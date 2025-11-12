@@ -857,4 +857,9 @@ static int main_work_init(void)
 	return 0;
 }
 
+int bt_work_main_work_init(void)
+{
+	return main_work_init();
+}
+
 STACK_INIT(main_work_init, STACK_BASE_INIT, 1);

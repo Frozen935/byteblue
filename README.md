@@ -25,16 +25,17 @@ Note: The demo links at least `libmbedcrypto`; if the system's `pkg-config mbedt
 Execute in the repository root directory:
 
 ```
-make clean; make
+make clean; make all
 ```
 
 This will generate:
-- `libzblue.a`
+- `libbyteblue.a`
 - `samples/demo/demo`
 
 The first execution will automatically install `kconfiglib` and generate `include/generated/autoconf.h`. When mbed TLS is not installed in the system, it will automatically fetch and build the local `third_party/mbedtls` (fixed version).
 
 ## Common Targets
+- `make all`: Build everything (default target)
 - `make demo`: Build only the sample program
 - `make clean`: Clean build artifacts (does not clean `third_party/mbedtls` source code and libraries)
 - `make menuconfig`: Open Kconfig menu and update `.config`

@@ -439,4 +439,9 @@ static int uc_init(void)
 	return 0;
 }
 
+int bt_driver_userchan_init(void)
+{
+	return uc_init();
+}
+
 STACK_INIT(uc_init, STACK_BASE_INIT, 0);

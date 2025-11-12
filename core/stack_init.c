@@ -15,10 +15,13 @@ extern const struct stack_init_entry __stop_stack_init[];
 
 extern const struct stack_init_entry __stack_init_entry_main_work_init;
 extern const struct stack_init_entry __stack_init_entry_uc_init;
+
+extern int bt_driver_userchan_init(void);
+extern int bt_work_main_work_init(void);
 int bt_stack_init_once(void)
 {
-	__stack_init_entry_main_work_init.init();
-	__stack_init_entry_uc_init.init();
+	bt_work_main_work_init();
+	bt_driver_userchan_init();
 
 	return 0;
 }
