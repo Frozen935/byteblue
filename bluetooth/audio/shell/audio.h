@@ -226,7 +226,7 @@ extern struct bt_bap_ep *srcs[CONFIG_BT_MAX_CONN][CONFIG_BT_BAP_UNICAST_CLIENT_A
 extern struct named_lc3_preset default_sink_preset;
 extern struct named_lc3_preset default_source_preset;
 
-int cap_ac_unicast(const struct shell *sh, const struct cap_unicast_ac_param *param);
+int cap_ac_unicast(const struct bt_shell *sh, const struct cap_unicast_ac_param *param);
 #endif /* CONFIG_BT_BAP_UNICAST_CLIENT */
 #endif /* CONFIG_BT_BAP_UNICAST */
 
@@ -782,7 +782,7 @@ struct bap_broadcast_ac_param {
 	size_t chan_cnt;
 };
 
-int cap_ac_broadcast(const struct shell *sh, size_t argc, char **argv,
+int cap_ac_broadcast(const struct bt_shell *sh, size_t argc, char **argv,
 		     const struct bap_broadcast_ac_param *param);
 
 extern struct shell_stream broadcast_source_streams[CONFIG_BT_BAP_BROADCAST_SRC_STREAM_COUNT];

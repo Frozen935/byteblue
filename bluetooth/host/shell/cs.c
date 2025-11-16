@@ -39,18 +39,18 @@ static int check_cs_sync_antenna_selection_input(uint16_t input)
 	return 0;
 }
 
-static int cmd_read_remote_supported_capabilities(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_read_remote_supported_capabilities(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
 	err = bt_le_cs_read_remote_supported_capabilities(default_conn);
 	if (err) {
-		shell_error(sh, "bt_le_cs_read_remote_supported_capabilities returned error %d",
+		bt_shell_error("bt_le_cs_read_remote_supported_capabilities returned error %d",
 			    err);
 		return -ENOEXEC;
 	}
@@ -58,7 +58,7 @@ static int cmd_read_remote_supported_capabilities(const struct shell *sh, size_t
 	return 0;
 }
 
-static int cmd_set_default_settings(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_set_default_settings(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 	struct bt_le_cs_set_default_settings_param params;
@@ -66,43 +66,43 @@ static int cmd_set_default_settings(const struct shell *sh, size_t argc, char *a
 	int16_t tx_power_input;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
-	params.enable_initiator_role = shell_strtobool(argv[1], 10, &err);
+	params.enable_initiator_role = bt_shell_strtobool(argv[1], 10, &err);
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 1, Enable initiator role");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 1, Enable initiator role");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
-	params.enable_reflector_role = shell_strtobool(argv[2], 10, &err);
+	params.enable_reflector_role = bt_shell_strtobool(argv[2], 10, &err);
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 2, Enable reflector role");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 2, Enable reflector role");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
-	antenna_input = shell_strtoul(argv[3], 16, &err);
+	antenna_input = bt_shell_strtoul(argv[3], 16, &err);
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 3, CS_SYNC antenna selection");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 3, CS_SYNC antenna selection");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	err = check_cs_sync_antenna_selection_input(antenna_input);
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "CS_SYNC antenna selection input invalid");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("CS_SYNC antenna selection input invalid");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
-	tx_power_input = shell_strtol(argv[4], 10, &err);
+	tx_power_input = bt_shell_strtol(argv[4], 10, &err);
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 4, Max TX power");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 4, Max TX power");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	params.cs_sync_antenna_selection = antenna_input;
@@ -110,25 +110,25 @@ static int cmd_set_default_settings(const struct shell *sh, size_t argc, char *a
 
 	err = bt_le_cs_set_default_settings(default_conn, &params);
 	if (err) {
-		shell_error(sh, "bt_le_cs_set_default_settings returned error %d", err);
+		bt_shell_error("bt_le_cs_set_default_settings returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_read_remote_fae_table(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_read_remote_fae_table(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
 	err = bt_le_cs_read_remote_fae_table(default_conn);
 	if (err) {
-		shell_error(sh, "bt_le_cs_read_remote_fae_table returned error %d", err);
+		bt_shell_error("bt_le_cs_read_remote_fae_table returned error %d", err);
 		return -ENOEXEC;
 	}
 
@@ -182,7 +182,7 @@ static void cs_test_end_complete_cb(void)
 	bt_shell_print("CS Test End Complete.");
 }
 
-static int cmd_cs_test_simple(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cs_test_simple(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 	struct bt_le_cs_test_param params;
@@ -191,19 +191,19 @@ static int cmd_cs_test_simple(const struct shell *sh, size_t argc, char *argv[])
 	params.main_mode_repetition = 0;
 	params.mode_0_steps = 2;
 
-	params.role = shell_strtoul(argv[1], 16, &err);
+	params.role = bt_shell_strtoul(argv[1], 16, &err);
 
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 1, Role selection");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 1, Role selection");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	if (params.role != BT_CONN_LE_CS_ROLE_INITIATOR &&
 	    params.role != BT_CONN_LE_CS_ROLE_REFLECTOR) {
-		shell_help(sh);
-		shell_error(sh, "Role selection input invalid");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Role selection input invalid");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	params.rtt_type = BT_CONN_LE_CS_RTT_TYPE_AA_ONLY;
@@ -240,13 +240,13 @@ static int cmd_cs_test_simple(const struct shell *sh, size_t argc, char *argv[])
 
 	err = bt_le_cs_test_cb_register(cs_test_cb);
 	if (err) {
-		shell_error(sh, "bt_le_cs_test_cb_register returned error %d", err);
+		bt_shell_error("bt_le_cs_test_cb_register returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	err = bt_le_cs_start_test(&params);
 	if (err) {
-		shell_error(sh, "bt_le_cs_start_test returned error %d", err);
+		bt_shell_error("bt_le_cs_start_test returned error %d", err);
 		return -ENOEXEC;
 	}
 
@@ -254,12 +254,12 @@ static int cmd_cs_test_simple(const struct shell *sh, size_t argc, char *argv[])
 }
 #endif /* CONFIG_BT_CHANNEL_SOUNDING_TEST */
 
-static int cmd_remove_config(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_remove_config(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
@@ -267,21 +267,21 @@ static int cmd_remove_config(const struct shell *sh, size_t argc, char *argv[])
 
 	err = bt_le_cs_remove_config(default_conn, config_id);
 	if (err) {
-		shell_error(sh, "bt_le_cs_remove_config returned error %d", err);
+		bt_shell_error("bt_le_cs_remove_config returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_create_config(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 	enum bt_le_cs_create_config_context context;
 	struct bt_le_cs_create_config_params params;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
@@ -291,9 +291,9 @@ static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
 	} else if (!strcmp(argv[2], "local-only")) {
 		context = BT_LE_CS_CREATE_CONFIG_CONTEXT_LOCAL_AND_REMOTE;
 	} else {
-		shell_error(sh, "Invalid context: %s", argv[2]);
-		shell_help(sh);
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_error("Invalid context: %s", argv[2]);
+		bt_shell_help(sh);
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	if (!strcmp(argv[3], "initiator")) {
@@ -301,9 +301,9 @@ static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
 	} else if (!strcmp(argv[3], "reflector")) {
 		params.role = BT_CONN_LE_CS_ROLE_REFLECTOR;
 	} else {
-		shell_error(sh, "Invalid role: %s", argv[3]);
-		shell_help(sh);
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_error("Invalid role: %s", argv[3]);
+		bt_shell_help(sh);
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	/* Set the default values */
@@ -336,20 +336,20 @@ static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
 			params.mode = BT_CONN_LE_CS_MAIN_MODE_3_SUB_MODE_2;
 		} else if (!strcmp(argv[j], "steps")) {
 			if (++j == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			params.min_main_mode_steps = strtoul(argv[j], NULL, 10);
 			if (++j == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			params.max_main_mode_steps = strtoul(argv[j], NULL, 10);
 			if (++j == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			params.mode_0_steps = strtoul(argv[j], NULL, 10);
@@ -375,8 +375,8 @@ static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
 			params.cs_sync_phy = BT_CONN_LE_CS_SYNC_2M_2BT_PHY;
 		} else if (!strcmp(argv[j], "chmap-rep")) {
 			if (++j == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			params.channel_map_repetition = strtoul(argv[j], NULL, 10);
@@ -390,32 +390,32 @@ static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
 			params.channel_selection_type = BT_CONN_LE_CS_CHSEL_TYPE_3C;
 		} else if (!strcmp(argv[j], "ch3c-jump")) {
 			if (++j == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			params.ch3c_jump = strtoul(argv[j], NULL, 10);
 		} else if (!strcmp(argv[j], "chmap")) {
 			if (++j == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			if (hex2bin(argv[j], strlen(argv[j]), params.channel_map, 10) == 0) {
-				shell_error(sh, "Invalid channel map");
+				bt_shell_error("Invalid channel map");
 				return -ENOEXEC;
 			}
 
 			sys_mem_swap(params.channel_map, 10);
 		} else {
-			shell_help(sh);
-			return SHELL_CMD_HELP_PRINTED;
+			bt_shell_help(sh);
+			return BT_SHELL_CMD_HELP_PRINTED;
 		}
 	}
 
 	err = bt_le_cs_create_config(default_conn, &params, context);
 	if (err) {
-		shell_error(sh, "bt_le_cs_create_config returned error %d", err);
+		bt_shell_error("bt_le_cs_create_config returned error %d", err);
 		return -ENOEXEC;
 	}
 
@@ -423,13 +423,13 @@ static int cmd_create_config(const struct shell *sh, size_t argc, char *argv[])
 }
 
 #if defined(CONFIG_BT_CHANNEL_SOUNDING_TEST)
-static int cmd_cs_stop_test(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cs_stop_test(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	err = bt_le_cs_stop_test();
 	if (err) {
-		shell_error(sh, "bt_cs_stop_test returned error %d", err);
+		bt_shell_error("bt_cs_stop_test returned error %d", err);
 		return -ENOEXEC;
 	}
 
@@ -437,7 +437,7 @@ static int cmd_cs_stop_test(const struct shell *sh, size_t argc, char *argv[])
 }
 #endif /* CONFIG_BT_CHANNEL_SOUNDING_TEST */
 
-static int cmd_read_local_supported_capabilities(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_read_local_supported_capabilities(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
@@ -446,14 +446,13 @@ static int cmd_read_local_supported_capabilities(const struct shell *sh, size_t 
 	err = bt_le_cs_read_local_supported_capabilities(&params);
 
 	if (err) {
-		shell_error(sh, "bt_le_cs_read_local_supported_capabilities returned error %d",
+		bt_shell_error("bt_le_cs_read_local_supported_capabilities returned error %d",
 			    err);
 
 		return -ENOEXEC;
 	}
 
-	shell_print(
-		sh,
+	bt_shell_print(
 		"Local channel sounding supported capabilities:\n"
 		"- Num CS configurations: %d\n"
 		"- Max consecutive CS procedures: %d\n"
@@ -514,13 +513,13 @@ static int cmd_read_local_supported_capabilities(const struct shell *sh, size_t 
 	return 0;
 }
 
-static int cmd_write_cached_remote_supported_capabilities(const struct shell *sh, size_t argc,
+static int cmd_write_cached_remote_supported_capabilities(const struct bt_shell *sh, size_t argc,
 							  char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
@@ -555,71 +554,71 @@ static int cmd_write_cached_remote_supported_capabilities(const struct shell *sh
 	err = bt_le_cs_write_cached_remote_supported_capabilities(default_conn, &params);
 
 	if (err) {
-		shell_error(sh, "bt_le_cs_set_channel_classification returned error %d", err);
+		bt_shell_error("bt_le_cs_set_channel_classification returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_security_enable(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_security_enable(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
 	err = bt_le_cs_security_enable(default_conn);
 
 	if (err) {
-		shell_error(sh, "bt_le_cs_security_enable returned error %d", err);
+		bt_shell_error("bt_le_cs_security_enable returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_set_channel_classification(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_set_channel_classification(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
 	uint8_t channel_classification[10];
 
 	for (int i = 0; i < 10; i++) {
-		channel_classification[i] = shell_strtoul(argv[1 + i], 16, &err);
+		channel_classification[i] = bt_shell_strtoul(argv[1 + i], 16, &err);
 
 		if (err) {
-			shell_help(sh);
-			shell_error(sh, "Could not parse input %d, Channel Classification[%d]", i,
+			bt_shell_help(sh);
+			bt_shell_error("Could not parse input %d, Channel Classification[%d]", i,
 				    i);
 
-			return SHELL_CMD_HELP_PRINTED;
+			return BT_SHELL_CMD_HELP_PRINTED;
 		}
 	}
 
 	err = bt_le_cs_set_channel_classification(channel_classification);
 
 	if (err) {
-		shell_error(sh, "bt_le_cs_set_channel_classification returned error %d", err);
+		bt_shell_error("bt_le_cs_set_channel_classification returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_set_procedure_parameters(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_set_procedure_parameters(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
@@ -642,66 +641,66 @@ static int cmd_set_procedure_parameters(const struct shell *sh, size_t argc, cha
 	err = bt_le_cs_set_procedure_parameters(default_conn, &params);
 
 	if (err) {
-		shell_error(sh, "bt_le_cs_set_procedure_parameters returned error %d", err);
+		bt_shell_error("bt_le_cs_set_procedure_parameters returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_procedure_enable(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_procedure_enable(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Conn handle error, at least one connection is required.");
+		bt_shell_error("Conn handle error, at least one connection is required.");
 		return -ENOEXEC;
 	}
 
 	struct bt_le_cs_procedure_enable_param params;
 
-	params.config_id = shell_strtoul(argv[1], 16, &err);
+	params.config_id = bt_shell_strtoul(argv[1], 16, &err);
 
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 1, Config ID");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 1, Config ID");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
-	params.enable = shell_strtoul(argv[2], 16, &err);
+	params.enable = bt_shell_strtoul(argv[2], 16, &err);
 
 	if (err) {
-		shell_help(sh);
-		shell_error(sh, "Could not parse input 2, Enable");
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		bt_shell_error("Could not parse input 2, Enable");
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	err = bt_le_cs_procedure_enable(default_conn, &params);
 
 	if (err) {
-		shell_error(sh, "bt_le_cs_procedure_enable returned error %d", err);
+		bt_shell_error("bt_le_cs_procedure_enable returned error %d", err);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	cs_cmds,
-	SHELL_CMD_ARG(read_remote_supported_capabilities, NULL, "<None>",
+	BT_SHELL_CMD_ARG(read_remote_supported_capabilities, NULL, "<None>",
 		      cmd_read_remote_supported_capabilities, 1, 0),
-	SHELL_CMD_ARG(
+	BT_SHELL_CMD_ARG(
 		set_default_settings, NULL,
 		"<Enable initiator role: true, false> <Enable reflector role: true, false> "
 		" <CS_SYNC antenna selection: 0x01 - 0x04, 0xFE, 0xFF> <Max TX power: -127 - 20>",
 		cmd_set_default_settings, 5, 0),
-	SHELL_CMD_ARG(read_remote_fae_table, NULL, "<None>", cmd_read_remote_fae_table, 1, 0),
+	BT_SHELL_CMD_ARG(read_remote_fae_table, NULL, "<None>", cmd_read_remote_fae_table, 1, 0),
 #if defined(CONFIG_BT_CHANNEL_SOUNDING_TEST)
-	SHELL_CMD_ARG(start_simple_cs_test, NULL, "<Role selection (initiator, reflector): 0, 1>",
+	BT_SHELL_CMD_ARG(start_simple_cs_test, NULL, "<Role selection (initiator, reflector): 0, 1>",
 		      cmd_cs_test_simple, 2, 0),
-	SHELL_CMD_ARG(stop_cs_test, NULL, "<None>", cmd_cs_stop_test, 1, 0),
+	BT_SHELL_CMD_ARG(stop_cs_test, NULL, "<None>", cmd_cs_stop_test, 1, 0),
 #endif /* CONFIG_BT_CHANNEL_SOUNDING_TEST */
-	SHELL_CMD_ARG(
+	BT_SHELL_CMD_ARG(
 		create_config, NULL,
 		"<id> <context: local-only, local-remote> <role: initiator, reflector> "
 		"[rtt-none, pbr-none, both-none, pbr-rtt, pbr-both, both-pbr] [steps <min> "
@@ -709,32 +708,37 @@ SHELL_STATIC_SUBCMD_SET_CREATE(
 		"128b-rand] [phy-1m, phy-2m, phy-2m-2b] [chmap-rep <rep>] [hat-shape, x-shape] "
 		"[ch3c-jump <jump>] [chmap <XXXXXXXXXXXXXXXX>] (78-0) [chsel-3b, chsel-3c]",
 		cmd_create_config, 4, 15),
-	SHELL_CMD_ARG(remove_config, NULL, "<id>", cmd_remove_config, 2, 0),
-	SHELL_CMD_ARG(read_local_supported_capabilities, NULL, "<None>",
+	BT_SHELL_CMD_ARG(remove_config, NULL, "<id>", cmd_remove_config, 2, 0),
+	BT_SHELL_CMD_ARG(read_local_supported_capabilities, NULL, "<None>",
 		      cmd_read_local_supported_capabilities, 1, 0),
-	SHELL_CMD_ARG(write_cached_remote_supported_capabilities, NULL, "<None>",
+	BT_SHELL_CMD_ARG(write_cached_remote_supported_capabilities, NULL, "<None>",
 		      cmd_write_cached_remote_supported_capabilities, 1, 0),
-	SHELL_CMD_ARG(security_enable, NULL, "<None>", cmd_security_enable, 1, 0),
-	SHELL_CMD_ARG(set_channel_classification, NULL,
+	BT_SHELL_CMD_ARG(security_enable, NULL, "<None>", cmd_security_enable, 1, 0),
+	BT_SHELL_CMD_ARG(set_channel_classification, NULL,
 		      "<Byte 0> <Byte 1> <Byte 2> <Byte 3> "
 		      "<Byte 4> <Byte 5> <Byte 6> <Byte 7> <Byte 8> <Byte 9>",
 		      cmd_set_channel_classification, 11, 0),
-	SHELL_CMD_ARG(set_procedure_parameters, NULL, "<None>", cmd_set_procedure_parameters, 1, 0),
-	SHELL_CMD_ARG(procedure_enable, NULL, "<Config ID: 0 to 3> <Enable: 0, 1>",
+	BT_SHELL_CMD_ARG(set_procedure_parameters, NULL, "<None>", cmd_set_procedure_parameters, 1, 0),
+	BT_SHELL_CMD_ARG(procedure_enable, NULL, "<Config ID: 0 to 3> <Enable: 0, 1>",
 		      cmd_procedure_enable, 3, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
-static int cmd_cs(const struct shell *sh, size_t argc, char **argv)
+static int cmd_cs(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	if (argc == 1) {
-		shell_help(sh);
+		bt_shell_help(sh);
 
-		return SHELL_CMD_HELP_PRINTED;
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
-	shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+	bt_shell_error("%s unknown parameter: %s", argv[0], argv[1]);
 
 	return -EINVAL;
 }
 
-SHELL_CMD_ARG_REGISTER(cs, &cs_cmds, "Bluetooth CS shell commands", cmd_cs, 1, 1);
+BT_SHELL_CMD_ARG_DEFINE(cs, &cs_cmds, "Bluetooth CS shell commands", cmd_cs, 1, 1);
+
+int bt_shell_cmd_cs_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &cs);
+}

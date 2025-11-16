@@ -115,7 +115,7 @@ static void set_gmap_features(struct bt_gmap_feat *features)
 	}
 }
 
-static int cmd_gmap_init(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_init(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	struct bt_gmap_feat features;
 	int err;
@@ -129,14 +129,14 @@ static int cmd_gmap_init(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_gmap_register(gmap_role, features);
 	if (err != 0) {
-		shell_error(sh, "Failed to register GMAS (err %d)", err);
+		bt_shell_error("Failed to register GMAS (err %d)", err);
 
 		return -ENOEXEC;
 	}
 
 	err = bt_gmap_cb_register(&gmap_cb);
 	if (err != 0) {
-		shell_error(sh, "Failed to register callbacks (err %d)", err);
+		bt_shell_error("Failed to register callbacks (err %d)", err);
 
 		return -ENOEXEC;
 	}
@@ -144,7 +144,7 @@ static int cmd_gmap_init(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
-static int cmd_gmap_set_role(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_set_role(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	enum bt_gmap_role role = 0;
 	struct bt_gmap_feat features;
@@ -162,10 +162,10 @@ static int cmd_gmap_set_role(const struct shell *sh, size_t argc, char **argv)
 		} else if (strcmp(arg, "bgr") == 0) {
 			role |= BT_GMAP_ROLE_BGR;
 		} else {
-			shell_error(sh, "Invalid arg: %s", arg);
-			shell_help(sh);
+			bt_shell_error("Invalid arg: %s", arg);
+			bt_shell_help(sh);
 
-			return SHELL_CMD_HELP_PRINTED;
+			return BT_SHELL_CMD_HELP_PRINTED;
 		}
 	}
 
@@ -173,7 +173,7 @@ static int cmd_gmap_set_role(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_gmap_set_role(role, features);
 	if (err != 0) {
-		shell_error(sh, "Failed to set new role (err %d)", err);
+		bt_shell_error("Failed to set new role (err %d)", err);
 
 		return -ENOEXEC;
 	}
@@ -183,18 +183,18 @@ static int cmd_gmap_set_role(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
-static int cmd_gmap_discover(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_discover(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	if (default_conn == NULL) {
-		shell_error(sh, "Not connected");
+		bt_shell_error("Not connected");
 		return -ENOEXEC;
 	}
 
 	err = bt_gmap_discover(default_conn);
 	if (err != 0) {
-		shell_error(sh, "bt_gmap_discover (err %d)", err);
+		bt_shell_error("bt_gmap_discover (err %d)", err);
 	}
 
 	return err;
@@ -255,7 +255,7 @@ const struct named_lc3_preset *gmap_get_named_preset(bool is_unicast, enum bt_au
 
 #if defined(CONFIG_BT_GMAP_UGG_SUPPORTED)
 #if UNICAST_SINK_SUPPORTED
-static int cmd_gmap_ac_1(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_1(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_1",
@@ -271,7 +271,7 @@ static int cmd_gmap_ac_1(const struct shell *sh, size_t argc, char **argv)
 #endif /* UNICAST_SINK_SUPPORTED */
 
 #if UNICAST_SRC_SUPPORTED
-static int cmd_gmap_ac_2(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_2(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_2",
@@ -287,7 +287,7 @@ static int cmd_gmap_ac_2(const struct shell *sh, size_t argc, char **argv)
 #endif /* UNICAST_SRC_SUPPORTED */
 
 #if UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED
-static int cmd_gmap_ac_3(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_3(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_3",
@@ -303,7 +303,7 @@ static int cmd_gmap_ac_3(const struct shell *sh, size_t argc, char **argv)
 #endif /* UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED */
 
 #if UNICAST_SINK_SUPPORTED
-static int cmd_gmap_ac_4(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_4(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_4",
@@ -319,7 +319,7 @@ static int cmd_gmap_ac_4(const struct shell *sh, size_t argc, char **argv)
 #endif /* UNICAST_SINK_SUPPORTED */
 
 #if UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED
-static int cmd_gmap_ac_5(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_5(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_5",
@@ -336,7 +336,7 @@ static int cmd_gmap_ac_5(const struct shell *sh, size_t argc, char **argv)
 
 #if UNICAST_SINK_SUPPORTED
 #if CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1
-static int cmd_gmap_ac_6_i(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_6_i(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_6_I",
@@ -352,7 +352,7 @@ static int cmd_gmap_ac_6_i(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 */
 
 #if CONFIG_BT_MAX_CONN >= 2
-static int cmd_gmap_ac_6_ii(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_6_ii(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_6_II",
@@ -370,7 +370,7 @@ static int cmd_gmap_ac_6_ii(const struct shell *sh, size_t argc, char **argv)
 
 #if UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED
 #if CONFIG_BT_MAX_CONN >= 2
-static int cmd_gmap_ac_7_ii(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_7_ii(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_7_II",
@@ -386,7 +386,7 @@ static int cmd_gmap_ac_7_ii(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_MAX_CONN >= 2 */
 
 #if CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1
-static int cmd_gmap_ac_8_i(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_8_i(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_8_I",
@@ -402,7 +402,7 @@ static int cmd_gmap_ac_8_i(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 */
 
 #if CONFIG_BT_MAX_CONN >= 2
-static int cmd_gmap_ac_8_ii(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_8_ii(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_8_II",
@@ -418,7 +418,7 @@ static int cmd_gmap_ac_8_ii(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_MAX_CONN >= 2 */
 
 #if CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 && CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SRC_COUNT > 1
-static int cmd_gmap_ac_11_i(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_11_i(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_11_I",
@@ -436,7 +436,7 @@ static int cmd_gmap_ac_11_i(const struct shell *sh, size_t argc, char **argv)
 	*/
 
 #if CONFIG_BT_MAX_CONN >= 2
-static int cmd_gmap_ac_11_ii(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_11_ii(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct cap_unicast_ac_param param = {
 		.name = "AC_11_II",
@@ -454,7 +454,7 @@ static int cmd_gmap_ac_11_ii(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_GMAP_UGG_SUPPORTED */
 
 #if defined(CONFIG_BT_GMAP_BGS_SUPPORTED)
-static int cmd_gmap_ac_12(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_12(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct bap_broadcast_ac_param param = {
 		.name = "AC_12",
@@ -466,7 +466,7 @@ static int cmd_gmap_ac_12(const struct shell *sh, size_t argc, char **argv)
 }
 
 #if CONFIG_BT_BAP_BROADCAST_SRC_STREAM_COUNT > 1
-static int cmd_gmap_ac_13(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_13(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct bap_broadcast_ac_param param = {
 		.name = "AC_13",
@@ -478,7 +478,7 @@ static int cmd_gmap_ac_13(const struct shell *sh, size_t argc, char **argv)
 }
 #endif /* CONFIG_BT_BAP_BROADCAST_SRC_STREAM_COUNT > 1 */
 
-static int cmd_gmap_ac_14(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap_ac_14(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const struct bap_broadcast_ac_param param = {
 		.name = "AC_14",
@@ -490,12 +490,12 @@ static int cmd_gmap_ac_14(const struct shell *sh, size_t argc, char **argv)
 }
 #endif /* CONFIG_BT_GMAP_BGS_SUPPORTED */
 
-static int cmd_gmap(const struct shell *sh, size_t argc, char **argv)
+static int cmd_gmap(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	if (argc > 1) {
-		shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+		bt_shell_error("%s unknown parameter: %s", argv[0], argv[1]);
 	} else {
-		shell_error(sh, "%s missing subcomand", argv[0]);
+		bt_shell_error("%s missing subcomand", argv[0]);
 	}
 
 	return -ENOEXEC;
@@ -503,63 +503,68 @@ static int cmd_gmap(const struct shell *sh, size_t argc, char **argv)
 
 #define HELP_NONE "[none]"
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
-	gmap_cmds, SHELL_CMD_ARG(init, NULL, HELP_NONE, cmd_gmap_init, 1, 0),
-	SHELL_CMD_ARG(set_role, NULL, "[ugt | ugg | bgr | bgs]", cmd_gmap_set_role, 2, 3),
-	SHELL_CMD_ARG(discover, NULL, HELP_NONE, cmd_gmap_discover, 1, 0),
+BT_SHELL_SUBCMD_SET_CREATE(
+	gmap_cmds, BT_SHELL_CMD_ARG(init, NULL, HELP_NONE, cmd_gmap_init, 1, 0),
+	BT_SHELL_CMD_ARG(set_role, NULL, "[ugt | ugg | bgr | bgs]", cmd_gmap_set_role, 2, 3),
+	BT_SHELL_CMD_ARG(discover, NULL, HELP_NONE, cmd_gmap_discover, 1, 0),
 #if defined(CONFIG_BT_GMAP_UGG_SUPPORTED)
 #if UNICAST_SINK_SUPPORTED
-	SHELL_CMD_ARG(ac_1, NULL, "Unicast audio configuration 1", cmd_gmap_ac_1, 1, 0),
+	BT_SHELL_CMD_ARG(ac_1, NULL, "Unicast audio configuration 1", cmd_gmap_ac_1, 1, 0),
 #endif /* UNICAST_SINK_SUPPORTED */
 #if UNICAST_SRC_SUPPORTED
-	SHELL_CMD_ARG(ac_2, NULL, "Unicast audio configuration 2", cmd_gmap_ac_2, 1, 0),
+	BT_SHELL_CMD_ARG(ac_2, NULL, "Unicast audio configuration 2", cmd_gmap_ac_2, 1, 0),
 #endif /* UNICAST_SRC_SUPPORTED */
 #if UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED
-	SHELL_CMD_ARG(ac_3, NULL, "Unicast audio configuration 3", cmd_gmap_ac_3, 1, 0),
+	BT_SHELL_CMD_ARG(ac_3, NULL, "Unicast audio configuration 3", cmd_gmap_ac_3, 1, 0),
 #endif /* UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED */
 #if UNICAST_SINK_SUPPORTED
-	SHELL_CMD_ARG(ac_4, NULL, "Unicast audio configuration 4", cmd_gmap_ac_4, 1, 0),
+	BT_SHELL_CMD_ARG(ac_4, NULL, "Unicast audio configuration 4", cmd_gmap_ac_4, 1, 0),
 #endif /* UNICAST_SINK_SUPPORTED */
 #if UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED
-	SHELL_CMD_ARG(ac_5, NULL, "Unicast audio configuration 5", cmd_gmap_ac_5, 1, 0),
+	BT_SHELL_CMD_ARG(ac_5, NULL, "Unicast audio configuration 5", cmd_gmap_ac_5, 1, 0),
 #endif /* UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED */
 #if UNICAST_SINK_SUPPORTED
 #if CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1
-	SHELL_CMD_ARG(ac_6_i, NULL, "Unicast audio configuration 6(i)", cmd_gmap_ac_6_i, 1, 0),
+	BT_SHELL_CMD_ARG(ac_6_i, NULL, "Unicast audio configuration 6(i)", cmd_gmap_ac_6_i, 1, 0),
 #endif /* CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 */
 #if CONFIG_BT_MAX_CONN >= 2
-	SHELL_CMD_ARG(ac_6_ii, NULL, "Unicast audio configuration 6(ii)", cmd_gmap_ac_6_ii, 1, 0),
+	BT_SHELL_CMD_ARG(ac_6_ii, NULL, "Unicast audio configuration 6(ii)", cmd_gmap_ac_6_ii, 1, 0),
 #endif /* CONFIG_BT_MAX_CONN >= 2 */
 #endif /* UNICAST_SINK_SUPPORTED */
 #if UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED
 #if CONFIG_BT_MAX_CONN >= 2
-	SHELL_CMD_ARG(ac_7_ii, NULL, "Unicast audio configuration 7(ii)", cmd_gmap_ac_7_ii, 1, 0),
+	BT_SHELL_CMD_ARG(ac_7_ii, NULL, "Unicast audio configuration 7(ii)", cmd_gmap_ac_7_ii, 1, 0),
 #endif /* CONFIG_BT_MAX_CONN >= 2 */
 #if CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1
-	SHELL_CMD_ARG(ac_8_i, NULL, "Unicast audio configuration 8(i)", cmd_gmap_ac_8_i, 1, 0),
+	BT_SHELL_CMD_ARG(ac_8_i, NULL, "Unicast audio configuration 8(i)", cmd_gmap_ac_8_i, 1, 0),
 #endif /* CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 */
 #if CONFIG_BT_MAX_CONN >= 2
-	SHELL_CMD_ARG(ac_8_ii, NULL, "Unicast audio configuration 8(ii)", cmd_gmap_ac_8_ii, 1, 0),
+	BT_SHELL_CMD_ARG(ac_8_ii, NULL, "Unicast audio configuration 8(ii)", cmd_gmap_ac_8_ii, 1, 0),
 #endif /* CONFIG_BT_MAX_CONN >= 2 */
 #if CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 && CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SRC_COUNT > 1
-	SHELL_CMD_ARG(ac_11_i, NULL, "Unicast audio configuration 11(i)", cmd_gmap_ac_11_i, 1, 0),
+	BT_SHELL_CMD_ARG(ac_11_i, NULL, "Unicast audio configuration 11(i)", cmd_gmap_ac_11_i, 1, 0),
 #endif /* CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SNK_COUNT > 1 &&                                        \
 	* CONFIG_BT_BAP_UNICAST_CLIENT_ASE_SRC_COUNT > 1                                           \
 	*/
 #if CONFIG_BT_MAX_CONN >= 2
-	SHELL_CMD_ARG(ac_11_ii, NULL, "Unicast audio configuration 11(ii)", cmd_gmap_ac_11_ii, 1,
+	BT_SHELL_CMD_ARG(ac_11_ii, NULL, "Unicast audio configuration 11(ii)", cmd_gmap_ac_11_ii, 1,
 		      0),
 #endif /* CONFIG_BT_MAX_CONN >= 2 */
 #endif /* UNICAST_SINK_SUPPORTED && UNICAST_SRC_SUPPORTED */
 #endif /* CONFIG_BT_GMAP_UGG_SUPPORTED */
 
 #if defined(CONFIG_BT_GMAP_BGS_SUPPORTED)
-	SHELL_CMD_ARG(ac_12, NULL, "Broadcast audio configuration 12", cmd_gmap_ac_12, 1, 0),
+	BT_SHELL_CMD_ARG(ac_12, NULL, "Broadcast audio configuration 12", cmd_gmap_ac_12, 1, 0),
 #if CONFIG_BT_BAP_BROADCAST_SRC_STREAM_COUNT > 1
-	SHELL_CMD_ARG(ac_13, NULL, "Broadcast audio configuration 13", cmd_gmap_ac_13, 1, 0),
+	BT_SHELL_CMD_ARG(ac_13, NULL, "Broadcast audio configuration 13", cmd_gmap_ac_13, 1, 0),
 #endif /* CONFIG_BT_BAP_BROADCAST_SRC_STREAM_COUNT > 1 */
-	SHELL_CMD_ARG(ac_14, NULL, "Broadcast audio configuration 14", cmd_gmap_ac_14, 1, 0),
+	BT_SHELL_CMD_ARG(ac_14, NULL, "Broadcast audio configuration 14", cmd_gmap_ac_14, 1, 0),
 #endif /* CONFIG_BT_GMAP_BGS_SUPPORTED*/
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_ARG_REGISTER(gmap, &gmap_cmds, "Bluetooth GMAP shell commands", cmd_gmap, 1, 1);
+BT_SHELL_CMD_ARG_DEFINE(gmap, &gmap_cmds, "Bluetooth GMAP shell commands", cmd_gmap, 1, 1);
+
+int bt_shell_cmd_gmap_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &gmap);
+}

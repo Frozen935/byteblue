@@ -1,5 +1,5 @@
 # Standalone Bluetooth build Makefile for external_zblue/bluetooth
-# This Makefile allows building libbyteblue_bt.a independently.
+# This Makefile allows building libopenblue_bt.a independently.
 # It assumes .config exists in ZBLUE_ROOT and autoconf.h has been generated.
 
 # Default toolchain (override via environment)
@@ -26,7 +26,7 @@ export $(shell sed -e 's/=.*//' -e '/^$$/d' $(BT_ROOT)/.config)
 include module.mk
 
 # mbed TLS header support when crypto uses PSA/mbedTLS
-ifneq ($(CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS),)
+ifneq ($(CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS),)
 MBEDTLS_PKG_AVAILABLE := $(shell (pkg-config --exists mbedcrypto || pkg-config --exists mbedtls) && echo yes || echo no)
 ifeq ($(MBEDTLS_PKG_AVAILABLE),yes)
   MBEDTLS_CFLAGS := $(shell pkg-config --cflags mbedcrypto 2>/dev/null || pkg-config --cflags mbedtls 2>/dev/null)
@@ -51,6 +51,6 @@ CPPFLAGS += $(BT_CPPFLAGS)
 
 # Default target
 .PHONY: all clean
-all: libbyteblue_bt.a
+all: libopenblue_bt.a
 
 clean: bt-clean

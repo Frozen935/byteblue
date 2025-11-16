@@ -80,7 +80,7 @@ static struct bt_csip_set_member_cb csip_set_member_cbs = {
 	.sirk_read_req = sirk_read_req_cb,
 };
 
-static int cmd_cap_acceptor_init(const struct shell *sh, size_t argc,
+static int cmd_cap_acceptor_init(const struct bt_shell *sh, size_t argc,
 				 char **argv)
 {
 	struct bt_csip_set_member_register_param param = {
@@ -102,20 +102,20 @@ static int cmd_cap_acceptor_init(const struct shell *sh, size_t argc,
 
 			argn++;
 			if (argn == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
-			set_size = shell_strtoul(argv[argn], 0, &err);
+			set_size = bt_shell_strtoul(argv[argn], 0, &err);
 			if (err != 0) {
-				shell_error(sh, "Could not parse set_size: %d",
+				bt_shell_error("Could not parse set_size: %d",
 					    err);
 
 				return -ENOEXEC;
 			}
 
 			if (set_size > UINT8_MAX) {
-				shell_error(sh, "Invalid set_size: %lu",
+				bt_shell_error("Invalid set_size: %lu",
 					    set_size);
 
 				return -ENOEXEC;
@@ -127,20 +127,20 @@ static int cmd_cap_acceptor_init(const struct shell *sh, size_t argc,
 
 			argn++;
 			if (argn == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
-			rank = shell_strtoul(argv[argn], 0, &err);
+			rank = bt_shell_strtoul(argv[argn], 0, &err);
 			if (err != 0) {
-				shell_error(sh, "Could not parse rank: %d",
+				bt_shell_error("Could not parse rank: %d",
 					    err);
 
 				return -ENOEXEC;
 			}
 
 			if (rank > UINT8_MAX) {
-				shell_error(sh, "Invalid rank: %lu", rank);
+				bt_shell_error("Invalid rank: %lu", rank);
 
 				return -ENOEXEC;
 			}
@@ -153,27 +153,27 @@ static int cmd_cap_acceptor_init(const struct shell *sh, size_t argc,
 
 			argn++;
 			if (argn == argc) {
-				shell_help(sh);
-				return SHELL_CMD_HELP_PRINTED;
+				bt_shell_help(sh);
+				return BT_SHELL_CMD_HELP_PRINTED;
 			}
 
 			len = hex2bin(argv[argn], strlen(argv[argn]), param.sirk,
 				      sizeof(param.sirk));
 			if (len == 0) {
-				shell_error(sh, "Could not parse SIRK");
+				bt_shell_error("Could not parse SIRK");
 
 				return -ENOEXEC;
 			}
 		} else {
-			shell_help(sh);
+			bt_shell_help(sh);
 
-			return SHELL_CMD_HELP_PRINTED;
+			return BT_SHELL_CMD_HELP_PRINTED;
 		}
 	}
 
 	err = bt_cap_acceptor_register(&param, &cap_csip_svc_inst);
 	if (err != 0) {
-		shell_error(sh, "Could not register CAS: %d", err);
+		bt_shell_error("Could not register CAS: %d", err);
 
 		return err;
 	}
@@ -181,24 +181,24 @@ static int cmd_cap_acceptor_init(const struct shell *sh, size_t argc,
 	return 0;
 }
 
-static int cmd_cap_acceptor_lock(const struct shell *sh, size_t argc,
+static int cmd_cap_acceptor_lock(const struct bt_shell *sh, size_t argc,
 				 char *argv[])
 {
 	int err;
 
 	err = bt_csip_set_member_lock(cap_csip_svc_inst, true, false);
 	if (err != 0) {
-		shell_error(sh, "Failed to set lock: %d", err);
+		bt_shell_error("Failed to set lock: %d", err);
 
 		return -ENOEXEC;
 	}
 
-	shell_print(sh, "Set locked");
+	bt_shell_print("Set locked");
 
 	return 0;
 }
 
-static int cmd_cap_acceptor_release(const struct shell *sh, size_t argc,
+static int cmd_cap_acceptor_release(const struct bt_shell *sh, size_t argc,
 				    char *argv[])
 {
 	bool force = false;
@@ -208,7 +208,7 @@ static int cmd_cap_acceptor_release(const struct shell *sh, size_t argc,
 		if (strcmp(argv[1], "force") == 0) {
 			force = true;
 		} else {
-			shell_error(sh, "Unknown parameter: %s", argv[1]);
+			bt_shell_error("Unknown parameter: %s", argv[1]);
 
 			return -ENOEXEC;
 		}
@@ -217,82 +217,82 @@ static int cmd_cap_acceptor_release(const struct shell *sh, size_t argc,
 	err = bt_csip_set_member_lock(cap_csip_svc_inst, false, force);
 
 	if (err != 0) {
-		shell_error(sh, "Failed to release lock: %d", err);
+		bt_shell_error("Failed to release lock: %d", err);
 
 		return -ENOEXEC;
 	}
 
-	shell_print(sh, "Set released");
+	bt_shell_print("Set released");
 
 	return 0;
 }
 
-static int cmd_cap_acceptor_sirk(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_acceptor_sirk(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t sirk[BT_CSIP_SIRK_SIZE];
 	size_t len;
 	int err;
 
 	if (cap_csip_svc_inst == NULL) {
-		shell_error(sh, "CSIS not registered");
+		bt_shell_error("CSIS not registered");
 
 		return -ENOEXEC;
 	}
 
 	len = hex2bin(argv[1], strlen(argv[1]), sirk, sizeof(sirk));
 	if (len != sizeof(sirk)) {
-		shell_error(sh, "Invalid SIRK Length: %zu", len);
+		bt_shell_error("Invalid SIRK Length: %zu", len);
 
 		return -ENOEXEC;
 	}
 
 	err = bt_csip_set_member_sirk(cap_csip_svc_inst, sirk);
 	if (err != 0) {
-		shell_error(sh, "Failed to set SIRK: %d", err);
+		bt_shell_error("Failed to set SIRK: %d", err);
 		return -ENOEXEC;
 	}
 
-	shell_print(sh, "SIRK updated");
+	bt_shell_print("SIRK updated");
 
 	return 0;
 }
 
-static int cmd_cap_acceptor_get_info(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_acceptor_get_info(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_csip_set_member_set_info info;
 	uint8_t sirk[BT_CSIP_SIRK_SIZE];
 	int err;
 
 	if (cap_csip_svc_inst == NULL) {
-		shell_error(sh, "CSIS not registered yet");
+		bt_shell_error("CSIS not registered yet");
 
 		return -ENOEXEC;
 	}
 
 	err = bt_csip_set_member_get_info(cap_csip_svc_inst, &info);
 	if (err != 0) {
-		shell_error(sh, "Failed to get SIRK: %d", err);
+		bt_shell_error("Failed to get SIRK: %d", err);
 		return -ENOEXEC;
 	}
 
-	shell_print(sh, "Info for %p", cap_csip_svc_inst);
-	shell_print(sh, "\tSIRK");
-	shell_hexdump(sh, sirk, sizeof(sirk));
-	shell_print(sh, "\tSet size: %u", info.set_size);
-	shell_print(sh, "\tRank: %u", info.rank);
-	shell_print(sh, "\tLockable: %s", info.lockable ? "true" : "false");
-	shell_print(sh, "\tLocked: %s", info.locked ? "true" : "false");
+	bt_shell_print("Info for %p", cap_csip_svc_inst);
+	bt_shell_print("\tSIRK");
+	bt_shell_hexdump(sirk, sizeof(sirk));
+	bt_shell_print("\tSet size: %u", info.set_size);
+	bt_shell_print("\tRank: %u", info.rank);
+	bt_shell_print("\tLockable: %s", info.lockable ? "true" : "false");
+	bt_shell_print("\tLocked: %s", info.locked ? "true" : "false");
 	if (info.locked) {
 		char addr_str[BT_ADDR_LE_STR_LEN];
 
 		bt_addr_le_to_str(&info.lock_client_addr, addr_str, sizeof(addr_str));
-		shell_print(sh, "\tLock owner: %s", addr_str);
+		bt_shell_print("\tLock owner: %s", addr_str);
 	}
 
 	return 0;
 }
 
-static int cmd_cap_acceptor_sirk_rsp(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_cap_acceptor_sirk_rsp(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (strcmp(argv[1], "accept") == 0) {
 		sirk_read_rsp = BT_CSIP_READ_SIRK_REQ_RSP_ACCEPT;
@@ -303,39 +303,45 @@ static int cmd_cap_acceptor_sirk_rsp(const struct shell *sh, size_t argc, char *
 	} else if (strcmp(argv[1], "oob") == 0) {
 		sirk_read_rsp = BT_CSIP_READ_SIRK_REQ_RSP_OOB_ONLY;
 	} else {
-		shell_error(sh, "Unknown parameter: %s", argv[1]);
+		bt_shell_error("Unknown parameter: %s", argv[1]);
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_cap_acceptor(const struct shell *sh, size_t argc, char **argv)
+static int cmd_cap_acceptor(const struct bt_shell *sh, size_t argc, char **argv)
 {
-	shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+	bt_shell_error("%s unknown parameter: %s", argv[0], argv[1]);
 
 	return -ENOEXEC;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	cap_acceptor_cmds,
-	SHELL_CMD_ARG(init, NULL,
+	BT_SHELL_CMD_ARG(init, NULL,
 		      "Initialize the service and register callbacks "
 		      "[size <int>] [rank <int>] [not-lockable] [sirk <data>]",
 		      cmd_cap_acceptor_init, 1, 4),
-	SHELL_CMD_ARG(lock, NULL, "Lock the set", cmd_cap_acceptor_lock, 1, 0),
-	SHELL_CMD_ARG(release, NULL, "Release the set [force]", cmd_cap_acceptor_release, 1, 1),
-	SHELL_CMD_ARG(sirk, NULL, "Set the currently used SIRK <sirk>", cmd_cap_acceptor_sirk, 2,
+	BT_SHELL_CMD_ARG(lock, NULL, "Lock the set", cmd_cap_acceptor_lock, 1, 0),
+	BT_SHELL_CMD_ARG(release, NULL, "Release the set [force]", cmd_cap_acceptor_release, 1, 1),
+	BT_SHELL_CMD_ARG(sirk, NULL, "Set the currently used SIRK <sirk>", cmd_cap_acceptor_sirk, 2,
 		      0),
-	SHELL_CMD_ARG(get_info, NULL, "Get CSIS info", cmd_cap_acceptor_get_info, 1, 0),
-	SHELL_CMD_ARG(sirk_rsp, NULL,
+	BT_SHELL_CMD_ARG(get_info, NULL, "Get CSIS info", cmd_cap_acceptor_get_info, 1, 0),
+	BT_SHELL_CMD_ARG(sirk_rsp, NULL,
 		      "Set the response used in SIRK requests "
 		      "<accept, accept_enc, reject, oob>",
 		      cmd_cap_acceptor_sirk_rsp, 2, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_ARG_REGISTER(cap_acceptor, &cap_acceptor_cmds, "Bluetooth CAP acceptor shell commands",
+BT_SHELL_CMD_ARG_DEFINE(cap_acceptor, &cap_acceptor_cmds, "Bluetooth CAP acceptor shell commands",
 		       cmd_cap_acceptor, 1, 1);
+
+int bt_shell_cmd_cap_acceptor_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &cap_acceptor);
+}
+
 
 size_t cap_acceptor_ad_data_add(struct bt_data data[], size_t data_size, bool discoverable)
 {

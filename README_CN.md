@@ -1,6 +1,6 @@
-# ByteBlue Stack 本地构建指南（启用 mbed TLS）
+# OpenBlue Stack 本地构建指南（启用 mbed TLS）
 
-本项目是从 Zephyr Bluetooth 子系统抽取的独立模块，使用 GNU Make 构建。当前默认启用 mbed TLS（CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS=y），支持“系统优先、缺省回退至本地”的依赖处理，以保证在干净环境也可稳定编译 demo。
+本项目是从 Zephyr Bluetooth 子系统抽取的独立模块，使用 GNU Make 构建。当前默认启用 mbed TLS（CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS=y），支持“系统优先、缺省回退至本地”的依赖处理，以保证在干净环境也可稳定编译 demo。
 
 ## 环境依赖
 - gcc（建议）或 clang
@@ -10,7 +10,7 @@
 - Linux/Unix 环境（示例依赖 pthread、rt）
 
 ## 依赖处理策略（系统优先 + 本地回退）
-当 `CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS=y` 时：
+当 `CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS=y` 时：
 - 优先通过 `pkg-config` 检测系统安装的 mbed TLS：
   - 首选 `mbedcrypto`，若不存在则尝试 `mbedtls`
   - 自动获取编译包含路径（CFLAGS）与链接库（LIBS）
@@ -29,7 +29,7 @@ make clean; make all
 ```
 
 将生成：
-- `libbyteblue.a`
+- `libopenblue.a`
 - `samples/demo/demo`
 
 首次执行会自动安装 `kconfiglib` 并生成 `include/generated/autoconf.h`。当系统未安装 mbed TLS 时，会自动拉取并构建本地 `third_party/mbedtls`（固定版本）。
@@ -75,8 +75,8 @@ Bluetooth 模块已独立为 `bluetooth/module.mk` 与 `bluetooth/Makefile`，�
 在你的 NuttX `apps/` 子工程的 Makefile 中：
 
 ```makefile
-# 假设通过环境或上层 Makefile 传入 BT_ROOT 到 byteblue 仓库根
-BT_ROOT ?= $(TOPDIR)/byteblue
+# 假设通过环境或上层 Makefile 传入 BT_ROOT 到 openblue 仓库根
+BT_ROOT ?= $(TOPDIR)/openblue
 
 # 选择平台为 nuttx（默认 linux）
 BT_PLATFORM ?= nuttx
@@ -90,7 +90,7 @@ MYAPP_SRCS += $(BT_SRCS)
 # 追加编译包含路径与自动配置头
 CPPFLAGS += $(BT_CPPFLAGS)
 
-# 若启用 mbed TLS（CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS），需为编译阶段提供头文件路径：
+# 若启用 mbed TLS（CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS），需为编译阶段提供头文件路径：
 # （建议统一在上层 apps 框架处理，或参考本仓库根 Makefile 的 pkg-config 检测逻辑）
 ```
 
@@ -100,10 +100,10 @@ CPPFLAGS += $(BT_CPPFLAGS)
 
 - 直接构建独立蓝牙静态库（在本仓库内）：
   - `make -C bluetooth clean && make -C bluetooth -j`
-  - 产物：`byteblue/bluetooth/libbyteblue_bt.a`
+  - 产物：`openblue/bluetooth/libopenblue_bt.a`
   - 可在你的工程中链接该静态库，同时链接本仓库 `base/*` 源码或相应库（模块库仅包含 bluetooth/* + 平台驱动/OS 层源码，不包含 base/* 与 core/*）。
 
-- 在你的工程中复用源码（不直接链接 `libbyteblue_bt.a`）：
+- 在你的工程中复用源码（不直接链接 `libopenblue_bt.a`）：
 
 ```makefile
 # 假设 BT_ROOT 指向本仓库根目录
@@ -117,5 +117,5 @@ MY_CPPFLAGS += $(BT_CPPFLAGS)
 ```
 
 ## 维护者提示
-- 根 Makefile 仍负责运行 Kconfig 与生成 `include/generated/autoconf.h`，默认 `make` 目标保持不变：同时生成 `libbyteblue.a` 与 `samples/demo`。
+- 根 Makefile 仍负责运行 Kconfig 与生成 `include/generated/autoconf.h`，默认 `make` 目标保持不变：同时生成 `libopenblue.a` 与 `samples/demo`。
 - 模块 Makefile（`bluetooth/module.mk`）不触发 Kconfig，仅暴露源文件列表与包含路径，供外部工程或子模块复用。

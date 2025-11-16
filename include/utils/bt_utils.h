@@ -91,4 +91,7 @@
 #define __UTIL_DO_CONCAT(x, y) x##y
 #define UTIL_CONCAT(x, y)      __UTIL_DO_CONCAT(x, y)
 
+#define __UTILS_STRINGIFY(x) #x
+#define UTILS_STRINGIFY(s) __UTILS_STRINGIFY(s)
+
 #endif /* __INCLUDE_UTIL_MACRO_H__ */

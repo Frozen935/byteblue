@@ -1,6 +1,6 @@
-# ByteBlue Stack Local Build Guide (with mbed TLS Enabled)
+# OpenBlue Stack Local Build Guide (with mbed TLS Enabled)
 
-This project is an independent module extracted from the Zephyr Bluetooth subsystem, built using GNU Make. It currently enables mbed TLS by default (CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS=y) and supports "system-first, fallback-to-local" dependency handling to ensure stable compilation of demos even in clean environments.
+This project is an independent module extracted from the Zephyr Bluetooth subsystem, built using GNU Make. It currently enables mbed TLS by default (CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS=y) and supports "system-first, fallback-to-local" dependency handling to ensure stable compilation of demos even in clean environments.
 
 ## Environment Dependencies
 - gcc (recommended) or clang
@@ -10,7 +10,7 @@ This project is an independent module extracted from the Zephyr Bluetooth subsys
 - Linux/Unix environment (examples depend on pthread, rt)
 
 ## Dependency Handling Strategy (System-First + Local Fallback)
-When `CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS=y`:
+When `CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS=y`:
 - Prioritize detecting system-installed mbed TLS via `pkg-config`:
   - Prefer `mbedcrypto`, fallback to `mbedtls` if not found
   - Automatically obtain compilation include paths (CFLAGS) and link libraries (LIBS)
@@ -29,7 +29,7 @@ make clean; make all
 ```
 
 This will generate:
-- `libbyteblue.a`
+- `libopenblue.a`
 - `samples/demo/demo`
 
 The first execution will automatically install `kconfiglib` and generate `include/generated/autoconf.h`. When mbed TLS is not installed in the system, it will automatically fetch and build the local `third_party/mbedtls` (fixed version).

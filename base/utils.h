@@ -121,6 +121,9 @@
 #define STRUCT_SECTION_FOREACH(struct_type, var) for (struct struct_type *var = NULL; false;)
 #endif
 
+int char2hex(char c, uint8_t *x);
+int hex2char(uint8_t x, char *c);
+size_t bin2hex(const uint8_t *buf, size_t buflen, char *hex, size_t hexlen);
 size_t hex2bin(const char *hex, size_t hex_len, uint8_t *out, size_t out_size);
 uint16_t crc16_reflect(uint16_t poly, uint16_t seed, const uint8_t *src, size_t len);
 uint32_t crc32_ieee(const uint8_t *data, size_t len);

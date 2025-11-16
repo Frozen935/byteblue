@@ -430,7 +430,7 @@ static int uc_init(void)
 {
 	struct uc_data *uc = &_uc_data;
 
-	printf("uc_init\n");
+	LOG_DBG("uc_init");
 	bt_hci_transport_register(&uc_transport);
 
 	uc->fd = -1;

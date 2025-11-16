@@ -23,7 +23,7 @@ static void status_print(int err, char *msg, uint16_t addr, struct bt_mesh_large
 	bt_shell_hexdump(rsp->data->data, rsp->data->len);
 }
 
-static int cmd_large_comp_data_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_large_comp_data_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	BT_BUF_SIMPLE_DEFINE(comp, 64);
 	struct bt_mesh_large_comp_data_rsp rsp = {
@@ -35,11 +35,11 @@ static int cmd_large_comp_data_get(const struct shell *sh, size_t argc, char *ar
 
 	bt_buf_simple_init(&comp, 0);
 
-	page = shell_strtoul(argv[1], 0, &err);
-	offset = shell_strtoul(argv[2], 0, &err);
+	page = bt_shell_strtoul(argv[1], 0, &err);
+	offset = bt_shell_strtoul(argv[2], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
@@ -50,7 +50,7 @@ static int cmd_large_comp_data_get(const struct shell *sh, size_t argc, char *ar
 	return err;
 }
 
-static int cmd_models_metadata_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_models_metadata_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	BT_BUF_SIMPLE_DEFINE(metadata, 64);
 	struct bt_mesh_large_comp_data_rsp rsp = {
@@ -62,11 +62,11 @@ static int cmd_models_metadata_get(const struct shell *sh, size_t argc, char *ar
 
 	bt_buf_simple_init(&metadata, 0);
 
-	page = shell_strtoul(argv[1], 0, &err);
-	offset = shell_strtoul(argv[2], 0, &err);
+	page = bt_shell_strtoul(argv[1], 0, &err);
+	offset = bt_shell_strtoul(argv[2], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
@@ -77,11 +77,11 @@ static int cmd_models_metadata_get(const struct shell *sh, size_t argc, char *ar
 	return err;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	large_comp_data_cmds,
-	SHELL_CMD_ARG(large-comp-data-get, NULL, "<page> <offset>", cmd_large_comp_data_get, 3, 0),
-	SHELL_CMD_ARG(models-metadata-get, NULL, "<page> <offset>", cmd_models_metadata_get, 3, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(large-comp-data-get, NULL, "<page> <offset>", cmd_large_comp_data_get, 3, 0),
+	BT_SHELL_CMD_ARG(models-metadata-get, NULL, "<page> <offset>", cmd_models_metadata_get, 3, 0),
+	BT_SHELL_SUBCMD_SET_END);
 
 SHELL_SUBCMD_ADD((mesh, models), lcd, &large_comp_data_cmds,
 		 "Large Comp Data Cli commands",

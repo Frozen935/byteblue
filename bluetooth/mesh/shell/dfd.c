@@ -15,13 +15,13 @@
 
 static const struct bt_mesh_model *mod;
 
-static void print_receivers_status(const struct shell *sh, struct bt_mesh_dfd_srv *srv,
+static void print_receivers_status(const struct bt_shell *sh, struct bt_mesh_dfd_srv *srv,
 				   enum bt_mesh_dfd_status status)
 {
-	shell_print(sh, "{\"status\": %d, \"target_cnt\": %d}", status, srv->target_cnt);
+	bt_shell_print("{\"status\": %d, \"target_cnt\": %d}", status, srv->target_cnt);
 }
 
-static void print_dfd_status(const struct shell *sh, struct bt_mesh_dfd_srv *srv,
+static void print_dfd_status(const struct bt_shell *sh, struct bt_mesh_dfd_srv *srv,
 			     enum bt_mesh_dfd_status status)
 {
 	shell_fprintf(sh, SHELL_NORMAL, "{ \"status\": %d, \"phase\": %d", status,
@@ -35,10 +35,10 @@ static void print_dfd_status(const struct shell *sh, struct bt_mesh_dfd_srv *srv
 			      srv->dfu.xfer.blob.mode, srv->apply, srv->slot_idx);
 	}
 
-	shell_print(sh, " }");
+	bt_shell_print(" }");
 }
 
-static void print_fw_status(const struct shell *sh, enum bt_mesh_dfd_status status,
+static void print_fw_status(const struct bt_shell *sh, enum bt_mesh_dfd_status status,
 			    uint16_t idx, const uint8_t *fwid, size_t fwid_len)
 {
 	shell_fprintf(sh, SHELL_NORMAL, "{ \"status\": %d, \"slot_cnt\": %d, \"idx\": %d",
@@ -50,7 +50,7 @@ static void print_fw_status(const struct shell *sh, enum bt_mesh_dfd_status stat
 		}
 		shell_fprintf(sh, SHELL_NORMAL, "\"");
 	}
-	shell_print(sh, " }");
+	bt_shell_print(" }");
 }
 
 static enum bt_mesh_dfu_iter slot_space_cb(const struct bt_mesh_dfu_slot *slot,
@@ -63,7 +63,7 @@ static enum bt_mesh_dfu_iter slot_space_cb(const struct bt_mesh_dfu_slot *slot,
 	return BT_MESH_DFU_ITER_CONTINUE;
 }
 
-static int cmd_dfd_receivers_add(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_receivers_add(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -90,11 +90,11 @@ static int cmd_dfd_receivers_add(const struct shell *sh, size_t argc, char *argv
 			return -EINVAL;
 		}
 
-		uint16_t addr = shell_strtoul(addr_str, 0, &err);
-		uint8_t img_idx = shell_strtoul(img_idx_str, 0, &err);
+		uint16_t addr = bt_shell_strtoul(addr_str, 0, &err);
+		uint8_t img_idx = bt_shell_strtoul(img_idx_str, 0, &err);
 
 		if (err) {
-			shell_warn(sh, "Unable to parse input string argument");
+			bt_shell_warn("Unable to parse input string argument");
 			return err;
 		}
 
@@ -115,7 +115,7 @@ static int cmd_dfd_receivers_add(const struct shell *sh, size_t argc, char *argv
 	return 0;
 }
 
-static int cmd_dfd_receivers_delete_all(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_receivers_delete_all(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -135,7 +135,7 @@ static int cmd_dfd_receivers_delete_all(const struct shell *sh, size_t argc, cha
 	return 0;
 }
 
-static int cmd_dfd_receivers_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_receivers_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -144,11 +144,11 @@ static int cmd_dfd_receivers_get(const struct shell *sh, size_t argc, char *argv
 	struct bt_mesh_dfd_srv *dfd_srv = mod->rt->user_data;
 	int err = 0;
 
-	uint16_t first = shell_strtoul(argv[1], 0, &err);
-	uint16_t cnt = shell_strtoul(argv[2], 0, &err);
+	uint16_t first = bt_shell_strtoul(argv[1], 0, &err);
+	uint16_t cnt = bt_shell_strtoul(argv[2], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
@@ -159,29 +159,29 @@ static int cmd_dfd_receivers_get(const struct shell *sh, size_t argc, char *argv
 	cnt = MIN(cnt, dfd_srv->target_cnt - first);
 	uint8_t progress = bt_mesh_dfu_cli_progress(&dfd_srv->dfu) / 2;
 
-	shell_print(sh, "{\n\t\"target_cnt\": %d,\n\t\"targets\": {",
+	bt_shell_print("{\n\t\"target_cnt\": %d,\n\t\"targets\": {",
 		    dfd_srv->target_cnt);
 	for (int i = 0; i < cnt; i++) {
 		const struct bt_mesh_dfu_target *t = &dfd_srv->targets[i + first];
 
-		shell_print(sh, "\t\t\"%d\": { \"blob_addr\": %d, \"phase\": %d, "
+		bt_shell_print("\t\t\"%d\": { \"blob_addr\": %d, \"phase\": %d, "
 			    "\"status\": %d, \"blob_status\": %d, \"progress\": %d, "
 			    "\"img_idx\": %d }%s", i + first, t->blob.addr, t->phase, t->status,
 			    t->blob.status, progress, t->img_idx, (i == cnt - 1) ? "" : ",");
 	}
-	shell_print(sh, "\t}\n}");
+	bt_shell_print("\t}\n}");
 
 	return 0;
 }
 
-static int cmd_dfd_capabilities_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_capabilities_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	size_t size = 0;
 	/* Remaining size */
 	(void)bt_mesh_dfu_slot_foreach(slot_space_cb, &size);
 	size = MIN(size, CONFIG_BT_MESH_DFD_SRV_SLOT_SPACE);
 
-	shell_print(sh, "{ \"targets_max\": %d, \"slot_cnt\": %d, \"slot_max_size\": %d, "
+	bt_shell_print("{ \"targets_max\": %d, \"slot_cnt\": %d, \"slot_max_size\": %d, "
 		    "\"slot_space\": %d, \"remaining_space\": %d, \"oob_supported\": false }",
 		    CONFIG_BT_MESH_DFD_SRV_TARGETS_MAX, CONFIG_BT_MESH_DFU_SLOT_CNT,
 		    CONFIG_BT_MESH_DFD_SRV_SLOT_MAX_SIZE, CONFIG_BT_MESH_DFD_SRV_SLOT_SPACE,
@@ -190,7 +190,7 @@ static int cmd_dfd_capabilities_get(const struct shell *sh, size_t argc, char *a
 	return 0;
 }
 
-static int cmd_dfd_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -203,7 +203,7 @@ static int cmd_dfd_get(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_start(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_start(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -213,40 +213,40 @@ static int cmd_dfd_start(const struct shell *sh, size_t argc, char *argv[])
 	struct bt_mesh_dfd_start_params params;
 	int err = 0;
 
-	params.app_idx = shell_strtoul(argv[1], 0, &err);
-	params.slot_idx = shell_strtoul(argv[2], 0, &err);
+	params.app_idx = bt_shell_strtoul(argv[1], 0, &err);
+	params.slot_idx = bt_shell_strtoul(argv[2], 0, &err);
 	if (argc > 3) {
-		params.group = shell_strtoul(argv[3], 0, &err);
+		params.group = bt_shell_strtoul(argv[3], 0, &err);
 	} else {
 		params.group = BT_MESH_ADDR_UNASSIGNED;
 	}
 
 	if (argc > 4) {
-		params.apply = shell_strtobool(argv[4], 0, &err);
+		params.apply = bt_shell_strtobool(argv[4], 0, &err);
 	} else {
 		params.apply = true;
 	}
 
 	if (argc > 5) {
-		params.ttl = shell_strtoul(argv[5], 0, &err);
+		params.ttl = bt_shell_strtoul(argv[5], 0, &err);
 	} else {
 		params.ttl = BT_MESH_TTL_DEFAULT;
 	}
 
 	if (argc > 6) {
-		params.timeout_base = shell_strtoul(argv[6], 0, &err);
+		params.timeout_base = bt_shell_strtoul(argv[6], 0, &err);
 	} else {
 		params.timeout_base = 0U;
 	}
 
 	if (argc > 7) {
-		params.xfer_mode = (enum bt_mesh_blob_xfer_mode)shell_strtoul(argv[7], 0, &err);
+		params.xfer_mode = (enum bt_mesh_blob_xfer_mode)bt_shell_strtoul(argv[7], 0, &err);
 	} else {
 		params.xfer_mode = BT_MESH_BLOB_XFER_MODE_PUSH;
 	}
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
@@ -260,7 +260,7 @@ static int cmd_dfd_start(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_suspend(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_suspend(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -278,7 +278,7 @@ static int cmd_dfd_suspend(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_cancel(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_cancel(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -296,7 +296,7 @@ static int cmd_dfd_cancel(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_apply(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_apply(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -314,7 +314,7 @@ static int cmd_dfd_apply(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_fw_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_fw_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t fwid[CONFIG_BT_MESH_DFU_FWID_MAXLEN];
 	size_t hexlen = strlen(argv[1]);
@@ -336,14 +336,14 @@ static int cmd_dfd_fw_get(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_fw_get_by_idx(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_fw_get_by_idx(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err = 0;
-	uint16_t idx = shell_strtoul(argv[1], 0, &err);
+	uint16_t idx = bt_shell_strtoul(argv[1], 0, &err);
 	const struct bt_mesh_dfu_slot *slot = bt_mesh_dfu_slot_at(idx);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
@@ -357,7 +357,7 @@ static int cmd_dfd_fw_get_by_idx(const struct shell *sh, size_t argc, char *argv
 	return 0;
 }
 
-static int cmd_dfd_fw_delete(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_fw_delete(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -387,7 +387,7 @@ static int cmd_dfd_fw_delete(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfd_fw_delete_all(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfd_fw_delete_all(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFD_SRV, &mod)) {
 		return -ENODEV;
@@ -408,27 +408,27 @@ static int cmd_dfd_fw_delete_all(const struct shell *sh, size_t argc, char *argv
 
 BT_MESH_SHELL_MDL_INSTANCE_CMDS(instance_cmds, BT_MESH_MODEL_ID_DFD_SRV, mod);
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	dfd_cmds,
-	SHELL_CMD_ARG(receivers-add, NULL, "<Addr>,<FwIdx>[;<Addr>,<FwIdx>]...",
+	BT_SHELL_CMD_ARG(receivers-add, NULL, "<Addr>,<FwIdx>[;<Addr>,<FwIdx>]...",
 		      cmd_dfd_receivers_add, 2, 0),
-	SHELL_CMD_ARG(receivers-delete-all, NULL, NULL, cmd_dfd_receivers_delete_all, 1, 0),
-	SHELL_CMD_ARG(receivers-get, NULL, "<First> <Count>", cmd_dfd_receivers_get, 3, 0),
-	SHELL_CMD_ARG(capabilities-get, NULL, NULL, cmd_dfd_capabilities_get, 1, 0),
-	SHELL_CMD_ARG(get, NULL, NULL, cmd_dfd_get, 1, 0),
-	SHELL_CMD_ARG(start, NULL,
+	BT_SHELL_CMD_ARG(receivers-delete-all, NULL, NULL, cmd_dfd_receivers_delete_all, 1, 0),
+	BT_SHELL_CMD_ARG(receivers-get, NULL, "<First> <Count>", cmd_dfd_receivers_get, 3, 0),
+	BT_SHELL_CMD_ARG(capabilities-get, NULL, NULL, cmd_dfd_capabilities_get, 1, 0),
+	BT_SHELL_CMD_ARG(get, NULL, NULL, cmd_dfd_get, 1, 0),
+	BT_SHELL_CMD_ARG(start, NULL,
 		      "<AppKeyIdx> <SlotIdx> [<Group> [<PolicyApply> [<TTL> "
 		      "[<TimeoutBase> [<XferMode>]]]]]",
 		      cmd_dfd_start, 3, 5),
-	SHELL_CMD_ARG(suspend, NULL, NULL, cmd_dfd_suspend, 1, 0),
-	SHELL_CMD_ARG(cancel, NULL, NULL, cmd_dfd_cancel, 1, 0),
-	SHELL_CMD_ARG(apply, NULL, NULL, cmd_dfd_apply, 1, 0),
-	SHELL_CMD_ARG(fw-get, NULL, "<FwID>", cmd_dfd_fw_get, 2, 0),
-	SHELL_CMD_ARG(fw-get-by-idx, NULL, "<Idx>", cmd_dfd_fw_get_by_idx, 2, 0),
-	SHELL_CMD_ARG(fw-delete, NULL, "<FwID>", cmd_dfd_fw_delete, 2, 0),
-	SHELL_CMD_ARG(fw-delete-all, NULL, NULL, cmd_dfd_fw_delete_all, 1, 0),
-	SHELL_CMD(instance, &instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(suspend, NULL, NULL, cmd_dfd_suspend, 1, 0),
+	BT_SHELL_CMD_ARG(cancel, NULL, NULL, cmd_dfd_cancel, 1, 0),
+	BT_SHELL_CMD_ARG(apply, NULL, NULL, cmd_dfd_apply, 1, 0),
+	BT_SHELL_CMD_ARG(fw-get, NULL, "<FwID>", cmd_dfd_fw_get, 2, 0),
+	BT_SHELL_CMD_ARG(fw-get-by-idx, NULL, "<Idx>", cmd_dfd_fw_get_by_idx, 2, 0),
+	BT_SHELL_CMD_ARG(fw-delete, NULL, "<FwID>", cmd_dfd_fw_delete, 2, 0),
+	BT_SHELL_CMD_ARG(fw-delete-all, NULL, NULL, cmd_dfd_fw_delete_all, 1, 0),
+	BT_SHELL_CMD(instance, &instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_SUBCMD_SET_END);
 
 SHELL_SUBCMD_ADD((mesh, models), dfd, &dfd_cmds, "Distributor commands",
 		 bt_mesh_shell_mdl_cmds_help, 1, 1);

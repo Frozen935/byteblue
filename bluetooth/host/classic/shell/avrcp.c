@@ -284,7 +284,7 @@ static struct bt_avrcp_tg_cb app_avrcp_tg_cb = {
 	.passthrough_req = avrcp_passthrough_req,
 };
 
-static int register_ct_cb(const struct shell *sh)
+static int register_ct_cb(const struct bt_shell *sh)
 {
 	int err;
 
@@ -295,18 +295,18 @@ static int register_ct_cb(const struct shell *sh)
 	err = bt_avrcp_ct_register_cb(&app_avrcp_ct_cb);
 	if (!err) {
 		avrcp_ct_registered = true;
-		shell_print(sh, "AVRCP CT callbacks registered");
+		bt_shell_print("AVRCP CT callbacks registered");
 	} else {
-		shell_print(sh, "failed to register AVRCP CT callbacks");
+		bt_shell_print("failed to register AVRCP CT callbacks");
 	}
 
 	return err;
 }
 
-static int cmd_register_ct_cb(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_register_ct_cb(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	if (avrcp_ct_registered) {
-		shell_print(sh, "already registered");
+		bt_shell_print("already registered");
 		return 0;
 	}
 
@@ -315,7 +315,7 @@ static int cmd_register_ct_cb(const struct shell *sh, int32_t argc, char *argv[]
 	return 0;
 }
 
-static int register_tg_cb(const struct shell *sh)
+static int register_tg_cb(const struct bt_shell *sh)
 {
 	int err;
 
@@ -326,18 +326,18 @@ static int register_tg_cb(const struct shell *sh)
 	err = bt_avrcp_tg_register_cb(&app_avrcp_tg_cb);
 	if (!err) {
 		avrcp_tg_registered = true;
-		shell_print(sh, "AVRCP TG callbacks registered");
+		bt_shell_print("AVRCP TG callbacks registered");
 	} else {
-		shell_print(sh, "failed to register AVRCP TG callbacks");
+		bt_shell_print("failed to register AVRCP TG callbacks");
 	}
 
 	return err;
 }
 
-static int cmd_register_tg_cb(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_register_tg_cb(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	if (avrcp_tg_registered) {
-		shell_print(sh, "already registered");
+		bt_shell_print("already registered");
 		return 0;
 	}
 
@@ -346,7 +346,7 @@ static int cmd_register_tg_cb(const struct shell *sh, int32_t argc, char *argv[]
 	return 0;
 }
 
-static int cmd_connect(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_connect(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	int err;
 
@@ -359,40 +359,40 @@ static int cmd_connect(const struct shell *sh, int32_t argc, char *argv[])
 	}
 
 	if (!default_conn) {
-		shell_error(sh, "BR/EDR not connected");
+		bt_shell_error("BR/EDR not connected");
 		return -ENOEXEC;
 	}
 
 	err = bt_avrcp_connect(default_conn);
 	if (err) {
-		shell_error(sh, "fail to connect AVRCP");
+		bt_shell_error("fail to connect AVRCP");
 	}
 
 	return 0;
 }
 
-static int cmd_disconnect(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_disconnect(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	if ((!avrcp_ct_registered) && (!avrcp_tg_registered)) {
-		shell_error(sh, "Neither CT nor TG callbacks are registered.");
+		bt_shell_error("Neither CT nor TG callbacks are registered.");
 		return -ENOEXEC;
 	}
 
 	if (!default_conn) {
-		shell_print(sh, "Not connected");
+		bt_shell_print("Not connected");
 		return -ENOEXEC;
 	}
 
 	if ((default_ct != NULL) || (default_tg != NULL)) {
 		bt_avrcp_disconnect(default_conn);
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 	}
 
 	return 0;
 }
 
-static int cmd_browsing_connect(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_browsing_connect(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	int err;
 
@@ -401,45 +401,45 @@ static int cmd_browsing_connect(const struct shell *sh, int32_t argc, char *argv
 	}
 
 	if (default_conn == NULL) {
-		shell_error(sh, "BR/EDR not connected");
+		bt_shell_error("BR/EDR not connected");
 		return -ENOEXEC;
 	}
 
 	err = bt_avrcp_browsing_connect(default_conn);
 	if (err < 0) {
-		shell_error(sh, "fail to connect AVRCP browsing");
+		bt_shell_error("fail to connect AVRCP browsing");
 	} else {
-		shell_print(sh, "AVRCP browsing connect request sent");
+		bt_shell_print("AVRCP browsing connect request sent");
 	}
 
 	return err;
 }
 
-static int cmd_browsing_disconnect(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_browsing_disconnect(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	int err;
 
 	if (default_conn == NULL) {
-		shell_print(sh, "Not connected");
+		bt_shell_print("Not connected");
 		return -ENOEXEC;
 	}
 
 	if ((default_ct != NULL) || (default_tg != NULL)) {
 		err = bt_avrcp_browsing_disconnect(default_conn);
 		if (err < 0) {
-			shell_error(sh, "fail to disconnect AVRCP browsing");
+			bt_shell_error("fail to disconnect AVRCP browsing");
 		} else {
-			shell_print(sh, "AVRCP browsing disconnect request sent");
+			bt_shell_print("AVRCP browsing disconnect request sent");
 		}
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 		err = -ENOEXEC;
 	}
 
 	return err;
 }
 
-static int cmd_get_unit_info(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_get_unit_info(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	if (!avrcp_ct_registered && register_ct_cb(sh) != 0) {
 		return -ENOEXEC;
@@ -448,13 +448,13 @@ static int cmd_get_unit_info(const struct shell *sh, int32_t argc, char *argv[])
 	if (default_ct != NULL) {
 		bt_avrcp_ct_get_unit_info(default_ct, get_next_tid());
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 	}
 
 	return 0;
 }
 
-static int cmd_send_unit_info_rsp(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_send_unit_info_rsp(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	struct bt_avrcp_unit_info_rsp rsp;
 	int err;
@@ -469,18 +469,18 @@ static int cmd_send_unit_info_rsp(const struct shell *sh, int32_t argc, char *ar
 	if (default_tg != NULL) {
 		err = bt_avrcp_tg_send_unit_info_rsp(default_tg, tg_tid, &rsp);
 		if (!err) {
-			shell_print(sh, "AVRCP send unit info response");
+			bt_shell_print("AVRCP send unit info response");
 		} else {
-			shell_error(sh, "Failed to send unit info response");
+			bt_shell_error("Failed to send unit info response");
 		}
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 	}
 
 	return 0;
 }
 
-static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_send_passthrough_rsp(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	struct bt_avrcp_passthrough_rsp *rsp;
 	struct bt_avrcp_passthrough_opvu_data *opvu = NULL;
@@ -498,18 +498,18 @@ static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *
 	}
 
 	if (default_tg == NULL) {
-		shell_error(sh, "AVRCP TG is not connected");
+		bt_shell_error("AVRCP TG is not connected");
 		return -ENOEXEC;
 	}
 
 	buf = bt_avrcp_create_pdu(NULL);
 	if (buf == NULL) {
-		shell_error(sh, "Failed to allocate buffer for AVRCP passthrough response");
+		bt_shell_error("Failed to allocate buffer for AVRCP passthrough response");
 		return -ENOMEM;
 	}
 
 	if (bt_buf_tailroom(buf) < sizeof(struct bt_avrcp_passthrough_rsp)) {
-		shell_error(sh, "Not enough tailroom in buffer for passthrough rsp");
+		bt_shell_error("Not enough tailroom in buffer for passthrough rsp");
 		goto failed;
 	}
 	rsp = bt_buf_add(buf, sizeof(*rsp));
@@ -519,7 +519,7 @@ static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *
 	} else if (!strcmp(argv[1], "opvu")) {
 		is_op_vu = true;
 	} else {
-		shell_error(sh, "Invalid response: %s", argv[1]);
+		bt_shell_error("Invalid response: %s", argv[1]);
 		goto failed;
 	}
 
@@ -533,7 +533,7 @@ static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *
 		/* Try to parse as hex value */
 		val = strtoul(argv[2], &endptr, 16);
 		if (*endptr != '\0' || val > 0xFFFFU) {
-			shell_error(sh, "Invalid opid: %s", argv[2]);
+			bt_shell_error("Invalid opid: %s", argv[2]);
 			goto failed;
 		}
 		if (is_op_vu) {
@@ -548,7 +548,7 @@ static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *
 	} else if (!strcmp(argv[3], "released")) {
 		state = BT_AVRCP_BUTTON_RELEASED;
 	} else {
-		shell_error(sh, "Invalid state: %s", argv[3]);
+		bt_shell_error("Invalid state: %s", argv[3]);
 		goto failed;
 	}
 
@@ -559,7 +559,7 @@ static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *
 	BT_AVRCP_PASSTHROUGH_SET_STATE_OPID(rsp, state, opid);
 	if (is_op_vu) {
 		if (bt_buf_tailroom(buf) < sizeof(*opvu)) {
-			shell_error(sh, "Not enough tailroom in buffer for opvu");
+			bt_shell_error("Not enough tailroom in buffer for opvu");
 			goto failed;
 		}
 		opvu = bt_buf_add(buf, sizeof(*opvu));
@@ -572,10 +572,10 @@ static int cmd_send_passthrough_rsp(const struct shell *sh, int32_t argc, char *
 
 	err = bt_avrcp_tg_send_passthrough_rsp(default_tg, tg_tid, BT_AVRCP_RSP_ACCEPTED, buf);
 	if (err < 0) {
-		shell_error(sh, "Failed to send passthrough response: %d", err);
+		bt_shell_error("Failed to send passthrough response: %d", err);
 		goto failed;
 	} else {
-		shell_print(sh, "Passthrough opid=0x%02x, state=%s", opid, argv[2]);
+		bt_shell_print("Passthrough opid=0x%02x, state=%s", opid, argv[2]);
 		return 0;
 	}
 
@@ -584,7 +584,7 @@ failed:
 	return -ENOEXEC;
 }
 
-static int cmd_send_subunit_info_rsp(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_send_subunit_info_rsp(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	int err;
 
@@ -595,18 +595,18 @@ static int cmd_send_subunit_info_rsp(const struct shell *sh, int32_t argc, char 
 	if (default_tg != NULL) {
 		err = bt_avrcp_tg_send_subunit_info_rsp(default_tg, tg_tid);
 		if (err == 0) {
-			shell_print(sh, "AVRCP send subunit info response");
+			bt_shell_print("AVRCP send subunit info response");
 		} else {
-			shell_error(sh, "Failed to send subunit info response");
+			bt_shell_error("Failed to send subunit info response");
 		}
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 	}
 
 	return 0;
 }
 
-static int cmd_get_subunit_info(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_get_subunit_info(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	if (!avrcp_ct_registered && register_ct_cb(sh) != 0) {
 		return -ENOEXEC;
@@ -615,13 +615,13 @@ static int cmd_get_subunit_info(const struct shell *sh, int32_t argc, char *argv
 	if (default_ct != NULL) {
 		bt_avrcp_ct_get_subunit_info(default_ct, get_next_tid());
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 	}
 
 	return 0;
 }
 
-static int cmd_passthrough(const struct shell *sh, bt_avrcp_opid_t opid, const uint8_t *payload,
+static int cmd_passthrough(const struct bt_shell *sh, bt_avrcp_opid_t opid, const uint8_t *payload,
 			   uint8_t len)
 {
 	if (!avrcp_ct_registered && register_ct_cb(sh) != 0) {
@@ -634,23 +634,23 @@ static int cmd_passthrough(const struct shell *sh, bt_avrcp_opid_t opid, const u
 		bt_avrcp_ct_passthrough(default_ct, get_next_tid(), opid, BT_AVRCP_BUTTON_RELEASED,
 					payload, len);
 	} else {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 	}
 
 	return 0;
 }
 
-static int cmd_play(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_play(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	return cmd_passthrough(sh, BT_AVRCP_OPID_PLAY, NULL, 0);
 }
 
-static int cmd_pause(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_pause(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	return cmd_passthrough(sh, BT_AVRCP_OPID_PAUSE, NULL, 0);
 }
 
-static int cmd_get_cap(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_get_cap(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	const char *cap_id;
 
@@ -659,7 +659,7 @@ static int cmd_get_cap(const struct shell *sh, int32_t argc, char *argv[])
 	}
 
 	if (default_ct == NULL) {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 		return 0;
 	}
 
@@ -673,7 +673,7 @@ static int cmd_get_cap(const struct shell *sh, int32_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_set_browsed_player(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_set_browsed_player(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	uint16_t player_id;
 	int err;
@@ -683,7 +683,7 @@ static int cmd_set_browsed_player(const struct shell *sh, int32_t argc, char *ar
 	}
 
 	if (default_ct == NULL) {
-		shell_error(sh, "AVRCP is not connected");
+		bt_shell_error("AVRCP is not connected");
 		return -ENOEXEC;
 	}
 
@@ -691,15 +691,15 @@ static int cmd_set_browsed_player(const struct shell *sh, int32_t argc, char *ar
 
 	err = bt_avrcp_ct_set_browsed_player(default_ct, get_next_tid(), player_id);
 	if (err < 0) {
-		shell_error(sh, "fail to set browsed player");
+		bt_shell_error("fail to set browsed player");
 	} else {
-		shell_print(sh, "AVRCP send set browsed player req");
+		bt_shell_print("AVRCP send set browsed player req");
 	}
 
 	return 0;
 }
 
-static int cmd_send_set_browsed_player_rsp(const struct shell *sh, int32_t argc, char *argv[])
+static int cmd_send_set_browsed_player_rsp(const struct bt_shell *sh, int32_t argc, char *argv[])
 {
 	struct bt_avrcp_set_browsed_player_rsp *rsp;
 	struct bt_avrcp_folder_name *folder_name;
@@ -715,18 +715,18 @@ static int cmd_send_set_browsed_player_rsp(const struct shell *sh, int32_t argc,
 	}
 
 	if (default_tg == NULL) {
-		shell_error(sh, "AVRCP TG is not connected");
+		bt_shell_error("AVRCP TG is not connected");
 		return -ENOEXEC;
 	}
 
 	buf = bt_avrcp_create_pdu(&avrcp_tx_pool);
 	if (buf == NULL) {
-		shell_error(sh, "Failed to allocate buffer for AVRCP browsing response");
+		bt_shell_error("Failed to allocate buffer for AVRCP browsing response");
 		return -ENOMEM;
 	}
 
 	if (bt_buf_tailroom(buf) < sizeof(struct bt_avrcp_set_browsed_player_rsp)) {
-		shell_error(sh, "Not enough tailroom in buffer for browsed player rsp");
+		bt_shell_error("Not enough tailroom in buffer for browsed player rsp");
 		goto failed;
 	}
 
@@ -765,17 +765,17 @@ static int cmd_send_set_browsed_player_rsp(const struct shell *sh, int32_t argc,
 			folder_name_len = hex2bin(argv[5], strlen(argv[5]), folder_name_hex,
 						  sizeof(folder_name_hex));
 			if (folder_name_len == 0) {
-				shell_error(sh, "Failed to get folder_name from  %s", argv[5]);
+				bt_shell_error("Failed to get folder_name from  %s", argv[5]);
 			}
 		} else {
-			shell_error(sh, "Please input hex string for folder_name");
+			bt_shell_error("Please input hex string for folder_name");
 			goto failed;
 		}
 	}
 
 	param_len = folder_name_len + sizeof(struct bt_avrcp_folder_name);
 	if (bt_buf_tailroom(buf) < param_len) {
-		shell_error(sh, "Not enough tailroom in buffer for param");
+		bt_shell_error("Not enough tailroom in buffer for param");
 		goto failed;
 	}
 
@@ -789,9 +789,9 @@ static int cmd_send_set_browsed_player_rsp(const struct shell *sh, int32_t argc,
 
 	err = bt_avrcp_tg_send_set_browsed_player_rsp(default_tg, tg_tid, buf);
 	if (err == 0) {
-		shell_print(sh, "Send set browsed player response, status = 0x%02x", rsp->status);
+		bt_shell_print("Send set browsed player response, status = 0x%02x", rsp->status);
 	} else {
-		shell_error(sh, "Failed to send set browsed player response, err = %d", err);
+		bt_shell_error("Failed to send set browsed player response, err = %d", err);
 		goto failed;
 	}
 
@@ -813,52 +813,57 @@ failed:
 	"Usage: send_browsed_player_rsp [status] [uid_counter] [num_items] "         \
 	"[charset_id] [folder_name]"
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	ct_cmds,
-	SHELL_CMD_ARG(register_cb, NULL, "register avrcp ct callbacks", cmd_register_ct_cb, 1, 0),
-	SHELL_CMD_ARG(get_unit, NULL, "get unit info", cmd_get_unit_info, 1, 0),
-	SHELL_CMD_ARG(get_subunit, NULL, "get subunit info", cmd_get_subunit_info, 1, 0),
-	SHELL_CMD_ARG(get_cap, NULL, "get capabilities <cap_id: company or events>", cmd_get_cap, 2,
+	BT_SHELL_CMD_ARG(register_cb, NULL, "register avrcp ct callbacks", cmd_register_ct_cb, 1, 0),
+	BT_SHELL_CMD_ARG(get_unit, NULL, "get unit info", cmd_get_unit_info, 1, 0),
+	BT_SHELL_CMD_ARG(get_subunit, NULL, "get subunit info", cmd_get_subunit_info, 1, 0),
+	BT_SHELL_CMD_ARG(get_cap, NULL, "get capabilities <cap_id: company or events>", cmd_get_cap, 2,
 		      0),
-	SHELL_CMD_ARG(play, NULL, "request a play at the remote player", cmd_play, 1, 0),
-	SHELL_CMD_ARG(pause, NULL, "request a pause at the remote player", cmd_pause, 1, 0),
-	SHELL_CMD_ARG(set_browsed_player, NULL, "set browsed player <player_id>",
+	BT_SHELL_CMD_ARG(play, NULL, "request a play at the remote player", cmd_play, 1, 0),
+	BT_SHELL_CMD_ARG(pause, NULL, "request a pause at the remote player", cmd_pause, 1, 0),
+	BT_SHELL_CMD_ARG(set_browsed_player, NULL, "set browsed player <player_id>",
 		      cmd_set_browsed_player, 2, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	tg_cmds,
-	SHELL_CMD_ARG(register_cb, NULL, "register avrcp tg callbacks", cmd_register_tg_cb, 1, 0),
-	SHELL_CMD_ARG(send_unit_rsp, NULL, "send unit info response", cmd_send_unit_info_rsp, 1, 0),
-	SHELL_CMD_ARG(send_subunit_rsp, NULL, HELP_NONE, cmd_send_subunit_info_rsp, 1, 0),
-	SHELL_CMD_ARG(send_browsed_player_rsp, NULL, HELP_BROWSED_PLAYER_RSP,
+	BT_SHELL_CMD_ARG(register_cb, NULL, "register avrcp tg callbacks", cmd_register_tg_cb, 1, 0),
+	BT_SHELL_CMD_ARG(send_unit_rsp, NULL, "send unit info response", cmd_send_unit_info_rsp, 1, 0),
+	BT_SHELL_CMD_ARG(send_subunit_rsp, NULL, HELP_NONE, cmd_send_subunit_info_rsp, 1, 0),
+	BT_SHELL_CMD_ARG(send_browsed_player_rsp, NULL, HELP_BROWSED_PLAYER_RSP,
 		      cmd_send_set_browsed_player_rsp, 1, 5),
-	SHELL_CMD_ARG(send_passthrough_rsp, NULL, HELP_PASSTHROUGH_RSP, cmd_send_passthrough_rsp,
+	BT_SHELL_CMD_ARG(send_passthrough_rsp, NULL, HELP_PASSTHROUGH_RSP, cmd_send_passthrough_rsp,
 		      4, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
-static int cmd_avrcp(const struct shell *sh, size_t argc, char **argv)
+static int cmd_avrcp(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	if (argc == 1) {
-		shell_help(sh);
+		bt_shell_help(sh);
 		/* sh returns 1 when help is printed */
 		return 1;
 	}
 
-	shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+	bt_shell_error("%s unknown parameter: %s", argv[0], argv[1]);
 
 	return -ENOEXEC;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	avrcp_cmds,
-	SHELL_CMD_ARG(connect, NULL, "connect AVRCP", cmd_connect, 1, 0),
-	SHELL_CMD_ARG(disconnect, NULL, "disconnect AVRCP", cmd_disconnect, 1, 0),
-	SHELL_CMD_ARG(browsing_connect, NULL, "connect browsing AVRCP", cmd_browsing_connect, 1, 0),
-	SHELL_CMD_ARG(browsing_disconnect, NULL, "disconnect browsing AVRCP",
+	BT_SHELL_CMD_ARG(connect, NULL, "connect AVRCP", cmd_connect, 1, 0),
+	BT_SHELL_CMD_ARG(disconnect, NULL, "disconnect AVRCP", cmd_disconnect, 1, 0),
+	BT_SHELL_CMD_ARG(browsing_connect, NULL, "connect browsing AVRCP", cmd_browsing_connect, 1, 0),
+	BT_SHELL_CMD_ARG(browsing_disconnect, NULL, "disconnect browsing AVRCP",
 		      cmd_browsing_disconnect, 1, 0),
-	SHELL_CMD(ct, &ct_cmds, "AVRCP CT shell commands", cmd_avrcp),
-	SHELL_CMD(tg, &tg_cmds, "AVRCP TG shell commands", cmd_avrcp),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD(ct, &ct_cmds, "AVRCP CT shell commands", cmd_avrcp),
+	BT_SHELL_CMD(tg, &tg_cmds, "AVRCP TG shell commands", cmd_avrcp),
+	BT_SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_ARG_REGISTER(avrcp, &avrcp_cmds, "Bluetooth AVRCP sh commands", cmd_avrcp, 1, 1);
+BT_SHELL_CMD_ARG_DEFINE(avrcp, &avrcp_cmds, "Bluetooth AVRCP sh commands", cmd_avrcp, 1, 1);
+
+int bt_shell_cmd_avrcp_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &avrcp);
+}

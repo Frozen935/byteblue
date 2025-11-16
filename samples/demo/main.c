@@ -7,22 +7,22 @@
 static void ready_cb(int err)
 {
     if (err) {
-        printf("Bluetooth enable failed: %d\n", err);
+        LOG_DBG("Bluetooth enable failed: %d", err);
         return;
     }
     
-    printf("Bluetooth ready\n");
+    LOG_DBG("Bluetooth ready");
 }
 
 int main(void)
 {
-	printf("Hello World!\n");
+	LOG_DBG("Hello World!");
 
     bt_stack_init_once();
 
     bt_enable(ready_cb);
 
-    printf("Bluetooth enabled\n");
+    LOG_DBG("Bluetooth enabled");
 
     while (1) {
         os_sleep_ms(1000);

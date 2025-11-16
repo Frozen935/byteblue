@@ -38,6 +38,11 @@ static inline int settings_save_one(const char *key, const void *value, size_t l
 	return 0;
 }
 
+static inline int settings_load(void)
+{
+	return 0;
+}
+
 static inline int settings_delete(const char *key)
 {
 	UNUSED(key);

@@ -18,6 +18,49 @@ static int hexval(int c)
 	return -1;
 }
 
+int char2hex(char c, uint8_t *x)
+{
+	if ((c >= '0') && (c <= '9')) {
+		*x = c - '0';
+	} else if ((c >= 'a') && (c <= 'f')) {
+		*x = c - 'a' + 10;
+	} else if ((c >= 'A') && (c <= 'F')) {
+		*x = c - 'A' + 10;
+	} else {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+int hex2char(uint8_t x, char *c)
+{
+	if (x <= 9) {
+		*c = x + (char)'0';
+	} else  if (x <= 15) {
+		*c = x - 10 + (char)'a';
+	} else {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+size_t bin2hex(const uint8_t *buf, size_t buflen, char *hex, size_t hexlen)
+{
+	if (hexlen < ((buflen * 2U) + 1U)) {
+		return 0;
+	}
+
+	for (size_t i = 0; i < buflen; i++) {
+		hex2char(buf[i] >> 4, &hex[2U * i]);
+		hex2char(buf[i] & 0xf, &hex[2U * i + 1U]);
+	}
+
+	hex[2U * buflen] = '\0';
+	return 2U * buflen;
+}
+
 /* Convert hex string to bytes. Ignores spaces and common separators. */
 size_t hex2bin(const char *hex, size_t hex_len, uint8_t *out, size_t out_size)
 {

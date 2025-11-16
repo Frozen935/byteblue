@@ -53,3 +53,4 @@ WhitespaceSensitiveMacros:
   - UTIL_COND_CODE
   - IF_DISABLED
   - IF_ENABLED
+  - BT_SHELL_CMD_ARG

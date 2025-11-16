@@ -27,6 +27,7 @@
 #include <utils/bt_slist.h>
 #include <utils/bt_dlist.h>
 
+#include <base/bt_debug.h>
 #include <base/log.h>
 #include <base/byteorder.h>
 #include <base/utils.h>
@@ -61,7 +62,6 @@ extern struct bt_work_q main_work_q;
 #endif
 #endif
 
-#include "shim_shell.h"
 #include "shim_settings.h"
 
 #endif /* ZEPHYR_SHIM_SHIM_H */

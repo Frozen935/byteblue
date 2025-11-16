@@ -345,19 +345,19 @@ static struct bt_hfp_hf_cb hf_cb = {
 	.subscriber_number = hf_subscriber_number,
 };
 
-static int cmd_reg_enable(const struct shell *sh, size_t argc, char **argv)
+static int cmd_reg_enable(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_register(&hf_cb);
 	if (err) {
-		shell_error(sh, "Callback register failed: %d", err);
+		bt_shell_error("Callback register failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_connect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_connect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	struct bt_hfp_hf *hf;
@@ -367,38 +367,38 @@ static int cmd_connect(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_hf_connect(default_conn, &hf, channel);
 	if (err) {
-		shell_error(sh, "Connect failed: %d", err);
+		bt_shell_error("Connect failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_disconnect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_disconnect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_disconnect(hfp_hf);
 	if (err) {
-		shell_error(sh, "Disconnect failed: %d", err);
+		bt_shell_error("Disconnect failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_sco_disconnect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_sco_disconnect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_conn_disconnect(hf_sco_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 	if (err) {
-		shell_error(sh, "Disconnect failed: %d", err);
+		bt_shell_error("Disconnect failed: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_HF_CLI)
-static int cmd_cli_enable(const struct shell *sh, size_t argc, char **argv)
+static int cmd_cli_enable(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action = argv[1];
 	bool enable;
@@ -409,13 +409,13 @@ static int cmd_cli_enable(const struct shell *sh, size_t argc, char **argv)
 	} else if (strcmp(action, "disable") == 0) {
 		enable = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_hf_cli(hfp_hf, enable);
 	if (err) {
-		shell_error(sh, "Fail to send AT+CLIP=%d (err %d)", enable, err);
+		bt_shell_error("Fail to send AT+CLIP=%d (err %d)", enable, err);
 		return -ENOEXEC;
 	}
 
@@ -424,7 +424,7 @@ static int cmd_cli_enable(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_HFP_HF_CLI */
 
 #if defined(CONFIG_BT_HFP_HF_VOLUME)
-static int cmd_vgm_enable(const struct shell *sh, size_t argc, char **argv)
+static int cmd_vgm_enable(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	uint32_t gain;
 	int err;
@@ -433,13 +433,13 @@ static int cmd_vgm_enable(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_hf_vgm(hfp_hf, gain);
 	if (err) {
-		shell_error(sh, "Fail to send AT+VGM=%d (err %d)", gain, err);
+		bt_shell_error("Fail to send AT+VGM=%d (err %d)", gain, err);
 	}
 
 	return err;
 }
 
-static int cmd_vgs_enable(const struct shell *sh, size_t argc, char **argv)
+static int cmd_vgs_enable(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	uint32_t gain;
 	int err;
@@ -448,39 +448,39 @@ static int cmd_vgs_enable(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_hf_vgs(hfp_hf, gain);
 	if (err) {
-		shell_error(sh, "Fail to send AT+VGS=%d (err %d)", gain, err);
+		bt_shell_error("Fail to send AT+VGS=%d (err %d)", gain, err);
 	}
 
 	return err;
 }
 #endif /* CONFIG_BT_HFP_HF_VOLUME */
 
-static int cmd_operator(const struct shell *sh, size_t argc, char **argv)
+static int cmd_operator(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_get_operator(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to read network operator: %d", err);
+		bt_shell_error("Failed to read network operator: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_HF_CODEC_NEG)
-static int cmd_audio_connect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_audio_connect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_audio_connect(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to start audio connection procedure: %d", err);
+		bt_shell_error("Failed to start audio connection procedure: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_select_codec(const struct shell *sh, size_t argc, char **argv)
+static int cmd_select_codec(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t codec_id;
@@ -489,26 +489,26 @@ static int cmd_select_codec(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_hf_select_codec(hfp_hf, codec_id);
 	if (err) {
-		shell_error(sh, "Failed to select codec id: %d", err);
+		bt_shell_error("Failed to select codec id: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_auto_select_codec(const struct shell *sh, size_t argc, char **argv)
+static int cmd_auto_select_codec(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err = 0;
 
-	hf_auto_select_codec = shell_strtobool(argv[1], 0, &err);
+	hf_auto_select_codec = bt_shell_strtobool(argv[1], 0, &err);
 	if (err != 0) {
-		shell_help(sh);
-		return SHELL_CMD_HELP_PRINTED;
+		bt_shell_help(sh);
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
 	return 0;
 }
 
-static int cmd_set_codecs(const struct shell *sh, size_t argc, char **argv)
+static int cmd_set_codecs(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t codec_ids;
@@ -517,145 +517,145 @@ static int cmd_set_codecs(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_hf_set_codecs(hfp_hf, codec_ids);
 	if (err) {
-		shell_error(sh, "Failed to set codecs: %d", err);
+		bt_shell_error("Failed to set codecs: %d", err);
 	}
 
 	return err;
 }
 #endif /* CONFIG_BT_HFP_HF_CODEC_NEG */
 
-static int cmd_accept(const struct shell *sh, size_t argc, char **argv)
+static int cmd_accept(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_accept(hfp_hf_call[index]);
 	if (err) {
-		shell_error(sh, "Failed to accept call: %d", err);
+		bt_shell_error("Failed to accept call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_reject(const struct shell *sh, size_t argc, char **argv)
+static int cmd_reject(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_reject(hfp_hf_call[index]);
 	if (err) {
-		shell_error(sh, "Failed to reject call: %d", err);
+		bt_shell_error("Failed to reject call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_terminate(const struct shell *sh, size_t argc, char **argv)
+static int cmd_terminate(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_terminate(hfp_hf_call[index]);
 	if (err) {
-		shell_error(sh, "Failed to terminate call: %d", err);
+		bt_shell_error("Failed to terminate call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_hold_incoming(const struct shell *sh, size_t argc, char **argv)
+static int cmd_hold_incoming(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_hold_incoming(hfp_hf_call[index]);
 	if (err) {
-		shell_error(sh, "Failed to put incoming call on hold: %d", err);
+		bt_shell_error("Failed to put incoming call on hold: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_query_respond_hold_status(const struct shell *sh, size_t argc, char **argv)
+static int cmd_query_respond_hold_status(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_query_respond_hold_status(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to query respond and hold status: %d", err);
+		bt_shell_error("Failed to query respond and hold status: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_number_call(const struct shell *sh, size_t argc, char **argv)
+static int cmd_number_call(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_number_call(hfp_hf, argv[1]);
 	if (err) {
-		shell_error(sh, "Failed to start phone number call: %d", err);
+		bt_shell_error("Failed to start phone number call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_memory_dial(const struct shell *sh, size_t argc, char **argv)
+static int cmd_memory_dial(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_memory_dial(hfp_hf, argv[1]);
 	if (err) {
-		shell_error(sh, "Failed to memory dial call: %d", err);
+		bt_shell_error("Failed to memory dial call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_redial(const struct shell *sh, size_t argc, char **argv)
+static int cmd_redial(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_redial(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to redial call: %d", err);
+		bt_shell_error("Failed to redial call: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_HF_ECNR)
-static int cmd_turn_off_ecnr(const struct shell *sh, size_t argc, char **argv)
+static int cmd_turn_off_ecnr(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_turn_off_ecnr(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to turn off ecnr: %d", err);
+		bt_shell_error("Failed to turn off ecnr: %d", err);
 	}
 
 	return err;
@@ -663,7 +663,7 @@ static int cmd_turn_off_ecnr(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_HFP_HF_ECNR */
 
 #if defined(CONFIG_BT_HFP_HF_3WAY_CALL)
-static int cmd_call_waiting_notify(const struct shell *sh, size_t argc, char **argv)
+static int cmd_call_waiting_notify(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action = argv[1];
 	bool enable;
@@ -676,123 +676,123 @@ static int cmd_call_waiting_notify(const struct shell *sh, size_t argc, char **a
 	} else if (strcmp(action, "disable") == 0) {
 		enable = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_hf_call_waiting_notify(hfp_hf, enable);
 	if (err) {
-		shell_error(sh, "Failed to set call waiting notify: %d", err);
+		bt_shell_error("Failed to set call waiting notify: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_release_all_held(const struct shell *sh, size_t argc, char **argv)
+static int cmd_release_all_held(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_release_all_held(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to release all held: %d", err);
+		bt_shell_error("Failed to release all held: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_set_udub(const struct shell *sh, size_t argc, char **argv)
+static int cmd_set_udub(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_set_udub(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to reject waiting call: %d", err);
+		bt_shell_error("Failed to reject waiting call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_release_active_accept_other(const struct shell *sh, size_t argc, char **argv)
+static int cmd_release_active_accept_other(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_release_active_accept_other(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to release active calls and accept other call: %d", err);
+		bt_shell_error("Failed to release active calls and accept other call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_hold_active_accept_other(const struct shell *sh, size_t argc, char **argv)
+static int cmd_hold_active_accept_other(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_hold_active_accept_other(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to hold all active calls and accept other call: %d", err);
+		bt_shell_error("Failed to hold all active calls and accept other call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_join_conversation(const struct shell *sh, size_t argc, char **argv)
+static int cmd_join_conversation(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_join_conversation(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to join the conversation: %d", err);
+		bt_shell_error("Failed to join the conversation: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_explicit_call_transfer(const struct shell *sh, size_t argc, char **argv)
+static int cmd_explicit_call_transfer(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_explicit_call_transfer(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to explicit call transfer: %d", err);
+		bt_shell_error("Failed to explicit call transfer: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_release_specified_call(const struct shell *sh, size_t argc, char **argv)
+static int cmd_release_specified_call(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_release_specified_call(hfp_hf_call[index]);
 	if (err) {
-		shell_error(sh, "Failed to release specified call: %d", err);
+		bt_shell_error("Failed to release specified call: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_private_consultation_mode(const struct shell *sh, size_t argc, char **argv)
+static int cmd_private_consultation_mode(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_private_consultation_mode(hfp_hf_call[index]);
 	if (err) {
-		shell_error(sh, "Failed to set private consultation mode: %d", err);
+		bt_shell_error("Failed to set private consultation mode: %d", err);
 	}
 
 	return err;
@@ -800,7 +800,7 @@ static int cmd_private_consultation_mode(const struct shell *sh, size_t argc, ch
 #endif /* CONFIG_BT_HFP_HF_3WAY_CALL */
 
 #if defined(CONFIG_BT_HFP_HF_VOICE_RECG)
-static int cmd_voice_recognition(const struct shell *sh, size_t argc, char **argv)
+static int cmd_voice_recognition(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 	bool activate;
@@ -813,26 +813,26 @@ static int cmd_voice_recognition(const struct shell *sh, size_t argc, char **arg
 	} else if (strcmp(action, "deactivate") == 0) {
 		activate = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_hf_voice_recognition(hfp_hf, activate);
 	if (err) {
-		shell_error(sh, "Failed to set voice recognition: %d", err);
+		bt_shell_error("Failed to set voice recognition: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_HF_ENH_VOICE_RECG)
-static int cmd_ready_to_accept_audio(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ready_to_accept_audio(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_ready_to_accept_audio(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to send ready to accept audio notify: %d", err);
+		bt_shell_error("Failed to send ready to accept audio notify: %d", err);
 	}
 
 	return err;
@@ -840,50 +840,50 @@ static int cmd_ready_to_accept_audio(const struct shell *sh, size_t argc, char *
 #endif /* CONFIG_BT_HFP_HF_ENH_VOICE_RECG */
 #endif /* CONFIG_BT_HFP_HF_VOICE_RECG */
 
-static int cmd_request_phone_number(const struct shell *sh, size_t argc, char **argv)
+static int cmd_request_phone_number(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_request_phone_number(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to request phone number: %d", err);
+		bt_shell_error("Failed to request phone number: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_transmit_dtmf_code(const struct shell *sh, size_t argc, char **argv)
+static int cmd_transmit_dtmf_code(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_hf_call))) || !hfp_hf_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_transmit_dtmf_code(hfp_hf_call[index], argv[2][0]);
 	if (err) {
-		shell_error(sh, "Failed to transmit DTMF Code: %d", err);
+		bt_shell_error("Failed to transmit DTMF Code: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_query_subscriber(const struct shell *sh, size_t argc, char **argv)
+static int cmd_query_subscriber(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_hf_query_subscriber(hfp_hf);
 	if (err) {
-		shell_error(sh, "Failed to query subscriber: %d", err);
+		bt_shell_error("Failed to query subscriber: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_indicator_status(const struct shell *sh, size_t argc, char **argv)
+static int cmd_indicator_status(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t status[4];
@@ -891,20 +891,20 @@ static int cmd_indicator_status(const struct shell *sh, size_t argc, char **argv
 
 	len = hex2bin(argv[1], strlen(argv[1]), status, sizeof(status));
 	if (len == 0) {
-		shell_error(sh, "Failed to parse status %s", argv[1]);
+		bt_shell_error("Failed to parse status %s", argv[1]);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_hf_indicator_status(hfp_hf, (uint32_t)status[0]);
 	if (err) {
-		shell_error(sh, "Failed to set AG indicator activated/deactivated status: %d", err);
+		bt_shell_error("Failed to set AG indicator activated/deactivated status: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_HF_HF_INDICATOR_ENH_SAFETY)
-static int cmd_enhanced_safety(const struct shell *sh, size_t argc, char **argv)
+static int cmd_enhanced_safety(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 	bool enable;
@@ -917,13 +917,13 @@ static int cmd_enhanced_safety(const struct shell *sh, size_t argc, char **argv)
 	} else if (strcmp(action, "disable") == 0) {
 		enable = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_hf_enhanced_safety(hfp_hf, enable);
 	if (err) {
-		shell_error(sh, "Failed to transfer enhanced safety status: %d", err);
+		bt_shell_error("Failed to transfer enhanced safety status: %d", err);
 	}
 
 	return err;
@@ -931,7 +931,7 @@ static int cmd_enhanced_safety(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_HFP_HF_HF_INDICATOR_ENH_SAFETY */
 
 #if defined(CONFIG_BT_HFP_HF_HF_INDICATOR_BATTERY)
-static int cmd_battery(const struct shell *sh, size_t argc, char **argv)
+static int cmd_battery(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int level;
@@ -940,79 +940,79 @@ static int cmd_battery(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_hf_battery(hfp_hf, level);
 	if (err) {
-		shell_error(sh, "Failed to transfer battery level: %d", err);
+		bt_shell_error("Failed to transfer battery level: %d", err);
 	}
 
 	return err;
 }
 #endif /* CONFIG_BT_HFP_HF_HF_INDICATOR_BATTERY */
 
-SHELL_STATIC_SUBCMD_SET_CREATE(hf_cmds,
-	SHELL_CMD_ARG(reg, NULL, HELP_NONE, cmd_reg_enable, 1, 0),
-	SHELL_CMD_ARG(connect, NULL, "<channel>", cmd_connect, 2, 0),
-	SHELL_CMD_ARG(disconnect, NULL, HELP_NONE, cmd_disconnect, 1, 0),
-	SHELL_CMD_ARG(sco_disconnect, NULL, HELP_NONE, cmd_sco_disconnect, 1, 0),
+BT_SHELL_SUBCMD_SET_CREATE(hf_cmds,
+	BT_SHELL_CMD_ARG(reg, NULL, HELP_NONE, cmd_reg_enable, 1, 0),
+	BT_SHELL_CMD_ARG(connect, NULL, "<channel>", cmd_connect, 2, 0),
+	BT_SHELL_CMD_ARG(disconnect, NULL, HELP_NONE, cmd_disconnect, 1, 0),
+	BT_SHELL_CMD_ARG(sco_disconnect, NULL, HELP_NONE, cmd_sco_disconnect, 1, 0),
 #if defined(CONFIG_BT_HFP_HF_CLI)
-	SHELL_CMD_ARG(cli, NULL, "<enable/disable>", cmd_cli_enable, 2, 0),
+	BT_SHELL_CMD_ARG(cli, NULL, "<enable/disable>", cmd_cli_enable, 2, 0),
 #endif /* CONFIG_BT_HFP_HF_CLI */
 #if defined(CONFIG_BT_HFP_HF_VOLUME)
-	SHELL_CMD_ARG(vgm, NULL, "<gain>", cmd_vgm_enable, 2, 0),
-	SHELL_CMD_ARG(vgs, NULL, "<gain>", cmd_vgs_enable, 2, 0),
+	BT_SHELL_CMD_ARG(vgm, NULL, "<gain>", cmd_vgm_enable, 2, 0),
+	BT_SHELL_CMD_ARG(vgs, NULL, "<gain>", cmd_vgs_enable, 2, 0),
 #endif /* CONFIG_BT_HFP_HF_VOLUME */
-	SHELL_CMD_ARG(operator, NULL, HELP_NONE, cmd_operator, 1, 0),
+	BT_SHELL_CMD_ARG(operator, NULL, HELP_NONE, cmd_operator, 1, 0),
 #if defined(CONFIG_BT_HFP_HF_CODEC_NEG)
-	SHELL_CMD_ARG(audio_connect, NULL, HELP_NONE, cmd_audio_connect, 1, 0),
-	SHELL_CMD_ARG(auto_select_codec, NULL, "<enable/disable>", cmd_auto_select_codec, 2, 0),
-	SHELL_CMD_ARG(select_codec, NULL, "Codec ID", cmd_select_codec, 2, 0),
-	SHELL_CMD_ARG(set_codecs, NULL, "Codec ID Map", cmd_set_codecs, 2, 0),
+	BT_SHELL_CMD_ARG(audio_connect, NULL, HELP_NONE, cmd_audio_connect, 1, 0),
+	BT_SHELL_CMD_ARG(auto_select_codec, NULL, "<enable/disable>", cmd_auto_select_codec, 2, 0),
+	BT_SHELL_CMD_ARG(select_codec, NULL, "Codec ID", cmd_select_codec, 2, 0),
+	BT_SHELL_CMD_ARG(set_codecs, NULL, "Codec ID Map", cmd_set_codecs, 2, 0),
 #endif /* CONFIG_BT_HFP_HF_CODEC_NEG */
-	SHELL_CMD_ARG(accept, NULL, "<call index>", cmd_accept, 2, 0),
-	SHELL_CMD_ARG(reject, NULL, "<call index>", cmd_reject, 2, 0),
-	SHELL_CMD_ARG(terminate, NULL, "<call index>", cmd_terminate, 2, 0),
-	SHELL_CMD_ARG(hold_incoming, NULL, "<call index>", cmd_hold_incoming, 2, 0),
-	SHELL_CMD_ARG(query_respond_hold_status, NULL, HELP_NONE, cmd_query_respond_hold_status, 1,
+	BT_SHELL_CMD_ARG(accept, NULL, "<call index>", cmd_accept, 2, 0),
+	BT_SHELL_CMD_ARG(reject, NULL, "<call index>", cmd_reject, 2, 0),
+	BT_SHELL_CMD_ARG(terminate, NULL, "<call index>", cmd_terminate, 2, 0),
+	BT_SHELL_CMD_ARG(hold_incoming, NULL, "<call index>", cmd_hold_incoming, 2, 0),
+	BT_SHELL_CMD_ARG(query_respond_hold_status, NULL, HELP_NONE, cmd_query_respond_hold_status, 1,
 		      0),
-	SHELL_CMD_ARG(number_call, NULL, "<phone number>", cmd_number_call, 2, 0),
-	SHELL_CMD_ARG(memory_dial, NULL, "<memory location>", cmd_memory_dial, 2, 0),
-	SHELL_CMD_ARG(redial, NULL, HELP_NONE, cmd_redial, 1, 0),
+	BT_SHELL_CMD_ARG(number_call, NULL, "<phone number>", cmd_number_call, 2, 0),
+	BT_SHELL_CMD_ARG(memory_dial, NULL, "<memory location>", cmd_memory_dial, 2, 0),
+	BT_SHELL_CMD_ARG(redial, NULL, HELP_NONE, cmd_redial, 1, 0),
 #if defined(CONFIG_BT_HFP_HF_ECNR)
-	SHELL_CMD_ARG(turn_off_ecnr, NULL, HELP_NONE, cmd_turn_off_ecnr, 1, 0),
+	BT_SHELL_CMD_ARG(turn_off_ecnr, NULL, HELP_NONE, cmd_turn_off_ecnr, 1, 0),
 #endif /* CONFIG_BT_HFP_HF_ECNR */
 #if defined(CONFIG_BT_HFP_HF_3WAY_CALL)
-	SHELL_CMD_ARG(call_waiting_notify, NULL, "<enable/disable>", cmd_call_waiting_notify, 2, 0),
-	SHELL_CMD_ARG(release_all_held, NULL, HELP_NONE, cmd_release_all_held, 1, 0),
-	SHELL_CMD_ARG(set_udub, NULL, HELP_NONE, cmd_set_udub, 1, 0),
-	SHELL_CMD_ARG(release_active_accept_other, NULL, HELP_NONE, cmd_release_active_accept_other,
+	BT_SHELL_CMD_ARG(call_waiting_notify, NULL, "<enable/disable>", cmd_call_waiting_notify, 2, 0),
+	BT_SHELL_CMD_ARG(release_all_held, NULL, HELP_NONE, cmd_release_all_held, 1, 0),
+	BT_SHELL_CMD_ARG(set_udub, NULL, HELP_NONE, cmd_set_udub, 1, 0),
+	BT_SHELL_CMD_ARG(release_active_accept_other, NULL, HELP_NONE, cmd_release_active_accept_other,
 		      1, 0),
-	SHELL_CMD_ARG(hold_active_accept_other, NULL, HELP_NONE, cmd_hold_active_accept_other, 1,
+	BT_SHELL_CMD_ARG(hold_active_accept_other, NULL, HELP_NONE, cmd_hold_active_accept_other, 1,
 		      0),
-	SHELL_CMD_ARG(join_conversation, NULL, HELP_NONE, cmd_join_conversation, 1, 0),
-	SHELL_CMD_ARG(explicit_call_transfer, NULL, HELP_NONE, cmd_explicit_call_transfer, 1, 0),
-	SHELL_CMD_ARG(release_specified_call, NULL, "<call index>", cmd_release_specified_call, 2,
+	BT_SHELL_CMD_ARG(join_conversation, NULL, HELP_NONE, cmd_join_conversation, 1, 0),
+	BT_SHELL_CMD_ARG(explicit_call_transfer, NULL, HELP_NONE, cmd_explicit_call_transfer, 1, 0),
+	BT_SHELL_CMD_ARG(release_specified_call, NULL, "<call index>", cmd_release_specified_call, 2,
 		      0),
-	SHELL_CMD_ARG(private_consultation_mode, NULL, "<call index>",
+	BT_SHELL_CMD_ARG(private_consultation_mode, NULL, "<call index>",
 		      cmd_private_consultation_mode, 2, 0),
 #endif /* CONFIG_BT_HFP_HF_3WAY_CALL */
 #if defined(CONFIG_BT_HFP_HF_VOICE_RECG)
-	SHELL_CMD_ARG(voice_recognition, NULL, "<activate/deactivate>", cmd_voice_recognition, 2,
+	BT_SHELL_CMD_ARG(voice_recognition, NULL, "<activate/deactivate>", cmd_voice_recognition, 2,
 		      0),
 #if defined(CONFIG_BT_HFP_HF_ENH_VOICE_RECG)
-	SHELL_CMD_ARG(ready_to_accept_audio, NULL, HELP_NONE, cmd_ready_to_accept_audio, 1, 0),
+	BT_SHELL_CMD_ARG(ready_to_accept_audio, NULL, HELP_NONE, cmd_ready_to_accept_audio, 1, 0),
 #endif /* CONFIG_BT_HFP_HF_ENH_VOICE_RECG */
 #endif /* CONFIG_BT_HFP_HF_VOICE_RECG */
-	SHELL_CMD_ARG(request_phone_number, NULL, HELP_NONE, cmd_request_phone_number, 1, 0),
-	SHELL_CMD_ARG(transmit_dtmf_code, NULL, "<call index> <code(set 0-9, #,*,A-D)>",
+	BT_SHELL_CMD_ARG(request_phone_number, NULL, HELP_NONE, cmd_request_phone_number, 1, 0),
+	BT_SHELL_CMD_ARG(transmit_dtmf_code, NULL, "<call index> <code(set 0-9, #,*,A-D)>",
 		      cmd_transmit_dtmf_code, 3, 0),
-	SHELL_CMD_ARG(query_subscriber, NULL, HELP_NONE, cmd_query_subscriber, 1, 0),
-	SHELL_CMD_ARG(indicator_status, NULL, "<Activate/deactivate AG indicators bitmap>",
+	BT_SHELL_CMD_ARG(query_subscriber, NULL, HELP_NONE, cmd_query_subscriber, 1, 0),
+	BT_SHELL_CMD_ARG(indicator_status, NULL, "<Activate/deactivate AG indicators bitmap>",
 		      cmd_indicator_status, 2, 0),
 #if defined(CONFIG_BT_HFP_HF_HF_INDICATOR_ENH_SAFETY)
-	SHELL_CMD_ARG(enhanced_safety, NULL, "<enable/disable>", cmd_enhanced_safety, 2, 0),
+	BT_SHELL_CMD_ARG(enhanced_safety, NULL, "<enable/disable>", cmd_enhanced_safety, 2, 0),
 #endif /* CONFIG_BT_HFP_HF_HF_INDICATOR_ENH_SAFETY */
 #if defined(CONFIG_BT_HFP_HF_HF_INDICATOR_BATTERY)
-	SHELL_CMD_ARG(battery, NULL, "<level>", cmd_battery, 2, 0),
+	BT_SHELL_CMD_ARG(battery, NULL, "<level>", cmd_battery, 2, 0),
 #endif /* CONFIG_BT_HFP_HF_HF_INDICATOR_BATTERY */
-	SHELL_SUBCMD_SET_END
+	BT_SHELL_SUBCMD_SET_END
 );
 #endif /* CONFIG_BT_HFP_HF */
 
@@ -1358,19 +1358,19 @@ static struct bt_hfp_ag_cb ag_cb = {
 	.hf_indicator_value = ag_hf_indicator_value,
 };
 
-static int cmd_ag_reg_enable(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_reg_enable(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_ag_register(&ag_cb);
 	if (err) {
-		shell_error(sh, "Callback register failed: %d", err);
+		bt_shell_error("Callback register failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_connect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_connect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	struct bt_hfp_ag *ag;
@@ -1380,31 +1380,31 @@ static int cmd_ag_connect(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_ag_connect(default_conn, &ag, channel);
 	if (err) {
-		shell_error(sh, "Connect failed: %d", err);
+		bt_shell_error("Connect failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_disconnect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_disconnect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_ag_disconnect(hfp_ag);
 	if (err) {
-		shell_error(sh, "Disconnect failed: %d", err);
+		bt_shell_error("Disconnect failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_sco_disconnect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_sco_disconnect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_conn_disconnect(hfp_ag_sco_conn, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
 	if (err) {
-		shell_error(sh, "Disconnect failed: %d", err);
+		bt_shell_error("Disconnect failed: %d", err);
 	}
 
 	return err;
@@ -1423,7 +1423,7 @@ static int set_ongoing_calls(void)
 	return err;
 }
 
-static int cmd_ag_ongoing_calls(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_ongoing_calls(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	if (!strcmp(argv[1], "yes")) {
 		has_ongoing_calls = true;
@@ -1433,13 +1433,13 @@ static int cmd_ag_ongoing_calls(const struct shell *sh, size_t argc, char **argv
 	return 0;
 }
 
-static int cmd_ag_set_ongoing_calls(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_set_ongoing_calls(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	size_t max_calls;
 
 	max_calls =  MIN(CONFIG_BT_HFP_AG_MAX_CALLS, ARRAY_SIZE(ag_ongoing_call_info));
 	if (ag_ongoing_calls >= max_calls) {
-		shell_error(sh, "Supported max call count %d", max_calls);
+		bt_shell_error("Supported max call count %d", max_calls);
 		return set_ongoing_calls();
 	}
 
@@ -1459,221 +1459,221 @@ static int cmd_ag_set_ongoing_calls(const struct shell *sh, size_t argc, char **
 	return 0;
 }
 
-static int cmd_ag_remote_incoming(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_remote_incoming(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_ag_remote_incoming(hfp_ag, argv[1]);
 	if (err) {
-		shell_error(sh, "Set remote incoming failed: %d", err);
+		bt_shell_error("Set remote incoming failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_hold_incoming(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_hold_incoming(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_hold_incoming(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set remote incoming failed: %d", err);
+		bt_shell_error("Set remote incoming failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_remote_reject(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_remote_reject(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_remote_reject(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set remote reject failed: %d", err);
+		bt_shell_error("Set remote reject failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_remote_accept(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_remote_accept(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_remote_accept(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set remote accept failed: %d", err);
+		bt_shell_error("Set remote accept failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_remote_terminate(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_remote_terminate(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_remote_terminate(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set remote terminate failed: %d", err);
+		bt_shell_error("Set remote terminate failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_remote_ringing(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_remote_ringing(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_remote_ringing(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set remote ringing failed: %d", err);
+		bt_shell_error("Set remote ringing failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_outgoing(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_outgoing(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_ag_outgoing(hfp_ag, argv[1]);
 	if (err) {
-		shell_error(sh, "Set outgoing failed: %d", err);
+		bt_shell_error("Set outgoing failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_reject(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_reject(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_reject(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set reject failed: %d", err);
+		bt_shell_error("Set reject failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_accept(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_accept(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_accept(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set accept failed: %d", err);
+		bt_shell_error("Set accept failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_hold(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_hold(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_hold(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set hold failed: %d", err);
+		bt_shell_error("Set hold failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_retrieve(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_retrieve(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_retrieve(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set retrieve failed: %d", err);
+		bt_shell_error("Set retrieve failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_terminate(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_terminate(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	int index;
 
 	index = atoi(argv[1]);
 	if ((index >= ((int)ARRAY_SIZE(hfp_ag_call))) || !hfp_ag_call[index]) {
-		shell_error(sh, "Invalid call index: %d", index);
+		bt_shell_error("Invalid call index: %d", index);
 		return -EINVAL;
 	}
 
 	err = bt_hfp_ag_terminate(hfp_ag_call[index]);
 	if (err) {
-		shell_error(sh, "Set terminate failed: %d", err);
+		bt_shell_error("Set terminate failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_vgm(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_vgm(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t vgm;
@@ -1682,13 +1682,13 @@ static int cmd_ag_vgm(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_ag_vgm(hfp_ag, vgm);
 	if (err) {
-		shell_error(sh, "Set microphone gain failed: %d", err);
+		bt_shell_error("Set microphone gain failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_vgs(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_vgs(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t vgs;
@@ -1697,13 +1697,13 @@ static int cmd_ag_vgs(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_ag_vgs(hfp_ag, vgs);
 	if (err) {
-		shell_error(sh, "Set speaker gain failed: %d", err);
+		bt_shell_error("Set speaker gain failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_operator(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_operator(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t mode;
@@ -1712,14 +1712,14 @@ static int cmd_ag_operator(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_ag_set_operator(hfp_ag, mode, argv[2]);
 	if (err) {
-		shell_error(sh, "Set network operator failed: %d", err);
+		bt_shell_error("Set network operator failed: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_AG_CODEC_NEG)
-static int cmd_ag_audio_connect(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_audio_connect(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 	uint8_t id;
@@ -1728,14 +1728,14 @@ static int cmd_ag_audio_connect(const struct shell *sh, size_t argc, char **argv
 
 	err = bt_hfp_ag_audio_connect(hfp_ag, id);
 	if (err) {
-		shell_error(sh, "Start audio connection procedure failed: %d", err);
+		bt_shell_error("Start audio connection procedure failed: %d", err);
 	}
 
 	return err;
 }
 #endif /* CONFIG_BT_HFP_AG_CODEC_NEG */
 
-static int cmd_ag_inband_ringtone(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_inband_ringtone(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 	bool enable;
@@ -1748,26 +1748,26 @@ static int cmd_ag_inband_ringtone(const struct shell *sh, size_t argc, char **ar
 	} else if (strcmp(action, "disable") == 0) {
 		enable = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_ag_inband_ringtone(hfp_ag, (bool)enable);
 	if (err) {
-		shell_error(sh, "Set inband ringtone failed: %d", err);
+		bt_shell_error("Set inband ringtone failed: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_AG_3WAY_CALL)
-static int cmd_ag_explicit_call_transfer(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_explicit_call_transfer(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	int err;
 
 	err = bt_hfp_ag_explicit_call_transfer(hfp_ag);
 	if (err) {
-		shell_error(sh, "Explicit call transfer failed: %d", err);
+		bt_shell_error("Explicit call transfer failed: %d", err);
 	}
 
 	return err;
@@ -1775,7 +1775,7 @@ static int cmd_ag_explicit_call_transfer(const struct shell *sh, size_t argc, ch
 #endif /* CONFIG_BT_HFP_AG_3WAY_CALL */
 
 #if defined(CONFIG_BT_HFP_AG_VOICE_RECG)
-static int cmd_ag_voice_recognition(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_voice_recognition(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 	bool enable;
@@ -1788,20 +1788,20 @@ static int cmd_ag_voice_recognition(const struct shell *sh, size_t argc, char **
 	} else if (strcmp(action, "deactivate") == 0) {
 		enable = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_ag_voice_recognition(hfp_ag, enable);
 	if (err) {
-		shell_error(sh, "Set voice recognition failed: %d", err);
+		bt_shell_error("Set voice recognition failed: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_AG_ENH_VOICE_RECG)
-static int cmd_ag_vre_state(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_vre_state(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 	uint8_t state = 0;
@@ -1825,14 +1825,14 @@ static int cmd_ag_vre_state(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_ag_vre_state(hfp_ag, state);
 	if (err) {
-		shell_error(sh, "Set voice recognition engine state failed: %d", err);
+		bt_shell_error("Set voice recognition engine state failed: %d", err);
 	}
 
 	return err;
 }
 #endif /* CONFIG_BT_HFP_AG_ENH_VOICE_RECG */
 #if defined(CONFIG_BT_HFP_AG_VOICE_RECG_TEXT)
-static int cmd_ag_vre_text(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_vre_text(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 	uint8_t state = 0;
@@ -1864,7 +1864,7 @@ static int cmd_ag_vre_text(const struct shell *sh, size_t argc, char **argv)
 
 	err = bt_hfp_ag_vre_textual_representation(hfp_ag, state, id, type, operation, text);
 	if (err) {
-		shell_error(sh, "Set voice recognition engine textual representation failed: %d",
+		bt_shell_error("Set voice recognition engine textual representation failed: %d",
 			    err);
 	}
 
@@ -1873,7 +1873,7 @@ static int cmd_ag_vre_text(const struct shell *sh, size_t argc, char **argv)
 #endif /* CONFIG_BT_HFP_AG_VOICE_RECG_TEXT */
 #endif /* CONFIG_BT_HFP_AG_VOICE_RECG */
 
-static int cmd_ag_subscriber(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_subscriber(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const char *action;
 
@@ -1884,14 +1884,14 @@ static int cmd_ag_subscriber(const struct shell *sh, size_t argc, char **argv)
 	} else if (strcmp(action, "notempty") == 0) {
 		subscriber = true;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	return 0;
 }
 
-static int cmd_ag_signal_strength(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_signal_strength(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	uint8_t strength;
 	int err;
@@ -1900,13 +1900,13 @@ static int cmd_ag_signal_strength(const struct shell *sh, size_t argc, char **ar
 
 	err = bt_hfp_ag_signal_strength(hfp_ag, strength);
 	if (err) {
-		shell_error(sh, "Set signal strength failed: %d", err);
+		bt_shell_error("Set signal strength failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_roaming_status(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_roaming_status(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	uint8_t status;
 	int err;
@@ -1915,13 +1915,13 @@ static int cmd_ag_roaming_status(const struct shell *sh, size_t argc, char **arg
 
 	err = bt_hfp_ag_roaming_status(hfp_ag, status);
 	if (err) {
-		shell_error(sh, "Set roaming status failed: %d", err);
+		bt_shell_error("Set roaming status failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_battery_level(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_battery_level(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	uint8_t level;
 	int err;
@@ -1930,13 +1930,13 @@ static int cmd_ag_battery_level(const struct shell *sh, size_t argc, char **argv
 
 	err = bt_hfp_ag_battery_level(hfp_ag, level);
 	if (err) {
-		shell_error(sh, "Set battery level failed: %d", err);
+		bt_shell_error("Set battery level failed: %d", err);
 	}
 
 	return err;
 }
 
-static int cmd_ag_service_availability(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_service_availability(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	bool available;
 	const char *action;
@@ -1949,20 +1949,20 @@ static int cmd_ag_service_availability(const struct shell *sh, size_t argc, char
 	} else if (strcmp(action, "no") == 0) {
 		available = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_ag_service_availability(hfp_ag, available);
 	if (err) {
-		shell_error(sh, "Set service availability failed: %d", err);
+		bt_shell_error("Set service availability failed: %d", err);
 	}
 
 	return err;
 }
 
 #if defined(CONFIG_BT_HFP_AG_HF_INDICATORS)
-static int cmd_ag_hf_indicator(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ag_hf_indicator(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	bool enable;
 	const char *action;
@@ -1977,13 +1977,13 @@ static int cmd_ag_hf_indicator(const struct shell *sh, size_t argc, char **argv)
 	} else if (strcmp(action, "disable") == 0) {
 		enable = false;
 	} else {
-		shell_error(sh, "Invalid option.");
+		bt_shell_error("Invalid option.");
 		return -ENOEXEC;
 	}
 
 	err = bt_hfp_ag_hf_indicator(hfp_ag, indicator, enable);
 	if (err) {
-		shell_error(sh, "Activate/deactivate HF indicator failed: %d", err);
+		bt_shell_error("Activate/deactivate HF indicator failed: %d", err);
 	}
 
 	return err;
@@ -1994,80 +1994,85 @@ static int cmd_ag_hf_indicator(const struct shell *sh, size_t argc, char **argv)
 	"<[R-ready][S-send][P-processing]> "        \
 	"<id> <type> <operation> <text string>"
 
-SHELL_STATIC_SUBCMD_SET_CREATE(ag_cmds,
-	SHELL_CMD_ARG(reg, NULL, HELP_NONE, cmd_ag_reg_enable, 1, 0),
-	SHELL_CMD_ARG(connect, NULL, "<channel>", cmd_ag_connect, 2, 0),
-	SHELL_CMD_ARG(disconnect, NULL, HELP_NONE, cmd_ag_disconnect, 1, 0),
-	SHELL_CMD_ARG(sco_disconnect, NULL, HELP_NONE, cmd_ag_sco_disconnect, 1, 0),
-	SHELL_CMD_ARG(ongoing_calls, NULL, "<yes or no>", cmd_ag_ongoing_calls, 2, 0),
-	SHELL_CMD_ARG(set_ongoing_calls, NULL, "<number> <type> <status> <dir> [all]",
+BT_SHELL_SUBCMD_SET_CREATE(ag_cmds,
+	BT_SHELL_CMD_ARG(reg, NULL, HELP_NONE, cmd_ag_reg_enable, 1, 0),
+	BT_SHELL_CMD_ARG(connect, NULL, "<channel>", cmd_ag_connect, 2, 0),
+	BT_SHELL_CMD_ARG(disconnect, NULL, HELP_NONE, cmd_ag_disconnect, 1, 0),
+	BT_SHELL_CMD_ARG(sco_disconnect, NULL, HELP_NONE, cmd_ag_sco_disconnect, 1, 0),
+	BT_SHELL_CMD_ARG(ongoing_calls, NULL, "<yes or no>", cmd_ag_ongoing_calls, 2, 0),
+	BT_SHELL_CMD_ARG(set_ongoing_calls, NULL, "<number> <type> <status> <dir> [all]",
 		      cmd_ag_set_ongoing_calls, 5, 1),
-	SHELL_CMD_ARG(remote_incoming, NULL, "<number>", cmd_ag_remote_incoming, 2, 0),
-	SHELL_CMD_ARG(hold_incoming, NULL, "<number>", cmd_ag_hold_incoming, 2, 0),
-	SHELL_CMD_ARG(remote_reject, NULL, "<call index>", cmd_ag_remote_reject, 2, 0),
-	SHELL_CMD_ARG(remote_accept, NULL, "<call index>", cmd_ag_remote_accept, 2, 0),
-	SHELL_CMD_ARG(remote_terminate, NULL, "<call index>", cmd_ag_remote_terminate, 2, 0),
-	SHELL_CMD_ARG(remote_ringing, NULL, "<call index>", cmd_ag_remote_ringing, 2, 0),
-	SHELL_CMD_ARG(outgoing, NULL, "<number>", cmd_ag_outgoing, 2, 0),
-	SHELL_CMD_ARG(reject, NULL, "<call index>", cmd_ag_reject, 2, 0),
-	SHELL_CMD_ARG(accept, NULL, "<call index>", cmd_ag_accept, 2, 0),
-	SHELL_CMD_ARG(hold, NULL, "<call index>", cmd_ag_hold, 2, 0),
-	SHELL_CMD_ARG(retrieve, NULL, "<call index>", cmd_ag_retrieve, 2, 0),
-	SHELL_CMD_ARG(terminate, NULL, "<call index>", cmd_ag_terminate, 2, 0),
-	SHELL_CMD_ARG(vgm, NULL, "<gain>", cmd_ag_vgm, 2, 0),
-	SHELL_CMD_ARG(vgs, NULL, "<gain>", cmd_ag_vgs, 2, 0),
-	SHELL_CMD_ARG(operator, NULL, "<mode> <operator>", cmd_ag_operator, 3, 0),
+	BT_SHELL_CMD_ARG(remote_incoming, NULL, "<number>", cmd_ag_remote_incoming, 2, 0),
+	BT_SHELL_CMD_ARG(hold_incoming, NULL, "<number>", cmd_ag_hold_incoming, 2, 0),
+	BT_SHELL_CMD_ARG(remote_reject, NULL, "<call index>", cmd_ag_remote_reject, 2, 0),
+	BT_SHELL_CMD_ARG(remote_accept, NULL, "<call index>", cmd_ag_remote_accept, 2, 0),
+	BT_SHELL_CMD_ARG(remote_terminate, NULL, "<call index>", cmd_ag_remote_terminate, 2, 0),
+	BT_SHELL_CMD_ARG(remote_ringing, NULL, "<call index>", cmd_ag_remote_ringing, 2, 0),
+	BT_SHELL_CMD_ARG(outgoing, NULL, "<number>", cmd_ag_outgoing, 2, 0),
+	BT_SHELL_CMD_ARG(reject, NULL, "<call index>", cmd_ag_reject, 2, 0),
+	BT_SHELL_CMD_ARG(accept, NULL, "<call index>", cmd_ag_accept, 2, 0),
+	BT_SHELL_CMD_ARG(hold, NULL, "<call index>", cmd_ag_hold, 2, 0),
+	BT_SHELL_CMD_ARG(retrieve, NULL, "<call index>", cmd_ag_retrieve, 2, 0),
+	BT_SHELL_CMD_ARG(terminate, NULL, "<call index>", cmd_ag_terminate, 2, 0),
+	BT_SHELL_CMD_ARG(vgm, NULL, "<gain>", cmd_ag_vgm, 2, 0),
+	BT_SHELL_CMD_ARG(vgs, NULL, "<gain>", cmd_ag_vgs, 2, 0),
+	BT_SHELL_CMD_ARG(operator, NULL, "<mode> <operator>", cmd_ag_operator, 3, 0),
 #if defined(CONFIG_BT_HFP_AG_CODEC_NEG)
-	SHELL_CMD_ARG(audio_connect, NULL, "<codec id>", cmd_ag_audio_connect, 2, 0),
+	BT_SHELL_CMD_ARG(audio_connect, NULL, "<codec id>", cmd_ag_audio_connect, 2, 0),
 #endif /* CONFIG_BT_HFP_AG_CODEC_NEG */
-	SHELL_CMD_ARG(inband_ringtone, NULL, "<enable/disable>", cmd_ag_inband_ringtone, 2, 0),
+	BT_SHELL_CMD_ARG(inband_ringtone, NULL, "<enable/disable>", cmd_ag_inband_ringtone, 2, 0),
 #if defined(CONFIG_BT_HFP_AG_3WAY_CALL)
-	SHELL_CMD_ARG(explicit_call_transfer, NULL, HELP_NONE, cmd_ag_explicit_call_transfer, 1, 0),
+	BT_SHELL_CMD_ARG(explicit_call_transfer, NULL, HELP_NONE, cmd_ag_explicit_call_transfer, 1, 0),
 #endif /* CONFIG_BT_HFP_AG_3WAY_CALL */
 #if defined(CONFIG_BT_HFP_AG_VOICE_RECG)
-	SHELL_CMD_ARG(voice_recognition, NULL, "<activate/deactivate>", cmd_ag_voice_recognition, 2,
+	BT_SHELL_CMD_ARG(voice_recognition, NULL, "<activate/deactivate>", cmd_ag_voice_recognition, 2,
 		      0),
 #if defined(CONFIG_BT_HFP_AG_ENH_VOICE_RECG)
-	SHELL_CMD_ARG(vre_state, NULL, "<[R-ready][S-send][P-processing]>", cmd_ag_vre_state, 2, 0),
+	BT_SHELL_CMD_ARG(vre_state, NULL, "<[R-ready][S-send][P-processing]>", cmd_ag_vre_state, 2, 0),
 #endif /* CONFIG_BT_HFP_AG_ENH_VOICE_RECG */
 #if defined(CONFIG_BT_HFP_AG_VOICE_RECG_TEXT)
-	SHELL_CMD_ARG(vre_text, NULL, HELP_AG_TEXTUAL_REPRESENTATION, cmd_ag_vre_text, 6, 0),
+	BT_SHELL_CMD_ARG(vre_text, NULL, HELP_AG_TEXTUAL_REPRESENTATION, cmd_ag_vre_text, 6, 0),
 #endif /* CONFIG_BT_HFP_AG_VOICE_RECG_TEXT */
 #endif /* CONFIG_BT_HFP_AG_VOICE_RECG */
-	SHELL_CMD_ARG(subscriber, NULL, "<empty/notempty>", cmd_ag_subscriber, 2, 0),
-	SHELL_CMD_ARG(signal_strength, NULL, "<signal strength>", cmd_ag_signal_strength, 2, 0),
-	SHELL_CMD_ARG(roaming_status, NULL, "<roaming status>", cmd_ag_roaming_status, 2, 0),
-	SHELL_CMD_ARG(battery_level, NULL, "<battery level>", cmd_ag_battery_level, 2, 0),
-	SHELL_CMD_ARG(service_availability, NULL, "<yes/no>", cmd_ag_service_availability, 2, 0),
+	BT_SHELL_CMD_ARG(subscriber, NULL, "<empty/notempty>", cmd_ag_subscriber, 2, 0),
+	BT_SHELL_CMD_ARG(signal_strength, NULL, "<signal strength>", cmd_ag_signal_strength, 2, 0),
+	BT_SHELL_CMD_ARG(roaming_status, NULL, "<roaming status>", cmd_ag_roaming_status, 2, 0),
+	BT_SHELL_CMD_ARG(battery_level, NULL, "<battery level>", cmd_ag_battery_level, 2, 0),
+	BT_SHELL_CMD_ARG(service_availability, NULL, "<yes/no>", cmd_ag_service_availability, 2, 0),
 #if defined(CONFIG_BT_HFP_AG_HF_INDICATORS)
-	SHELL_CMD_ARG(hf_indicator, NULL, "<indicator> <enable/disable>", cmd_ag_hf_indicator, 3,
+	BT_SHELL_CMD_ARG(hf_indicator, NULL, "<indicator> <enable/disable>", cmd_ag_hf_indicator, 3,
 		      0),
 #endif /* CONFIG_BT_HFP_HF_HF_INDICATORS */
-	SHELL_SUBCMD_SET_END
+	BT_SHELL_SUBCMD_SET_END
 );
 #endif /* CONFIG_BT_HFP_AG */
 
-static int cmd_default(const struct shell *sh, size_t argc, char **argv)
+static int cmd_default(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	if (argc == 1) {
-		shell_help(sh);
+		bt_shell_help(sh);
 		/* sh returns 1 when help is printed */
-		return SHELL_CMD_HELP_PRINTED;
+		return BT_SHELL_CMD_HELP_PRINTED;
 	}
 
-	shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+	bt_shell_error("%s unknown parameter: %s", argv[0], argv[1]);
 
 	return -ENOEXEC;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(hfp_cmds,
+BT_SHELL_SUBCMD_SET_CREATE(hfp_cmds,
 #if defined(CONFIG_BT_HFP_HF)
-	SHELL_CMD(hf, &hf_cmds, "HFP HF shell commands", cmd_default),
+	BT_SHELL_CMD(hf, &hf_cmds, "HFP HF shell commands", cmd_default),
 #endif /* CONFIG_BT_HFP_HF */
 #if defined(CONFIG_BT_HFP_AG)
-	SHELL_CMD(ag, &ag_cmds, "HFP AG shell commands", cmd_default),
+	BT_SHELL_CMD(ag, &ag_cmds, "HFP AG shell commands", cmd_default),
 #endif /* CONFIG_BT_HFP_AG */
-	SHELL_SUBCMD_SET_END
+	BT_SHELL_SUBCMD_SET_END
 );
 
-SHELL_CMD_ARG_REGISTER(hfp, &hfp_cmds, "Bluetooth HFP shell commands", cmd_default, 1, 1);
+BT_SHELL_CMD_ARG_DEFINE(hfp, &hfp_cmds, "Bluetooth HFP shell commands", cmd_default, 1, 1);
+
+int bt_shell_cmd_hfp_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &hfp);
+}

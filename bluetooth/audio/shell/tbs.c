@@ -40,7 +40,7 @@ static struct bt_tbs_cb tbs_cbs = {
 	.authorize = tbs_authorize_cb
 };
 
-static int cmd_tbs_authorize(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_authorize(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	char addr[BT_ADDR_LE_STR_LEN];
 
@@ -49,17 +49,17 @@ static int cmd_tbs_authorize(const struct shell *sh, size_t argc, char *argv[])
 	(void)bt_addr_le_to_str(bt_conn_get_dst(tbs_authorized_conn),
 				addr, sizeof(addr));
 
-	shell_print(sh, "Connection with addr %s authorized", addr);
+	bt_shell_print("Connection with addr %s authorized", addr);
 
 	return 0;
 }
 
-static int cmd_tbs_init(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_init(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	static bool registered;
 
 	if (registered) {
-		shell_info(sh, "Already initialized");
+		bt_shell_info("Already initialized");
 
 		return -ENOEXEC;
 	}
@@ -77,12 +77,12 @@ static int cmd_tbs_init(const struct shell *sh, size_t argc, char *argv[])
 
 	err = bt_tbs_register_bearer(&gtbs_param);
 	if (err < 0) {
-		shell_error(sh, "Failed to register GTBS: %d", err);
+		bt_shell_error("Failed to register GTBS: %d", err);
 
 		return -ENOEXEC;
 	}
 
-	shell_info(sh, "Registered GTBS");
+	bt_shell_info("Registered GTBS");
 
 	for (int i = 0; i < CONFIG_BT_TBS_BEARER_COUNT; i++) {
 		char prov_name[22]; /* Enough to store "Telephone Bearer #255" */
@@ -101,12 +101,12 @@ static int cmd_tbs_init(const struct shell *sh, size_t argc, char *argv[])
 
 		err = bt_tbs_register_bearer(&tbs_param);
 		if (err < 0) {
-			shell_error(sh, "Failed to register TBS[%d]: %d", i, err);
+			bt_shell_error("Failed to register TBS[%d]: %d", i, err);
 
 			return -ENOEXEC;
 		}
 
-		shell_info(sh, "Registered TBS[%d] with index %u", i, (uint8_t)err);
+		bt_shell_info("Registered TBS[%d] with index %u", i, (uint8_t)err);
 	}
 
 	bt_tbs_register_cb(&tbs_cbs);
@@ -115,141 +115,141 @@ static int cmd_tbs_init(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_tbs_accept(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_accept(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_accept((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_terminate(const struct shell *sh, size_t argc,
+static int cmd_tbs_terminate(const struct bt_shell *sh, size_t argc,
 			     char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_terminate((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_hold(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_hold(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_hold((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_retrieve(const struct shell *sh, size_t argc,
+static int cmd_tbs_retrieve(const struct bt_shell *sh, size_t argc,
 			    char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_retrieve((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_originate(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_originate(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	unsigned long service_index;
 	uint8_t call_index;
 	int result = 0;
 
 	if (argc > 2) {
-		service_index = shell_strtoul(argv[1], 0, &result);
+		service_index = bt_shell_strtoul(argv[1], 0, &result);
 		if (result != 0) {
-			shell_error(sh, "Could not parse service_index: %d",
+			bt_shell_error("Could not parse service_index: %d",
 				    result);
 
 			return -ENOEXEC;
 		}
 
 		if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-			shell_error(sh, "Invalid service_index: %lu",
+			bt_shell_error("Invalid service_index: %lu",
 				    service_index);
 
 			return -ENOEXEC;
@@ -261,31 +261,31 @@ static int cmd_tbs_originate(const struct shell *sh, size_t argc, char *argv[])
 	result = bt_tbs_originate((uint8_t)service_index, argv[argc - 1],
 				  &call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS call_index %u originated", call_index);
+		bt_shell_print("TBS call_index %u originated", call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_join(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_join(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t call_indexes[CONFIG_BT_TBS_MAX_CALLS];
 	unsigned long call_index;
 	int result = 0;
 
 	for (size_t i = 1; i < argc; i++) {
-		call_index = shell_strtoul(argv[i], 0, &result);
+		call_index = bt_shell_strtoul(argv[i], 0, &result);
 		if (result != 0) {
-			shell_error(sh, "Could not parse call_index: %d",
+			bt_shell_error("Could not parse call_index: %d",
 				    result);
 
 			return -ENOEXEC;
 		}
 
 		if (call_index > UINT8_MAX) {
-			shell_error(sh, "Invalid call_index: %lu", call_index);
+			bt_shell_error("Invalid call_index: %lu", call_index);
 
 			return -ENOEXEC;
 		}
@@ -295,134 +295,134 @@ static int cmd_tbs_join(const struct shell *sh, size_t argc, char *argv[])
 
 	result = bt_tbs_join(argc - 1, call_indexes);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS join succeeded");
+		bt_shell_print("TBS join succeeded");
 	}
 
 	return result;
 }
 
-static int cmd_tbs_answer(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_answer(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_remote_answer((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_remote_hold(const struct shell *sh, size_t argc,
+static int cmd_tbs_remote_hold(const struct bt_shell *sh, size_t argc,
 			       char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_remote_hold((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_remote_retrieve(const struct shell *sh, size_t argc,
+static int cmd_tbs_remote_retrieve(const struct bt_shell *sh, size_t argc,
 				   char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_remote_retrieve((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_remote_terminate(const struct shell *sh, size_t argc,
+static int cmd_tbs_remote_terminate(const struct bt_shell *sh, size_t argc,
 				    char *argv[])
 {
 	unsigned long call_index;
 	int result = 0;
 
-	call_index = shell_strtoul(argv[1], 0, &result);
+	call_index = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse call_index: %d", result);
+		bt_shell_error("Could not parse call_index: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (call_index > UINT8_MAX) {
-		shell_error(sh, "Invalid call_index: %lu", call_index);
+		bt_shell_error("Invalid call_index: %lu", call_index);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_tbs_remote_terminate((uint8_t)call_index);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded for call_index: %ld",
+		bt_shell_print("TBS succeeded for call_index: %ld",
 			    call_index);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_incoming(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tbs_incoming(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	unsigned long service_index;
 	int result = 0;
@@ -431,9 +431,9 @@ static int cmd_tbs_incoming(const struct shell *sh, size_t argc, char *argv[])
 		if (strcmp(argv[1], "gtbs") == 0) {
 			service_index = BT_TBS_GTBS_INDEX;
 		} else {
-			service_index = shell_strtoul(argv[1], 0, &result);
+			service_index = bt_shell_strtoul(argv[1], 0, &result);
 			if (result != 0) {
-				shell_error(sh,
+				bt_shell_error(
 					    "Could not parse service_index: %d",
 					    result);
 
@@ -441,7 +441,7 @@ static int cmd_tbs_incoming(const struct shell *sh, size_t argc, char *argv[])
 			}
 
 			if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-				shell_error(sh, "Invalid service_index: %lu",
+				bt_shell_error("Invalid service_index: %lu",
 					    service_index);
 
 				return -ENOEXEC;
@@ -456,15 +456,15 @@ static int cmd_tbs_incoming(const struct shell *sh, size_t argc, char *argv[])
 					argv[argc - 2],
 					argv[argc - 1]);
 	if (result < 0) {
-		shell_print(sh, "TBS failed: %d", result);
+		bt_shell_print("TBS failed: %d", result);
 	} else {
-		shell_print(sh, "TBS succeeded");
+		bt_shell_print("TBS succeeded");
 	}
 
 	return result;
 }
 
-static int cmd_tbs_set_bearer_provider_name(const struct shell *sh, size_t argc,
+static int cmd_tbs_set_bearer_provider_name(const struct bt_shell *sh, size_t argc,
 					    char *argv[])
 {
 	unsigned long service_index;
@@ -474,9 +474,9 @@ static int cmd_tbs_set_bearer_provider_name(const struct shell *sh, size_t argc,
 		if (strcmp(argv[1], "gtbs") == 0) {
 			service_index = BT_TBS_GTBS_INDEX;
 		} else {
-			service_index = shell_strtoul(argv[1], 0, &result);
+			service_index = bt_shell_strtoul(argv[1], 0, &result);
 			if (result != 0) {
-				shell_error(sh,
+				bt_shell_error(
 					    "Could not parse service_index: %d",
 					    result);
 
@@ -484,7 +484,7 @@ static int cmd_tbs_set_bearer_provider_name(const struct shell *sh, size_t argc,
 			}
 
 			if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-				shell_error(sh, "Invalid service_index: %lu",
+				bt_shell_error("Invalid service_index: %lu",
 					    service_index);
 
 				return -ENOEXEC;
@@ -497,13 +497,13 @@ static int cmd_tbs_set_bearer_provider_name(const struct shell *sh, size_t argc,
 	result = bt_tbs_set_bearer_provider_name((uint8_t)service_index,
 						 argv[argc - 1]);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "Could not set provider name: %d", result);
+		bt_shell_print("Could not set provider name: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_set_bearer_technology(const struct shell *sh, size_t argc,
+static int cmd_tbs_set_bearer_technology(const struct bt_shell *sh, size_t argc,
 					 char *argv[])
 {
 	unsigned long service_index;
@@ -514,9 +514,9 @@ static int cmd_tbs_set_bearer_technology(const struct shell *sh, size_t argc,
 		if (strcmp(argv[1], "gtbs") == 0) {
 			service_index = BT_TBS_GTBS_INDEX;
 		} else {
-			service_index = shell_strtoul(argv[1], 0, &result);
+			service_index = bt_shell_strtoul(argv[1], 0, &result);
 			if (result != 0) {
-				shell_error(sh,
+				bt_shell_error(
 					    "Could not parse service_index: %d",
 					    result);
 
@@ -524,7 +524,7 @@ static int cmd_tbs_set_bearer_technology(const struct shell *sh, size_t argc,
 			}
 
 			if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-				shell_error(sh, "Invalid service_index: %lu",
+				bt_shell_error("Invalid service_index: %lu",
 					    service_index);
 
 				return -ENOEXEC;
@@ -534,15 +534,15 @@ static int cmd_tbs_set_bearer_technology(const struct shell *sh, size_t argc,
 		service_index = BT_TBS_GTBS_INDEX;
 	}
 
-	technology = shell_strtoul(argv[argc - 1], 0, &result);
+	technology = bt_shell_strtoul(argv[argc - 1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse technology: %d", result);
+		bt_shell_error("Could not parse technology: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (technology > UINT8_MAX) {
-		shell_error(sh, "Invalid technology: %lu", technology);
+		bt_shell_error("Invalid technology: %lu", technology);
 
 		return -ENOEXEC;
 	}
@@ -550,13 +550,13 @@ static int cmd_tbs_set_bearer_technology(const struct shell *sh, size_t argc,
 	result = bt_tbs_set_bearer_technology((uint8_t)service_index,
 					      (uint8_t)technology);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "Could not set technology: %d", result);
+		bt_shell_print("Could not set technology: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_set_bearer_signal_strength(const struct shell *sh,
+static int cmd_tbs_set_bearer_signal_strength(const struct bt_shell *sh,
 					      size_t argc, char *argv[])
 {
 	unsigned long signal_strength;
@@ -567,9 +567,9 @@ static int cmd_tbs_set_bearer_signal_strength(const struct shell *sh,
 		if (strcmp(argv[1], "gtbs") == 0) {
 			service_index = BT_TBS_GTBS_INDEX;
 		} else {
-			service_index = shell_strtoul(argv[1], 0, &result);
+			service_index = bt_shell_strtoul(argv[1], 0, &result);
 			if (result != 0) {
-				shell_error(sh,
+				bt_shell_error(
 					    "Could not parse service_index: %d",
 					    result);
 
@@ -577,7 +577,7 @@ static int cmd_tbs_set_bearer_signal_strength(const struct shell *sh,
 			}
 
 			if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-				shell_error(sh, "Invalid service_index: %lu",
+				bt_shell_error("Invalid service_index: %lu",
 					    service_index);
 
 				return -ENOEXEC;
@@ -587,15 +587,15 @@ static int cmd_tbs_set_bearer_signal_strength(const struct shell *sh,
 		service_index = BT_TBS_GTBS_INDEX;
 	}
 
-	signal_strength = shell_strtoul(argv[argc - 1], 0, &result);
+	signal_strength = bt_shell_strtoul(argv[argc - 1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse signal_strength: %d", result);
+		bt_shell_error("Could not parse signal_strength: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (signal_strength > UINT8_MAX) {
-		shell_error(sh, "Invalid signal_strength: %lu",
+		bt_shell_error("Invalid signal_strength: %lu",
 			    signal_strength);
 
 		return -ENOEXEC;
@@ -604,13 +604,13 @@ static int cmd_tbs_set_bearer_signal_strength(const struct shell *sh,
 	result = bt_tbs_set_signal_strength((uint8_t)service_index,
 					    (uint8_t)signal_strength);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "Could not set signal strength: %d", result);
+		bt_shell_print("Could not set signal strength: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_set_status_flags(const struct shell *sh, size_t argc,
+static int cmd_tbs_set_status_flags(const struct bt_shell *sh, size_t argc,
 				    char *argv[])
 {
 	unsigned long service_index;
@@ -621,9 +621,9 @@ static int cmd_tbs_set_status_flags(const struct shell *sh, size_t argc,
 		if (strcmp(argv[1], "gtbs") == 0) {
 			service_index = BT_TBS_GTBS_INDEX;
 		} else {
-			service_index = shell_strtoul(argv[1], 0, &result);
+			service_index = bt_shell_strtoul(argv[1], 0, &result);
 			if (result != 0) {
-				shell_error(sh,
+				bt_shell_error(
 					    "Could not parse service_index: %d",
 					    result);
 
@@ -631,7 +631,7 @@ static int cmd_tbs_set_status_flags(const struct shell *sh, size_t argc,
 			}
 
 			if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-				shell_error(sh, "Invalid service_index: %lu",
+				bt_shell_error("Invalid service_index: %lu",
 					    service_index);
 
 				return -ENOEXEC;
@@ -641,15 +641,15 @@ static int cmd_tbs_set_status_flags(const struct shell *sh, size_t argc,
 		service_index = BT_TBS_GTBS_INDEX;
 	}
 
-	status_flags = shell_strtoul(argv[argc - 1], 0, &result);
+	status_flags = bt_shell_strtoul(argv[argc - 1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse status_flags: %d", result);
+		bt_shell_error("Could not parse status_flags: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (status_flags > UINT8_MAX) {
-		shell_error(sh, "Invalid status_flags: %lu", status_flags);
+		bt_shell_error("Invalid status_flags: %lu", status_flags);
 
 		return -ENOEXEC;
 	}
@@ -657,13 +657,13 @@ static int cmd_tbs_set_status_flags(const struct shell *sh, size_t argc,
 	result = bt_tbs_set_status_flags((uint8_t)service_index,
 					 (uint16_t)status_flags);
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "Could not set status flags: %d", result);
+		bt_shell_print("Could not set status flags: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_set_uri_scheme_list(const struct shell *sh, size_t argc,
+static int cmd_tbs_set_uri_scheme_list(const struct bt_shell *sh, size_t argc,
 				       char *argv[])
 {
 	unsigned long service_index;
@@ -673,9 +673,9 @@ static int cmd_tbs_set_uri_scheme_list(const struct shell *sh, size_t argc,
 		if (strcmp(argv[1], "gtbs") == 0) {
 			service_index = BT_TBS_GTBS_INDEX;
 		} else {
-			service_index = shell_strtoul(argv[1], 0, &result);
+			service_index = bt_shell_strtoul(argv[1], 0, &result);
 			if (result != 0) {
-				shell_error(sh,
+				bt_shell_error(
 					    "Could not parse service_index: %d",
 					    result);
 
@@ -683,7 +683,7 @@ static int cmd_tbs_set_uri_scheme_list(const struct shell *sh, size_t argc,
 			}
 
 			if (service_index > CONFIG_BT_TBS_BEARER_COUNT) {
-				shell_error(sh, "Invalid service_index: %lu",
+				bt_shell_error("Invalid service_index: %lu",
 					    service_index);
 
 				return -ENOEXEC;
@@ -698,13 +698,13 @@ static int cmd_tbs_set_uri_scheme_list(const struct shell *sh, size_t argc,
 					    argc - 2);
 
 	if (result != BT_TBS_RESULT_CODE_SUCCESS) {
-		shell_print(sh, "Could not set URI prefix list: %d", result);
+		bt_shell_print("Could not set URI prefix list: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_tbs_print_calls(const struct shell *sh, size_t argc,
+static int cmd_tbs_print_calls(const struct bt_shell *sh, size_t argc,
 			       char *argv[])
 {
 	if (IS_ENABLED(CONFIG_BT_TBS_LOG_LEVEL_DBG)) {
@@ -715,87 +715,92 @@ static int cmd_tbs_print_calls(const struct shell *sh, size_t argc,
 	return -ENOEXEC;
 }
 
-static int cmd_tbs(const struct shell *sh, size_t argc, char **argv)
+static int cmd_tbs(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	if (argc > 1) {
-		shell_error(sh, "%s unknown parameter: %s", argv[0],
+		bt_shell_error("%s unknown parameter: %s", argv[0],
 			    argv[1]);
 	} else {
-		shell_error(sh, "%s Missing subcommand", argv[0]);
+		bt_shell_error("%s Missing subcommand", argv[0]);
 	}
 
 	return -ENOEXEC;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(tbs_cmds,
-	SHELL_CMD_ARG(init, NULL,
+BT_SHELL_SUBCMD_SET_CREATE(tbs_cmds,
+	BT_SHELL_CMD_ARG(init, NULL,
 		      "Initialize TBS",
 		      cmd_tbs_init, 1, 0),
-	SHELL_CMD_ARG(authorize, NULL,
+	BT_SHELL_CMD_ARG(authorize, NULL,
 		      "Authorize the current connection",
 		      cmd_tbs_authorize, 1, 0),
-	SHELL_CMD_ARG(accept, NULL,
+	BT_SHELL_CMD_ARG(accept, NULL,
 		      "Accept call <call_index>",
 		      cmd_tbs_accept, 2, 0),
-	SHELL_CMD_ARG(terminate, NULL,
+	BT_SHELL_CMD_ARG(terminate, NULL,
 		      "Terminate call <call_index>",
 		      cmd_tbs_terminate, 2, 0),
-	SHELL_CMD_ARG(hold, NULL,
+	BT_SHELL_CMD_ARG(hold, NULL,
 		      "Hold call <call_index>",
 		      cmd_tbs_hold, 2, 0),
-	SHELL_CMD_ARG(retrieve, NULL,
+	BT_SHELL_CMD_ARG(retrieve, NULL,
 		      "Retrieve call <call_index>",
 		      cmd_tbs_retrieve, 2, 0),
-	SHELL_CMD_ARG(originate, NULL,
+	BT_SHELL_CMD_ARG(originate, NULL,
 		      "Originate call [<instance_index>] <uri>",
 		      cmd_tbs_originate, 2, 1),
 #if CONFIG_BT_TBS_MAX_CALLS > 1
-	SHELL_CMD_ARG(join, NULL,
+	BT_SHELL_CMD_ARG(join, NULL,
 		      "Join calls <id> <id> [<id> [<id> [...]]]",
 		      cmd_tbs_join, 3, CONFIG_BT_TBS_MAX_CALLS - 2),
 #endif /* CONFIG_BT_TBS_MAX_CALLS > 1 */
-	SHELL_CMD_ARG(incoming, NULL,
+	BT_SHELL_CMD_ARG(incoming, NULL,
 		      "Simulate incoming remote call "
 		      "[<{instance_index, gtbs}>] <local_uri> <remote_uri> "
 		      "<remote_friendly_name>",
 		      cmd_tbs_incoming, 4, 1),
-	SHELL_CMD_ARG(remote_answer, NULL,
+	BT_SHELL_CMD_ARG(remote_answer, NULL,
 		      "Simulate remote answer outgoing call <call_index>",
 		      cmd_tbs_answer, 2, 0),
-	SHELL_CMD_ARG(remote_retrieve, NULL,
+	BT_SHELL_CMD_ARG(remote_retrieve, NULL,
 		      "Simulate remote retrieve <call_index>",
 		      cmd_tbs_remote_retrieve, 2, 0),
-	SHELL_CMD_ARG(remote_terminate, NULL,
+	BT_SHELL_CMD_ARG(remote_terminate, NULL,
 		      "Simulate remote terminate <call_index>",
 		      cmd_tbs_remote_terminate, 2, 0),
-	SHELL_CMD_ARG(remote_hold, NULL,
+	BT_SHELL_CMD_ARG(remote_hold, NULL,
 		      "Simulate remote hold <call_index>",
 		      cmd_tbs_remote_hold, 2, 0),
-	SHELL_CMD_ARG(set_bearer_provider_name, NULL,
+	BT_SHELL_CMD_ARG(set_bearer_provider_name, NULL,
 		      "Set the bearer provider name [<{instance_index, gtbs}>] "
 		      "<name>",
 		      cmd_tbs_set_bearer_provider_name, 2, 1),
-	SHELL_CMD_ARG(set_bearer_technology, NULL,
+	BT_SHELL_CMD_ARG(set_bearer_technology, NULL,
 		      "Set the bearer technology [<{instance_index, gtbs}>] "
 		      "<technology>",
 		      cmd_tbs_set_bearer_technology, 2, 1),
-	SHELL_CMD_ARG(set_bearer_signal_strength, NULL,
+	BT_SHELL_CMD_ARG(set_bearer_signal_strength, NULL,
 		      "Set the bearer signal strength "
 		      "[<{instance_index, gtbs}>] <strength>",
 		      cmd_tbs_set_bearer_signal_strength, 2, 1),
-	SHELL_CMD_ARG(set_status_flags, NULL,
+	BT_SHELL_CMD_ARG(set_status_flags, NULL,
 		      "Set the bearer feature and status value "
 		      "[<{instance_index, gtbs}>] <feature_and_status>",
 		      cmd_tbs_set_status_flags, 2, 1),
-	SHELL_CMD_ARG(set_uri_scheme, NULL,
+	BT_SHELL_CMD_ARG(set_uri_scheme, NULL,
 		      "Set the URI prefix list <bearer_idx> "
 		      "<uri1 [uri2 [uri3 [...]]]>",
 		      cmd_tbs_set_uri_scheme_list, 3, 30),
-	SHELL_CMD_ARG(print_calls, NULL,
+	BT_SHELL_CMD_ARG(print_calls, NULL,
 		      "Output all calls in the debug log",
 		      cmd_tbs_print_calls, 1, 0),
-	SHELL_SUBCMD_SET_END
+	BT_SHELL_SUBCMD_SET_END
 );
 
-SHELL_CMD_ARG_REGISTER(tbs, &tbs_cmds, "Bluetooth TBS shell commands",
+BT_SHELL_CMD_ARG_DEFINE(tbs, &tbs_cmds, "Bluetooth TBS shell commands",
 		       cmd_tbs, 1, 1);
+
+int bt_shell_cmd_tbs_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &tbs);
+}

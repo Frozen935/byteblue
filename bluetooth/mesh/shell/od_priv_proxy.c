@@ -10,7 +10,7 @@
 
 #include "utils.h"
 
-static int cmd_od_priv_gatt_proxy_set(const struct shell *sh, size_t argc,
+static int cmd_od_priv_gatt_proxy_set(const struct bt_shell *sh, size_t argc,
 				      char *argv[])
 {
 	uint8_t val, val_rsp;
@@ -21,10 +21,10 @@ static int cmd_od_priv_gatt_proxy_set(const struct shell *sh, size_t argc,
 	if (argc < 2) {
 		err = bt_mesh_od_priv_proxy_cli_get(net_idx, addr, &val_rsp);
 	} else {
-		val = shell_strtoul(argv[1], 0, &err);
+		val = bt_shell_strtoul(argv[1], 0, &err);
 
 		if (err) {
-			shell_warn(sh, "Unable to parse input string argument");
+			bt_shell_warn("Unable to parse input string argument");
 			return err;
 		}
 
@@ -32,20 +32,20 @@ static int cmd_od_priv_gatt_proxy_set(const struct shell *sh, size_t argc,
 	}
 
 	if (err) {
-		shell_print(sh, "Unable to send On-Demand Private GATT Proxy Get/Set (err %d)",
+		bt_shell_print("Unable to send On-Demand Private GATT Proxy Get/Set (err %d)",
 			    err);
 		return 0;
 	}
 
-	shell_print(sh, "On-Demand Private GATT Proxy is set to 0x%02x", val_rsp);
+	bt_shell_print("On-Demand Private GATT Proxy is set to 0x%02x", val_rsp);
 
 	return 0;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	od_priv_proxy_cmds,
-	SHELL_CMD_ARG(gatt-proxy, NULL, "[Dur(s)]", cmd_od_priv_gatt_proxy_set, 1, 1),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(gatt-proxy, NULL, "[Dur(s)]", cmd_od_priv_gatt_proxy_set, 1, 1),
+	BT_SHELL_SUBCMD_SET_END);
 
 SHELL_SUBCMD_ADD((mesh, models), od_priv_proxy, &od_priv_proxy_cmds,
 		 "On-Demand Private Proxy Cli commands",

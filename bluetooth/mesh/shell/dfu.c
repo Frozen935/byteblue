@@ -151,13 +151,13 @@ void bt_mesh_shell_dfu_cmds_init(void)
 
 BT_BUF_SIMPLE_DEFINE_STATIC(dfu_comp_data, BT_MESH_TX_SDU_MAX);
 
-static int cmd_dfu_comp_clear(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_comp_clear(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	bt_buf_simple_reset(&dfu_comp_data);
 	return 0;
 }
 
-static int cmd_dfu_comp_add(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_comp_add(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_buf_simple_state state;
 	int err = 0;
@@ -167,7 +167,7 @@ static int cmd_dfu_comp_add(const struct shell *sh, size_t argc, char *argv[])
 	}
 
 	if (bt_buf_simple_tailroom(&dfu_comp_data) < 10) {
-		shell_print(sh, "Buffer is too small: %u",
+		bt_shell_print("Buffer is too small: %u",
 			    bt_buf_simple_tailroom(&dfu_comp_data));
 		return -EMSGSIZE;
 	}
@@ -175,19 +175,19 @@ static int cmd_dfu_comp_add(const struct shell *sh, size_t argc, char *argv[])
 	bt_buf_simple_save(&dfu_comp_data, &state);
 
 	for (size_t i = 1; i <= 5; i++) {
-		bt_buf_simple_add_le16(&dfu_comp_data, shell_strtoul(argv[i], 0, &err));
+		bt_buf_simple_add_le16(&dfu_comp_data, bt_shell_strtoul(argv[i], 0, &err));
 	}
 
 	if (err) {
 		bt_buf_simple_restore(&dfu_comp_data, &state);
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_comp_elem_add(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_comp_elem_add(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t sig_model_count;
 	uint8_t vnd_model_count;
@@ -200,8 +200,8 @@ static int cmd_dfu_comp_elem_add(const struct shell *sh, size_t argc, char *argv
 
 	bt_buf_simple_save(&dfu_comp_data, &state);
 
-	sig_model_count = shell_strtoul(argv[2], 0, &err);
-	vnd_model_count = shell_strtoul(argv[3], 0, &err);
+	sig_model_count = bt_shell_strtoul(argv[2], 0, &err);
+	vnd_model_count = bt_shell_strtoul(argv[3], 0, &err);
 
 	if (argc < 4 + sig_model_count + vnd_model_count * 2) {
 		return -EINVAL;
@@ -209,43 +209,43 @@ static int cmd_dfu_comp_elem_add(const struct shell *sh, size_t argc, char *argv
 
 	if (bt_buf_simple_tailroom(&dfu_comp_data) < 4 + sig_model_count * 2 +
 	    vnd_model_count * 4) {
-		shell_print(sh, "Buffer is too small: %u",
+		bt_shell_print("Buffer is too small: %u",
 			    bt_buf_simple_tailroom(&dfu_comp_data));
 		return -EMSGSIZE;
 	}
 
-	bt_buf_simple_add_le16(&dfu_comp_data, shell_strtoul(argv[1], 0, &err));
+	bt_buf_simple_add_le16(&dfu_comp_data, bt_shell_strtoul(argv[1], 0, &err));
 	bt_buf_simple_add_u8(&dfu_comp_data, sig_model_count);
 	bt_buf_simple_add_u8(&dfu_comp_data, vnd_model_count);
 
 	for (size_t i = 0; i < sig_model_count; i++) {
-		bt_buf_simple_add_le16(&dfu_comp_data, shell_strtoul(argv[4 + i], 0, &err));
+		bt_buf_simple_add_le16(&dfu_comp_data, bt_shell_strtoul(argv[4 + i], 0, &err));
 	}
 
 	for (size_t i = 0; i < vnd_model_count; i++) {
 		size_t arg_i = 4 + sig_model_count + i * 2;
 
-		bt_buf_simple_add_le16(&dfu_comp_data, shell_strtoul(argv[arg_i], 0, &err));
-		bt_buf_simple_add_le16(&dfu_comp_data, shell_strtoul(argv[arg_i + 1], 0, &err));
+		bt_buf_simple_add_le16(&dfu_comp_data, bt_shell_strtoul(argv[arg_i], 0, &err));
+		bt_buf_simple_add_le16(&dfu_comp_data, bt_shell_strtoul(argv[arg_i + 1], 0, &err));
 	}
 
 	if (err) {
 		bt_buf_simple_restore(&dfu_comp_data, &state);
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_comp_hash_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_comp_hash_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t key[16] = {};
 	uint32_t hash;
 	int err;
 
 	if (dfu_comp_data.len < 14) {
-		shell_print(sh, "Composition data is not set");
+		bt_shell_print("Composition data is not set");
 		return -EINVAL;
 	}
 
@@ -253,30 +253,30 @@ static int cmd_dfu_comp_hash_get(const struct shell *sh, size_t argc, char *argv
 		hex2bin(argv[1], strlen(argv[1]), key, sizeof(key));
 	}
 
-	shell_print(sh, "Composition data to be hashed:");
-	shell_print(sh, "\tCID: 0x%04x", sys_get_le16(&dfu_comp_data.data[0]));
-	shell_print(sh, "\tPID: 0x%04x", sys_get_le16(&dfu_comp_data.data[2]));
-	shell_print(sh, "\tVID: 0x%04x", sys_get_le16(&dfu_comp_data.data[4]));
-	shell_print(sh, "\tCPRL: %u", sys_get_le16(&dfu_comp_data.data[6]));
-	shell_print(sh, "\tFeatures: 0x%x", sys_get_le16(&dfu_comp_data.data[8]));
+	bt_shell_print("Composition data to be hashed:");
+	bt_shell_print("\tCID: 0x%04x", sys_get_le16(&dfu_comp_data.data[0]));
+	bt_shell_print("\tPID: 0x%04x", sys_get_le16(&dfu_comp_data.data[2]));
+	bt_shell_print("\tVID: 0x%04x", sys_get_le16(&dfu_comp_data.data[4]));
+	bt_shell_print("\tCPRL: %u", sys_get_le16(&dfu_comp_data.data[6]));
+	bt_shell_print("\tFeatures: 0x%x", sys_get_le16(&dfu_comp_data.data[8]));
 
 	for (size_t i = 10; i < dfu_comp_data.len - 4;) {
 		uint8_t sig_model_count = dfu_comp_data.data[i + 2];
 		uint8_t vnd_model_count = dfu_comp_data.data[i + 3];
 
-		shell_print(sh, "\tElem: %u", sys_get_le16(&dfu_comp_data.data[i]));
-		shell_print(sh, "\t\tNumS: %u", sig_model_count);
-		shell_print(sh, "\t\tNumV: %u", vnd_model_count);
+		bt_shell_print("\tElem: %u", sys_get_le16(&dfu_comp_data.data[i]));
+		bt_shell_print("\t\tNumS: %u", sig_model_count);
+		bt_shell_print("\t\tNumV: %u", vnd_model_count);
 
 		for (size_t j = 0; j < sig_model_count; j++) {
-			shell_print(sh, "\t\tSIG Model ID: 0x%04x",
+			bt_shell_print("\t\tSIG Model ID: 0x%04x",
 				    sys_get_le16(&dfu_comp_data.data[i + 4 + j * 2]));
 		}
 
 		for (size_t j = 0; j < vnd_model_count; j++) {
 			size_t arg_i = i + 4 + sig_model_count * 2 + j * 4;
 
-			shell_print(sh, "\t\tVnd Company ID: 0x%04x, Model ID: 0x%04x",
+			bt_shell_print("\t\tVnd Company ID: 0x%04x, Model ID: 0x%04x",
 				    sys_get_le16(&dfu_comp_data.data[arg_i]),
 				    sys_get_le16(&dfu_comp_data.data[arg_i + 2]));
 		}
@@ -286,16 +286,16 @@ static int cmd_dfu_comp_hash_get(const struct shell *sh, size_t argc, char *argv
 
 	err = bt_mesh_dfu_metadata_comp_hash_get(&dfu_comp_data, key, &hash);
 	if (err) {
-		shell_print(sh, "Failed to compute composition data hash: %d\n", err);
+		bt_shell_print("Failed to compute composition data hash: %d\n", err);
 		return err;
 	}
 
-	shell_print(sh, "Composition data hash: 0x%04x", hash);
+	bt_shell_print("Composition data hash: 0x%04x", hash);
 
 	return 0;
 }
 
-static int cmd_dfu_metadata_encode(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_metadata_encode(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	char md_str[2 * CONFIG_BT_MESH_DFU_METADATA_MAXLEN + 1];
 	uint8_t user_data[CONFIG_BT_MESH_DFU_METADATA_MAXLEN - 18];
@@ -309,23 +309,23 @@ static int cmd_dfu_metadata_encode(const struct shell *sh, size_t argc, char *ar
 		return -EINVAL;
 	}
 
-	md.fw_ver.major = shell_strtoul(argv[1], 0, &err);
-	md.fw_ver.minor = shell_strtoul(argv[2], 0, &err);
-	md.fw_ver.revision = shell_strtoul(argv[3], 0, &err);
-	md.fw_ver.build_num = shell_strtoul(argv[4], 0, &err);
-	md.fw_size = shell_strtoul(argv[5], 0, &err);
-	md.fw_core_type = shell_strtoul(argv[6], 0, &err);
-	md.comp_hash = shell_strtoul(argv[7], 0, &err);
-	md.elems = shell_strtoul(argv[8], 0, &err);
+	md.fw_ver.major = bt_shell_strtoul(argv[1], 0, &err);
+	md.fw_ver.minor = bt_shell_strtoul(argv[2], 0, &err);
+	md.fw_ver.revision = bt_shell_strtoul(argv[3], 0, &err);
+	md.fw_ver.build_num = bt_shell_strtoul(argv[4], 0, &err);
+	md.fw_size = bt_shell_strtoul(argv[5], 0, &err);
+	md.fw_core_type = bt_shell_strtoul(argv[6], 0, &err);
+	md.comp_hash = bt_shell_strtoul(argv[7], 0, &err);
+	md.elems = bt_shell_strtoul(argv[8], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	if (argc > 9) {
 		if (sizeof(user_data) < strlen(argv[9]) / 2) {
-			shell_print(sh, "User data is too big.");
+			bt_shell_print("User data is too big.");
 			return -EINVAL;
 		}
 
@@ -335,29 +335,29 @@ static int cmd_dfu_metadata_encode(const struct shell *sh, size_t argc, char *ar
 		md.user_data_len = 0;
 	}
 
-	shell_print(sh, "Metadata to be encoded:");
-	shell_print(sh, "\tVersion: %u.%u.%u+%u", md.fw_ver.major, md.fw_ver.minor,
+	bt_shell_print("Metadata to be encoded:");
+	bt_shell_print("\tVersion: %u.%u.%u+%u", md.fw_ver.major, md.fw_ver.minor,
 		    md.fw_ver.revision, md.fw_ver.build_num);
-	shell_print(sh, "\tSize: %u", md.fw_size);
-	shell_print(sh, "\tCore Type: 0x%x", md.fw_core_type);
-	shell_print(sh, "\tComposition data hash: 0x%x", md.comp_hash);
-	shell_print(sh, "\tElements: %u", md.elems);
+	bt_shell_print("\tSize: %u", md.fw_size);
+	bt_shell_print("\tCore Type: 0x%x", md.fw_core_type);
+	bt_shell_print("\tComposition data hash: 0x%x", md.comp_hash);
+	bt_shell_print("\tElements: %u", md.elems);
 
 	if (argc > 9) {
-		shell_print(sh, "\tUser data: %s", argv[10]);
+		bt_shell_print("\tUser data: %s", argv[10]);
 	}
 
-	shell_print(sh, "\tUser data length: %u", md.user_data_len);
+	bt_shell_print("\tUser data length: %u", md.user_data_len);
 
 	err = bt_mesh_dfu_metadata_encode(&md, &buf);
 	if (err) {
-		shell_print(sh, "Failed to encode metadata: %d", err);
+		bt_shell_print("Failed to encode metadata: %d", err);
 		return err;
 	}
 
 	len = bin2hex(buf.data, buf.len, md_str, sizeof(md_str));
 	md_str[len] = '\0';
-	shell_print(sh, "Encoded metadata: %s", md_str);
+	bt_shell_print("Encoded metadata: %s", md_str);
 
 	return 0;
 }
@@ -366,7 +366,7 @@ static int cmd_dfu_metadata_encode(const struct shell *sh, size_t argc, char *ar
 
 #if defined(CONFIG_BT_MESH_SHELL_DFU_SLOT)
 
-static int cmd_dfu_slot_add(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_slot_add(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_dfu_slot *slot;
 	size_t size;
@@ -376,17 +376,17 @@ static int cmd_dfu_slot_add(const struct shell *sh, size_t argc, char *argv[])
 	size_t metadata_len = 0;
 	int err = 0;
 
-	size = shell_strtoul(argv[1], 0, &err);
+	size = bt_shell_strtoul(argv[1], 0, &err);
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
-	shell_print(sh, "Adding slot (size: %u)", size);
+	bt_shell_print("Adding slot (size: %u)", size);
 	slot = bt_mesh_dfu_slot_reserve();
 
 	if (!slot) {
-		shell_print(sh, "Failed to reserve slot.");
+		bt_shell_print("Failed to reserve slot.");
 		return 0;
 	}
 
@@ -403,53 +403,53 @@ static int cmd_dfu_slot_add(const struct shell *sh, size_t argc, char *argv[])
 
 	err = bt_mesh_dfu_slot_commit(slot);
 	if (err) {
-		shell_print(sh, "Failed to commit slot: %d", err);
+		bt_shell_print("Failed to commit slot: %d", err);
 		bt_mesh_dfu_slot_release(slot);
 		return err;
 	}
 
-	shell_print(sh, "Slot added. Index: %u", bt_mesh_dfu_slot_img_idx_get(slot));
+	bt_shell_print("Slot added. Index: %u", bt_mesh_dfu_slot_img_idx_get(slot));
 
 	return 0;
 }
 
-static int cmd_dfu_slot_del(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_slot_del(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	const struct bt_mesh_dfu_slot *slot;
 	uint8_t idx;
 	int err = 0;
 
-	idx = shell_strtoul(argv[1], 0, &err);
+	idx = bt_shell_strtoul(argv[1], 0, &err);
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	slot = bt_mesh_dfu_slot_at(idx);
 	if (!slot) {
-		shell_print(sh, "No slot at %u", idx);
+		bt_shell_print("No slot at %u", idx);
 		return 0;
 	}
 
 	err = bt_mesh_dfu_slot_del(slot);
 	if (err) {
-		shell_print(sh, "Failed deleting slot %u (err: %d)", idx,
+		bt_shell_print("Failed deleting slot %u (err: %d)", idx,
 			    err);
 		return 0;
 	}
 
-	shell_print(sh, "Slot %u deleted.", idx);
+	bt_shell_print("Slot %u deleted.", idx);
 	return 0;
 }
 
-static int cmd_dfu_slot_del_all(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_slot_del_all(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	bt_mesh_dfu_slot_del_all();
-	shell_print(sh, "All slots deleted.");
+	bt_shell_print("All slots deleted.");
 	return 0;
 }
 
-static void slot_info_print(const struct shell *sh, const struct bt_mesh_dfu_slot *slot,
+static void slot_info_print(const struct bt_shell *sh, const struct bt_mesh_dfu_slot *slot,
 			    const uint8_t *idx)
 {
 	char fwid[2 * CONFIG_BT_MESH_DFU_FWID_MAXLEN + 1];
@@ -463,30 +463,30 @@ static void slot_info_print(const struct shell *sh, const struct bt_mesh_dfu_slo
 	metadata[len] = '\0';
 
 	if (idx != NULL) {
-		shell_print(sh, "Slot %u:", *idx);
+		bt_shell_print("Slot %u:", *idx);
 	} else {
-		shell_print(sh, "Slot:");
+		bt_shell_print("Slot:");
 	}
-	shell_print(sh, "\tSize:     %u bytes", slot->size);
-	shell_print(sh, "\tFWID:     %s", fwid);
-	shell_print(sh, "\tMetadata: %s", metadata);
+	bt_shell_print("\tSize:     %u bytes", slot->size);
+	bt_shell_print("\tFWID:     %s", fwid);
+	bt_shell_print("\tMetadata: %s", metadata);
 }
 
-static int cmd_dfu_slot_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_slot_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	const struct bt_mesh_dfu_slot *slot;
 	uint8_t idx;
 	int err = 0;
 
-	idx = shell_strtoul(argv[1], 0, &err);
+	idx = bt_shell_strtoul(argv[1], 0, &err);
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	slot = bt_mesh_dfu_slot_at(idx);
 	if (!slot) {
-		shell_print(sh, "No slot at %u", idx);
+		bt_shell_print("No slot at %u", idx);
 		return 0;
 	}
 
@@ -524,28 +524,28 @@ static void dfu_tx_prepare(void)
 	}
 }
 
-static int cmd_dfu_target(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_target(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t img_idx;
 	uint16_t addr;
 	int err = 0;
 
-	addr = shell_strtoul(argv[1], 0, &err);
-	img_idx = shell_strtoul(argv[2], 0, &err);
+	addr = bt_shell_strtoul(argv[1], 0, &err);
+	img_idx = bt_shell_strtoul(argv[2], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	if (dfu_tx.target_cnt == ARRAY_SIZE(dfu_tx.targets)) {
-		shell_print(sh, "No room.");
+		bt_shell_print("No room.");
 		return 0;
 	}
 
 	for (size_t i = 0; i < dfu_tx.target_cnt; i++) {
 		if (dfu_tx.targets[i].blob.addr == addr) {
-			shell_print(sh, "Target 0x%04x already exists", addr);
+			bt_shell_print("Target 0x%04x already exists", addr);
 			return 0;
 		}
 	}
@@ -555,17 +555,17 @@ static int cmd_dfu_target(const struct shell *sh, size_t argc, char *argv[])
 	bt_slist_append(&dfu_tx.inputs.targets, &dfu_tx.targets[dfu_tx.target_cnt].blob.n);
 	dfu_tx.target_cnt++;
 
-	shell_print(sh, "Added target 0x%04x", addr);
+	bt_shell_print("Added target 0x%04x", addr);
 	return 0;
 }
 
-static int cmd_dfu_targets_reset(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_targets_reset(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	dfu_tx_prepare();
 	return 0;
 }
 
-static int cmd_dfu_target_state(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_target_state(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_dfu_target_status rsp;
 	struct bt_mesh_msg_ctx ctx = {
@@ -583,19 +583,19 @@ static int cmd_dfu_target_state(const struct shell *sh, size_t argc, char *argv[
 	err = bt_mesh_dfu_cli_status_get((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data,
 					 &ctx, &rsp);
 	if (err) {
-		shell_print(sh, "Failed getting target status (err: %d)",
+		bt_shell_print("Failed getting target status (err: %d)",
 			    err);
 		return 0;
 	}
 
-	shell_print(sh, "Target 0x%04x:", bt_mesh_shell_target_ctx.dst);
-	shell_print(sh, "\tStatus:     %u", rsp.status);
-	shell_print(sh, "\tPhase:      %u", rsp.phase);
+	bt_shell_print("Target 0x%04x:", bt_mesh_shell_target_ctx.dst);
+	bt_shell_print("\tStatus:     %u", rsp.status);
+	bt_shell_print("\tPhase:      %u", rsp.phase);
 	if (rsp.phase != BT_MESH_DFU_PHASE_IDLE) {
-		shell_print(sh, "\tEffect:       %u", rsp.effect);
-		shell_print(sh, "\tImg Idx:      %u", rsp.img_idx);
-		shell_print(sh, "\tTTL:          %u", rsp.ttl);
-		shell_print(sh, "\tTimeout base: %u", rsp.timeout_base);
+		bt_shell_print("\tEffect:       %u", rsp.effect);
+		bt_shell_print("\tImg Idx:      %u", rsp.img_idx);
+		bt_shell_print("\tTTL:          %u", rsp.ttl);
+		bt_shell_print("\tTimeout base: %u", rsp.timeout_base);
 	}
 
 	return 0;
@@ -622,7 +622,7 @@ static enum bt_mesh_dfu_iter dfu_img_cb(struct bt_mesh_dfu_cli *cli,
 	return BT_MESH_DFU_ITER_CONTINUE;
 }
 
-static int cmd_dfu_target_imgs(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_target_imgs(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_msg_ctx ctx = {
 		.send_ttl = BT_MESH_TTL_DEFAULT,
@@ -638,25 +638,25 @@ static int cmd_dfu_target_imgs(const struct shell *sh, size_t argc, char *argv[]
 	}
 
 	if (argc == 2) {
-		img_cnt = shell_strtoul(argv[1], 0, &err);
+		img_cnt = bt_shell_strtoul(argv[1], 0, &err);
 		if (err) {
-			shell_warn(sh, "Unable to parse input string argument");
+			bt_shell_warn("Unable to parse input string argument");
 			return err;
 		}
 	}
 
-	shell_print(sh, "Requesting DFU images in 0x%04x", bt_mesh_shell_target_ctx.dst);
+	bt_shell_print("Requesting DFU images in 0x%04x", bt_mesh_shell_target_ctx.dst);
 
 	err = bt_mesh_dfu_cli_imgs_get((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data,
 				       &ctx, dfu_img_cb, NULL, img_cnt);
 	if (err) {
-		shell_print(sh, "Request failed (err: %d)", err);
+		bt_shell_print("Request failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_target_check(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_target_check(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_dfu_metadata_status rsp;
 	const struct bt_mesh_dfu_slot *slot;
@@ -673,36 +673,36 @@ static int cmd_dfu_target_check(const struct shell *sh, size_t argc, char *argv[
 		return -ENODEV;
 	}
 
-	slot_idx = shell_strtoul(argv[1], 0, &err);
-	img_idx = shell_strtoul(argv[2], 0, &err);
+	slot_idx = bt_shell_strtoul(argv[1], 0, &err);
+	img_idx = bt_shell_strtoul(argv[2], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	slot = bt_mesh_dfu_slot_at(slot_idx);
 	if (!slot) {
-		shell_print(sh, "No image in slot %u", slot_idx);
+		bt_shell_print("No image in slot %u", slot_idx);
 		return 0;
 	}
 
 	err = bt_mesh_dfu_cli_metadata_check((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data,
 					     &ctx, img_idx, slot, &rsp);
 	if (err) {
-		shell_print(sh, "Metadata check failed. err: %d", err);
+		bt_shell_print("Metadata check failed. err: %d", err);
 		return 0;
 	}
 
-	shell_print(sh, "Slot %u check for 0x%04x image %u:", slot_idx,
+	bt_shell_print("Slot %u check for 0x%04x image %u:", slot_idx,
 		    bt_mesh_shell_target_ctx.dst, img_idx);
-	shell_print(sh, "\tStatus: %u", rsp.status);
-	shell_print(sh, "\tEffect: 0x%x", rsp.effect);
+	bt_shell_print("\tStatus: %u", rsp.status);
+	bt_shell_print("\tEffect: 0x%x", rsp.effect);
 
 	return 0;
 }
 
-static int cmd_dfu_send(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_send(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_dfu_cli_xfer_blob_params blob_params;
 	struct bt_mesh_dfu_cli_xfer xfer = { 0 };
@@ -714,44 +714,44 @@ static int cmd_dfu_send(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	slot_idx = shell_strtoul(argv[1], 0, &err);
+	slot_idx = bt_shell_strtoul(argv[1], 0, &err);
 	if (argc > 2) {
-		group = shell_strtoul(argv[2], 0, &err);
+		group = bt_shell_strtoul(argv[2], 0, &err);
 	} else {
 		group = BT_MESH_ADDR_UNASSIGNED;
 	}
 
 	if (argc > 3) {
-		xfer.mode = shell_strtoul(argv[3], 0, &err);
+		xfer.mode = bt_shell_strtoul(argv[3], 0, &err);
 	} else {
 		xfer.mode = BT_MESH_BLOB_XFER_MODE_PUSH;
 	}
 
 	if (argc > 5) {
-		blob_params.block_size_log = shell_strtoul(argv[4], 0, &err);
-		blob_params.chunk_size = shell_strtoul(argv[5], 0, &err);
+		blob_params.block_size_log = bt_shell_strtoul(argv[4], 0, &err);
+		blob_params.chunk_size = bt_shell_strtoul(argv[5], 0, &err);
 		xfer.blob_params = &blob_params;
 	} else {
 		xfer.blob_params = NULL;
 	}
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	if (!dfu_tx.target_cnt) {
-		shell_print(sh, "No targets.");
+		bt_shell_print("No targets.");
 		return 0;
 	}
 
 	xfer.slot = bt_mesh_dfu_slot_at(slot_idx);
 	if (!xfer.slot) {
-		shell_print(sh, "No image in slot %u", slot_idx);
+		bt_shell_print("No image in slot %u", slot_idx);
 		return 0;
 	}
 
-	shell_print(sh, "Starting DFU from slot %u (%u targets)", slot_idx,
+	bt_shell_print("Starting DFU from slot %u (%u targets)", slot_idx,
 		    dfu_tx.target_cnt);
 
 	dfu_tx.inputs.group = group;
@@ -761,13 +761,13 @@ static int cmd_dfu_send(const struct shell *sh, size_t argc, char *argv[])
 	err = bt_mesh_dfu_cli_send((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data,
 				   &dfu_tx.inputs, bt_mesh_shell_blob_io, &xfer);
 	if (err) {
-		shell_print(sh, "Failed (err: %d)", err);
+		bt_shell_print("Failed (err: %d)", err);
 		return 0;
 	}
 	return 0;
 }
 
-static int cmd_dfu_tx_cancel(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_tx_cancel(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_msg_ctx ctx = {
 		.send_ttl = BT_MESH_TTL_DEFAULT,
@@ -782,27 +782,27 @@ static int cmd_dfu_tx_cancel(const struct shell *sh, size_t argc, char *argv[])
 	}
 
 	if (argc == 2) {
-		ctx.addr = shell_strtoul(argv[1], 0, &err);
+		ctx.addr = bt_shell_strtoul(argv[1], 0, &err);
 		if (err) {
-			shell_warn(sh, "Unable to parse input string argument");
+			bt_shell_warn("Unable to parse input string argument");
 			return err;
 		}
 
-		shell_print(sh, "Cancelling DFU for 0x%04x", ctx.addr);
+		bt_shell_print("Cancelling DFU for 0x%04x", ctx.addr);
 	} else {
-		shell_print(sh, "Cancelling DFU");
+		bt_shell_print("Cancelling DFU");
 	}
 
 	err = bt_mesh_dfu_cli_cancel((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data,
 				     (argc == 2) ? &ctx : NULL);
 	if (err) {
-		shell_print(sh, "Failed (err: %d)", err);
+		bt_shell_print("Failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_apply(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_apply(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err;
 
@@ -810,17 +810,17 @@ static int cmd_dfu_apply(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Applying DFU");
+	bt_shell_print("Applying DFU");
 
 	err = bt_mesh_dfu_cli_apply((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data);
 	if (err) {
-		shell_print(sh, "Failed (err: %d)", err);
+		bt_shell_print("Failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_confirm(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_confirm(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err;
 
@@ -828,17 +828,17 @@ static int cmd_dfu_confirm(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Confirming DFU");
+	bt_shell_print("Confirming DFU");
 
 	err = bt_mesh_dfu_cli_confirm((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data);
 	if (err) {
-		shell_print(sh, "Failed (err: %d)", err);
+		bt_shell_print("Failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_suspend(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_suspend(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err;
 
@@ -846,17 +846,17 @@ static int cmd_dfu_suspend(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Suspending DFU");
+	bt_shell_print("Suspending DFU");
 
 	err = bt_mesh_dfu_cli_suspend((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data);
 	if (err) {
-		shell_print(sh, "Failed (err: %d)", err);
+		bt_shell_print("Failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_resume(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_resume(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err;
 
@@ -864,23 +864,23 @@ static int cmd_dfu_resume(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Resuming DFU");
+	bt_shell_print("Resuming DFU");
 
 	err = bt_mesh_dfu_cli_resume((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data);
 	if (err) {
-		shell_print(sh, "Failed (err: %d)", err);
+		bt_shell_print("Failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_dfu_tx_progress(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_tx_progress(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod_cli && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFU_CLI, &mod_cli)) {
 		return -ENODEV;
 	}
 
-	shell_print(sh, "DFU progress: %u %%",
+	bt_shell_print("DFU progress: %u %%",
 		    bt_mesh_dfu_cli_progress((struct bt_mesh_dfu_cli *)mod_cli->rt->user_data));
 	return 0;
 }
@@ -891,7 +891,7 @@ static int cmd_dfu_tx_progress(const struct shell *sh, size_t argc, char *argv[]
 
 static const struct bt_mesh_model *mod_srv;
 
-static int cmd_dfu_applied(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_applied(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod_srv && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFU_SRV, &mod_srv)) {
 		return -ENODEV;
@@ -901,7 +901,7 @@ static int cmd_dfu_applied(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfu_rx_cancel(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_rx_cancel(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod_srv && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFU_SRV, &mod_srv)) {
 		return -ENODEV;
@@ -911,13 +911,13 @@ static int cmd_dfu_rx_cancel(const struct shell *sh, size_t argc, char *argv[])
 	return 0;
 }
 
-static int cmd_dfu_rx_progress(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_dfu_rx_progress(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod_srv && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_DFU_SRV, &mod_srv)) {
 		return -ENODEV;
 	}
 
-	shell_print(sh, "DFU progress: %u %%",
+	bt_shell_print("DFU progress: %u %%",
 		    bt_mesh_dfu_srv_progress((struct bt_mesh_dfu_srv *)mod_srv->rt->user_data));
 	return 0;
 }
@@ -933,82 +933,82 @@ BT_MESH_SHELL_MDL_INSTANCE_CMDS(srv_instance_cmds, BT_MESH_MODEL_ID_DFU_SRV, mod
 #endif
 
 #if defined(CONFIG_BT_MESH_SHELL_DFU_METADATA)
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	dfu_metadata_cmds,
-	SHELL_CMD_ARG(comp-clear, NULL, NULL, cmd_dfu_comp_clear, 1, 0),
-	SHELL_CMD_ARG(comp-add, NULL, "<CID> <ProductID> <VendorID> <Crpl> <Features>",
+	BT_SHELL_CMD_ARG(comp-clear, NULL, NULL, cmd_dfu_comp_clear, 1, 0),
+	BT_SHELL_CMD_ARG(comp-add, NULL, "<CID> <ProductID> <VendorID> <Crpl> <Features>",
 		      cmd_dfu_comp_add, 6, 0),
-	SHELL_CMD_ARG(comp-elem-add, NULL, "<Loc> <NumS> <NumV> "
+	BT_SHELL_CMD_ARG(comp-elem-add, NULL, "<Loc> <NumS> <NumV> "
 		      "{<SigMID>|<VndCID> <VndMID>}...",
 		      cmd_dfu_comp_elem_add, 5, 10),
-	SHELL_CMD_ARG(comp-hash-get, NULL, "[<Key>]", cmd_dfu_comp_hash_get, 1, 1),
-	SHELL_CMD_ARG(encode, NULL, "<Major> <Minor> <Rev> <BuildNum> <Size> "
+	BT_SHELL_CMD_ARG(comp-hash-get, NULL, "[<Key>]", cmd_dfu_comp_hash_get, 1, 1),
+	BT_SHELL_CMD_ARG(encode, NULL, "<Major> <Minor> <Rev> <BuildNum> <Size> "
 		      "<CoreType> <Hash> <Elems> [<UserData>]",
 		      cmd_dfu_metadata_encode, 9, 1),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 #endif
 
 #if defined(CONFIG_BT_MESH_SHELL_DFU_SLOT)
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	dfu_slot_cmds,
-	SHELL_CMD_ARG(add, NULL,
+	BT_SHELL_CMD_ARG(add, NULL,
 		      "<Size> <FwID> [<Metadata>]",
 		      cmd_dfu_slot_add, 3, 1),
-	SHELL_CMD_ARG(del, NULL, "<SlotIdx>", cmd_dfu_slot_del, 2, 0),
-	SHELL_CMD_ARG(del-all, NULL, NULL, cmd_dfu_slot_del_all, 1, 0),
-	SHELL_CMD_ARG(get, NULL, "<SlotIdx>", cmd_dfu_slot_get, 2, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(del, NULL, "<SlotIdx>", cmd_dfu_slot_del, 2, 0),
+	BT_SHELL_CMD_ARG(del-all, NULL, NULL, cmd_dfu_slot_del_all, 1, 0),
+	BT_SHELL_CMD_ARG(get, NULL, "<SlotIdx>", cmd_dfu_slot_get, 2, 0),
+	BT_SHELL_SUBCMD_SET_END);
 #endif
 
 #if defined(CONFIG_BT_MESH_SHELL_DFU_CLI)
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	dfu_cli_cmds,
 	/* DFU Client Model Operations */
-	SHELL_CMD_ARG(target, NULL, "<Addr> <ImgIdx>", cmd_dfu_target, 3,
+	BT_SHELL_CMD_ARG(target, NULL, "<Addr> <ImgIdx>", cmd_dfu_target, 3,
 		      0),
-	SHELL_CMD_ARG(targets-reset, NULL, NULL, cmd_dfu_targets_reset, 1, 0),
-	SHELL_CMD_ARG(target-state, NULL, NULL, cmd_dfu_target_state, 1, 0),
-	SHELL_CMD_ARG(target-imgs, NULL, "[<MaxCount>]",
+	BT_SHELL_CMD_ARG(targets-reset, NULL, NULL, cmd_dfu_targets_reset, 1, 0),
+	BT_SHELL_CMD_ARG(target-state, NULL, NULL, cmd_dfu_target_state, 1, 0),
+	BT_SHELL_CMD_ARG(target-imgs, NULL, "[<MaxCount>]",
 		      cmd_dfu_target_imgs, 1, 1),
-	SHELL_CMD_ARG(target-check, NULL, "<SlotIdx> <TargetImgIdx>",
+	BT_SHELL_CMD_ARG(target-check, NULL, "<SlotIdx> <TargetImgIdx>",
 		      cmd_dfu_target_check, 3, 0),
-	SHELL_CMD_ARG(send, NULL, "<SlotIdx>  [<Group> "
+	BT_SHELL_CMD_ARG(send, NULL, "<SlotIdx>  [<Group> "
 		      "[<Mode(push, pull)> [<BlockSizeLog> <ChunkSize>]]]", cmd_dfu_send, 2, 4),
-	SHELL_CMD_ARG(cancel, NULL, "[<Addr>]", cmd_dfu_tx_cancel, 1, 1),
-	SHELL_CMD_ARG(apply, NULL, NULL, cmd_dfu_apply, 0, 0),
-	SHELL_CMD_ARG(confirm, NULL, NULL, cmd_dfu_confirm, 0, 0),
-	SHELL_CMD_ARG(suspend, NULL, NULL, cmd_dfu_suspend, 0, 0),
-	SHELL_CMD_ARG(resume, NULL, NULL, cmd_dfu_resume, 0, 0),
-	SHELL_CMD_ARG(progress, NULL, NULL, cmd_dfu_tx_progress, 1, 0),
-	SHELL_CMD(instance, &cli_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(cancel, NULL, "[<Addr>]", cmd_dfu_tx_cancel, 1, 1),
+	BT_SHELL_CMD_ARG(apply, NULL, NULL, cmd_dfu_apply, 0, 0),
+	BT_SHELL_CMD_ARG(confirm, NULL, NULL, cmd_dfu_confirm, 0, 0),
+	BT_SHELL_CMD_ARG(suspend, NULL, NULL, cmd_dfu_suspend, 0, 0),
+	BT_SHELL_CMD_ARG(resume, NULL, NULL, cmd_dfu_resume, 0, 0),
+	BT_SHELL_CMD_ARG(progress, NULL, NULL, cmd_dfu_tx_progress, 1, 0),
+	BT_SHELL_CMD(instance, &cli_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_SUBCMD_SET_END);
 #endif
 
 #if defined(CONFIG_BT_MESH_SHELL_DFU_SRV)
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	dfu_srv_cmds,
-	SHELL_CMD_ARG(applied, NULL, NULL, cmd_dfu_applied, 1, 0),
-	SHELL_CMD_ARG(rx-cancel, NULL, NULL, cmd_dfu_rx_cancel, 1, 0),
-	SHELL_CMD_ARG(progress, NULL, NULL, cmd_dfu_rx_progress, 1, 0),
-	SHELL_CMD(instance, &srv_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(applied, NULL, NULL, cmd_dfu_applied, 1, 0),
+	BT_SHELL_CMD_ARG(rx-cancel, NULL, NULL, cmd_dfu_rx_cancel, 1, 0),
+	BT_SHELL_CMD_ARG(progress, NULL, NULL, cmd_dfu_rx_progress, 1, 0),
+	BT_SHELL_CMD(instance, &srv_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_SUBCMD_SET_END);
 #endif
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	dfu_cmds,
 #if defined(CONFIG_BT_MESH_SHELL_DFU_METADATA)
-	SHELL_CMD(metadata, &dfu_metadata_cmds, "Metadata commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_CMD(metadata, &dfu_metadata_cmds, "Metadata commands", bt_mesh_shell_mdl_cmds_help),
 #endif
 #if defined(CONFIG_BT_MESH_SHELL_DFU_SLOT)
-	SHELL_CMD(slot, &dfu_slot_cmds, "Slot commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_CMD(slot, &dfu_slot_cmds, "Slot commands", bt_mesh_shell_mdl_cmds_help),
 #endif
 #if defined(CONFIG_BT_MESH_SHELL_DFU_CLI)
-	SHELL_CMD(cli, &dfu_cli_cmds, "DFU Cli commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_CMD(cli, &dfu_cli_cmds, "DFU Cli commands", bt_mesh_shell_mdl_cmds_help),
 #endif
 #if defined(CONFIG_BT_MESH_SHELL_DFU_SRV)
-	SHELL_CMD(srv, &dfu_srv_cmds, "DFU Srv commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_CMD(srv, &dfu_srv_cmds, "DFU Srv commands", bt_mesh_shell_mdl_cmds_help),
 #endif
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
 SHELL_SUBCMD_ADD((mesh, models), dfu, &dfu_cmds, "DFU models commands",
 		 bt_mesh_shell_mdl_cmds_help, 1, 1);

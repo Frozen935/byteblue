@@ -223,7 +223,7 @@ void bt_mesh_shell_blob_cmds_init(void)
 
 static struct bt_mesh_blob_io_flash blob_flash_stream;
 
-static int cmd_flash_stream_set(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_flash_stream_set(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint8_t area_id;
 	uint32_t offset = 0;
@@ -233,30 +233,30 @@ static int cmd_flash_stream_set(const struct shell *sh, size_t argc, char *argv[
 		return -EINVAL;
 	}
 
-	area_id = shell_strtoul(argv[1], 0, &err);
+	area_id = bt_shell_strtoul(argv[1], 0, &err);
 
 	if (argc >= 3) {
-		offset = shell_strtoul(argv[2], 0, &err);
+		offset = bt_shell_strtoul(argv[2], 0, &err);
 	}
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	err = bt_mesh_blob_io_flash_init(&blob_flash_stream, area_id, offset);
 	if (err) {
-		shell_error(sh, "Failed to init BLOB IO Flash module: %d\n", err);
+		bt_shell_error("Failed to init BLOB IO Flash module: %d\n", err);
 	}
 
 	bt_mesh_shell_blob_io = &blob_flash_stream.io;
 
-	shell_print(sh, "Flash stream is initialized with area %u, offset: %u", area_id, offset);
+	bt_shell_print("Flash stream is initialized with area %u, offset: %u", area_id, offset);
 
 	return 0;
 }
 
-static int cmd_flash_stream_unset(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_flash_stream_unset(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	bt_mesh_shell_blob_io = &dummy_blob_io;
 	return 0;
@@ -291,7 +291,7 @@ static void blob_cli_inputs_prepare(uint16_t group)
 	}
 }
 
-static int cmd_tx(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tx(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint16_t group;
 	int err = 0;
@@ -300,13 +300,13 @@ static int cmd_tx(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	blob_cli_xfer.xfer.id = shell_strtoul(argv[1], 0, &err);
-	blob_cli_xfer.xfer.size = shell_strtoul(argv[2], 0, &err);
-	blob_cli_xfer.xfer.block_size_log = shell_strtoul(argv[3], 0, &err);
-	blob_cli_xfer.xfer.chunk_size = shell_strtoul(argv[4], 0, &err);
+	blob_cli_xfer.xfer.id = bt_shell_strtoul(argv[1], 0, &err);
+	blob_cli_xfer.xfer.size = bt_shell_strtoul(argv[2], 0, &err);
+	blob_cli_xfer.xfer.block_size_log = bt_shell_strtoul(argv[3], 0, &err);
+	blob_cli_xfer.xfer.chunk_size = bt_shell_strtoul(argv[4], 0, &err);
 
 	if (argc >= 6) {
-		group = shell_strtoul(argv[5], 0, &err);
+		group = bt_shell_strtoul(argv[5], 0, &err);
 	} else {
 		group = BT_MESH_ADDR_UNASSIGNED;
 	}
@@ -316,29 +316,29 @@ static int cmd_tx(const struct shell *sh, size_t argc, char *argv[])
 	} else if (!strcmp(argv[6], "pull")) {
 		blob_cli_xfer.xfer.mode = BT_MESH_BLOB_XFER_MODE_PULL;
 	} else {
-		shell_print(sh, "Mode must be either push or pull");
+		bt_shell_print("Mode must be either push or pull");
 		return -EINVAL;
 	}
 
 	if (argc >= 8) {
-		blob_cli_xfer.inputs.timeout_base = shell_strtoul(argv[7], 0, &err);
+		blob_cli_xfer.inputs.timeout_base = bt_shell_strtoul(argv[7], 0, &err);
 	} else {
 		blob_cli_xfer.inputs.timeout_base = 0;
 	}
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	if (!blob_cli_xfer.target_count) {
-		shell_print(sh, "Failed: No targets");
+		bt_shell_print("Failed: No targets");
 		return 0;
 	}
 
 	blob_cli_inputs_prepare(group);
 
-	shell_print(sh,
+	bt_shell_print(
 		    "Sending transfer 0x%x (mode: %s, %u bytes) to 0x%04x",
 		    (uint32_t)blob_cli_xfer.xfer.id,
 		    blob_cli_xfer.xfer.mode == BT_MESH_BLOB_XFER_MODE_PUSH ?
@@ -350,38 +350,38 @@ static int cmd_tx(const struct shell *sh, size_t argc, char *argv[])
 				    &blob_cli_xfer.inputs,
 				    &blob_cli_xfer.xfer, bt_mesh_shell_blob_io);
 	if (err) {
-		shell_print(sh, "BLOB transfer TX failed (err: %d)", err);
+		bt_shell_print("BLOB transfer TX failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_target(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_target(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	struct bt_mesh_blob_target *t;
 	int err = 0;
 
 	if (blob_cli_xfer.target_count ==
 	    ARRAY_SIZE(blob_cli_xfer.targets)) {
-		shell_print(sh, "No more room");
+		bt_shell_print("No more room");
 		return 0;
 	}
 
 	t = &blob_cli_xfer.targets[blob_cli_xfer.target_count];
-	t->addr = shell_strtoul(argv[1], 0, &err);
+	t->addr = bt_shell_strtoul(argv[1], 0, &err);
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
-	shell_print(sh, "Added target 0x%04x", t->addr);
+	bt_shell_print("Added target 0x%04x", t->addr);
 
 	blob_cli_xfer.target_count++;
 	return 0;
 }
 
-static int cmd_caps(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_caps(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint16_t group;
 	int err = 0;
@@ -390,27 +390,27 @@ static int cmd_caps(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Retrieving transfer capabilities...");
+	bt_shell_print("Retrieving transfer capabilities...");
 
 	if (argc > 1) {
-		group = shell_strtoul(argv[1], 0, &err);
+		group = bt_shell_strtoul(argv[1], 0, &err);
 	} else {
 		group = BT_MESH_ADDR_UNASSIGNED;
 	}
 
 	if (argc > 2) {
-		blob_cli_xfer.inputs.timeout_base = shell_strtoul(argv[2], 0, &err);
+		blob_cli_xfer.inputs.timeout_base = bt_shell_strtoul(argv[2], 0, &err);
 	} else {
 		blob_cli_xfer.inputs.timeout_base = 0;
 	}
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
 	if (!blob_cli_xfer.target_count) {
-		shell_print(sh, "Failed: No targets");
+		bt_shell_print("Failed: No targets");
 		return 0;
 	}
 
@@ -419,26 +419,26 @@ static int cmd_caps(const struct shell *sh, size_t argc, char *argv[])
 	err = bt_mesh_blob_cli_caps_get((struct bt_mesh_blob_cli *)mod_cli->rt->user_data,
 					&blob_cli_xfer.inputs);
 	if (err) {
-		shell_print(sh, "Boundary check start failed (err: %d)", err);
+		bt_shell_print("Boundary check start failed (err: %d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_tx_cancel(const struct shell *sh, size_t argc,
+static int cmd_tx_cancel(const struct bt_shell *sh, size_t argc,
 			      char *argv[])
 {
 	if (!mod_cli && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_BLOB_CLI, &mod_cli)) {
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Cancelling transfer");
+	bt_shell_print("Cancelling transfer");
 	bt_mesh_blob_cli_cancel((struct bt_mesh_blob_cli *)mod_cli->rt->user_data);
 
 	return 0;
 }
 
-static int cmd_tx_get(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tx_get(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint16_t group;
 	int err;
@@ -448,13 +448,13 @@ static int cmd_tx_get(const struct shell *sh, size_t argc, char *argv[])
 	}
 
 	if (argc > 1) {
-		group = shell_strtoul(argv[1], 0, &err);
+		group = bt_shell_strtoul(argv[1], 0, &err);
 	} else {
 		group = BT_MESH_ADDR_UNASSIGNED;
 	}
 
 	if (!blob_cli_xfer.target_count) {
-		shell_print(sh, "Failed: No targets");
+		bt_shell_print("Failed: No targets");
 		return -EINVAL;
 	}
 
@@ -463,32 +463,32 @@ static int cmd_tx_get(const struct shell *sh, size_t argc, char *argv[])
 	err = bt_mesh_blob_cli_xfer_progress_get((struct bt_mesh_blob_cli *)mod_cli->rt->user_data,
 						 &blob_cli_xfer.inputs);
 	if (err) {
-		shell_print(sh, "ERR %d", err);
+		bt_shell_print("ERR %d", err);
 		return err;
 	}
 	return 0;
 }
 
-static int cmd_tx_suspend(const struct shell *sh, size_t argc,
+static int cmd_tx_suspend(const struct bt_shell *sh, size_t argc,
 			       char *argv[])
 {
 	if (!mod_cli && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_BLOB_CLI, &mod_cli)) {
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Suspending transfer");
+	bt_shell_print("Suspending transfer");
 	bt_mesh_blob_cli_suspend((struct bt_mesh_blob_cli *)mod_cli->rt->user_data);
 
 	return 0;
 }
 
-static int cmd_tx_resume(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_tx_resume(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!mod_cli && !bt_mesh_shell_mdl_first_get(BT_MESH_MODEL_ID_BLOB_CLI, &mod_cli)) {
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Resuming transfer");
+	bt_shell_print("Resuming transfer");
 	bt_mesh_blob_cli_resume((struct bt_mesh_blob_cli *)mod_cli->rt->user_data);
 
 	return 0;
@@ -500,7 +500,7 @@ static int cmd_tx_resume(const struct shell *sh, size_t argc, char *argv[])
 
 static const struct bt_mesh_model *mod_srv;
 
-static int cmd_rx(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_rx(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	uint16_t timeout_base;
 	uint32_t id;
@@ -510,31 +510,31 @@ static int cmd_rx(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	id = shell_strtoul(argv[1], 0, &err);
+	id = bt_shell_strtoul(argv[1], 0, &err);
 	blob_rx_sum = 0;
 
 	if (argc > 2) {
-		timeout_base = shell_strtoul(argv[2], 0, &err);
+		timeout_base = bt_shell_strtoul(argv[2], 0, &err);
 	} else {
 		timeout_base = 0U;
 	}
 
 	if (err) {
-		shell_warn(sh, "Unable to parse input string argument");
+		bt_shell_warn("Unable to parse input string argument");
 		return err;
 	}
 
-	shell_print(sh, "Receive BLOB 0x%x", id);
+	bt_shell_print("Receive BLOB 0x%x", id);
 	err = bt_mesh_blob_srv_recv((struct bt_mesh_blob_srv *)mod_srv->rt->user_data,
 				    id, bt_mesh_shell_blob_io, BT_MESH_TTL_MAX, timeout_base);
 	if (err) {
-		shell_print(sh, "BLOB RX setup failed (%d)", err);
+		bt_shell_print("BLOB RX setup failed (%d)", err);
 	}
 
 	return 0;
 }
 
-static int cmd_rx_cancel(const struct shell *sh, size_t argc, char *argv[])
+static int cmd_rx_cancel(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	int err;
 
@@ -542,10 +542,10 @@ static int cmd_rx_cancel(const struct shell *sh, size_t argc, char *argv[])
 		return -ENODEV;
 	}
 
-	shell_print(sh, "Cancelling BLOB rx");
+	bt_shell_print("Cancelling BLOB rx");
 	err = bt_mesh_blob_srv_cancel((struct bt_mesh_blob_srv *)mod_srv->rt->user_data);
 	if (err) {
-		shell_print(sh, "BLOB cancel failed (%d)", err);
+		bt_shell_print("BLOB cancel failed (%d)", err);
 	}
 
 	return 0;
@@ -561,46 +561,46 @@ BT_MESH_SHELL_MDL_INSTANCE_CMDS(srv_instance_cmds, BT_MESH_MODEL_ID_BLOB_SRV, mo
 #endif
 
 #if defined(CONFIG_BT_MESH_SHELL_BLOB_CLI)
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	blob_cli_cmds,
 	/* BLOB Client Model Operations */
-	SHELL_CMD_ARG(target, NULL, "<Addr>", cmd_target, 2, 0),
-	SHELL_CMD_ARG(caps, NULL, "[<Group> [<TimeoutBase>]]", cmd_caps, 1, 2),
-	SHELL_CMD_ARG(tx, NULL, "<ID> <Size> <BlockSizeLog> "
+	BT_SHELL_CMD_ARG(target, NULL, "<Addr>", cmd_target, 2, 0),
+	BT_SHELL_CMD_ARG(caps, NULL, "[<Group> [<TimeoutBase>]]", cmd_caps, 1, 2),
+	BT_SHELL_CMD_ARG(tx, NULL, "<ID> <Size> <BlockSizeLog> "
 		      "<ChunkSize> [<Group> [<Mode(push, pull)> "
 		      "[<TimeoutBase>]]]", cmd_tx, 5, 3),
-	SHELL_CMD_ARG(tx-cancel, NULL, NULL, cmd_tx_cancel, 1, 0),
-	SHELL_CMD_ARG(tx-get, NULL, "[Group]", cmd_tx_get, 1, 1),
-	SHELL_CMD_ARG(tx-suspend, NULL, NULL, cmd_tx_suspend, 1, 0),
-	SHELL_CMD_ARG(tx-resume, NULL, NULL, cmd_tx_resume, 1, 0),
-	SHELL_CMD(instance, &cli_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(tx-cancel, NULL, NULL, cmd_tx_cancel, 1, 0),
+	BT_SHELL_CMD_ARG(tx-get, NULL, "[Group]", cmd_tx_get, 1, 1),
+	BT_SHELL_CMD_ARG(tx-suspend, NULL, NULL, cmd_tx_suspend, 1, 0),
+	BT_SHELL_CMD_ARG(tx-resume, NULL, NULL, cmd_tx_resume, 1, 0),
+	BT_SHELL_CMD(instance, &cli_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_SUBCMD_SET_END);
 #endif
 
 #if defined(CONFIG_BT_MESH_SHELL_BLOB_SRV)
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	blob_srv_cmds,
 	/* BLOB Server Model Operations */
-	SHELL_CMD_ARG(rx, NULL, "<ID> [<TimeoutBase(10s steps)>]", cmd_rx, 2, 1),
-	SHELL_CMD_ARG(rx-cancel, NULL, NULL, cmd_rx_cancel, 1, 0),
-	SHELL_CMD(instance, &srv_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_CMD_ARG(rx, NULL, "<ID> [<TimeoutBase(10s steps)>]", cmd_rx, 2, 1),
+	BT_SHELL_CMD_ARG(rx-cancel, NULL, NULL, cmd_rx_cancel, 1, 0),
+	BT_SHELL_CMD(instance, &srv_instance_cmds, "Instance commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_SUBCMD_SET_END);
 #endif
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	blob_cmds,
 #if defined(CONFIG_BT_MESH_SHELL_BLOB_IO_FLASH)
-	SHELL_CMD_ARG(flash-stream-set, NULL, "<AreaID> [<Offset>]",
+	BT_SHELL_CMD_ARG(flash-stream-set, NULL, "<AreaID> [<Offset>]",
 		      cmd_flash_stream_set, 2, 1),
-	SHELL_CMD_ARG(flash-stream-unset, NULL, NULL, cmd_flash_stream_unset, 1, 0),
+	BT_SHELL_CMD_ARG(flash-stream-unset, NULL, NULL, cmd_flash_stream_unset, 1, 0),
 #endif
 #if defined(CONFIG_BT_MESH_SHELL_BLOB_CLI)
-	SHELL_CMD(cli, &blob_cli_cmds, "BLOB Cli commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_CMD(cli, &blob_cli_cmds, "BLOB Cli commands", bt_mesh_shell_mdl_cmds_help),
 #endif
 #if defined(CONFIG_BT_MESH_SHELL_BLOB_SRV)
-	SHELL_CMD(srv, &blob_srv_cmds, "BLOB Srv commands", bt_mesh_shell_mdl_cmds_help),
+	BT_SHELL_CMD(srv, &blob_srv_cmds, "BLOB Srv commands", bt_mesh_shell_mdl_cmds_help),
 #endif
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
 SHELL_SUBCMD_ADD((mesh, models), blob, &blob_cmds, "BLOB models commands",
 		 bt_mesh_shell_mdl_cmds_help, 1, 1);

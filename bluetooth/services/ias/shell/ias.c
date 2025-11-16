@@ -38,32 +38,37 @@ BT_IAS_CB_DEFINE(ias_callbacks) = {
 	.high_alert = alert_high_start,
 };
 
-static int cmd_ias_local_alert_stop(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ias_local_alert_stop(const struct bt_shell *sh, size_t argc, char **argv)
 {
 	const int result = bt_ias_local_alert_stop();
 
 	if (result) {
-		shell_print(sh, "Local alert stop failed: %d", result);
+		bt_shell_print("Local alert stop failed: %d", result);
 	} else {
-		shell_print(sh, "Local alert stopped");
+		bt_shell_print("Local alert stopped");
 	}
 
 	return result;
 }
 
-static int cmd_ias(const struct shell *sh, size_t argc, char **argv)
+static int cmd_ias(const struct bt_shell *sh, size_t argc, char **argv)
 {
-	shell_error(sh, "%s unknown parameter: %s", argv[0], argv[1]);
+	bt_shell_error("%s unknown parameter: %s", argv[0], argv[1]);
 
 	return -ENOEXEC;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(ias_cmds,
-	SHELL_CMD_ARG(local_alert_stop, NULL,
+BT_SHELL_SUBCMD_SET_CREATE(ias_cmds,
+	BT_SHELL_CMD_ARG(local_alert_stop, NULL,
 		      "Stop alert locally",
 		      cmd_ias_local_alert_stop, 1, 0),
-	SHELL_SUBCMD_SET_END
+	BT_SHELL_SUBCMD_SET_END
 );
 
-SHELL_CMD_ARG_REGISTER(ias, &ias_cmds, "Bluetooth IAS shell commands",
+BT_SHELL_CMD_ARG_DEFINE(ias, &ias_cmds, "Bluetooth IAS shell commands",
 		       cmd_ias, 1, 1);
+
+int bt_shell_cmd_ias_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &ias);
+}

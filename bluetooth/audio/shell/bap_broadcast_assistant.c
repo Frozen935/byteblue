@@ -290,7 +290,7 @@ static struct bt_bap_broadcast_assistant_cb cbs = {
 	.rem_src = bap_broadcast_assistant_rem_src_cb,
 };
 
-static int cmd_bap_broadcast_assistant_scan_start(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_scan_start(const struct bt_shell *sh,
 						  size_t argc, char **argv)
 {
 	int result;
@@ -299,9 +299,9 @@ static int cmd_bap_broadcast_assistant_scan_start(const struct shell *sh,
 	if (argc > 1) {
 		result = 0;
 
-		start_scan = shell_strtobool(argv[1], 0, &result);
+		start_scan = bt_shell_strtobool(argv[1], 0, &result);
 		if (result != 0) {
-			shell_error(sh, "Could not parse start_scan: %d",
+			bt_shell_error("Could not parse start_scan: %d",
 				    result);
 
 			return -ENOEXEC;
@@ -311,26 +311,26 @@ static int cmd_bap_broadcast_assistant_scan_start(const struct shell *sh,
 	result = bt_bap_broadcast_assistant_scan_start(default_conn,
 						       (bool)start_scan);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_bap_broadcast_assistant_scan_stop(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_scan_stop(const struct bt_shell *sh,
 						 size_t argc, char **argv)
 {
 	int result;
 
 	result = bt_bap_broadcast_assistant_scan_stop(default_conn);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_add_src(const struct bt_shell *sh,
 					       size_t argc, char **argv)
 {
 	struct bt_bap_broadcast_assistant_add_src_param param = { 0 };
@@ -341,42 +341,42 @@ static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
 
 	result = bt_addr_le_from_str(argv[1], argv[2], &param.addr);
 	if (result) {
-		shell_error(sh, "Invalid peer address (err %d)", result);
+		bt_shell_error("Invalid peer address (err %d)", result);
 
 		return -ENOEXEC;
 	}
 
-	adv_sid = shell_strtoul(argv[3], 0, &result);
+	adv_sid = bt_shell_strtoul(argv[3], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse adv_sid: %d", result);
+		bt_shell_error("Could not parse adv_sid: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (adv_sid > BT_GAP_SID_MAX) {
-		shell_error(sh, "Invalid adv_sid: %lu", adv_sid);
+		bt_shell_error("Invalid adv_sid: %lu", adv_sid);
 
 		return -ENOEXEC;
 	}
 
 	param.adv_sid = adv_sid;
 
-	param.pa_sync = shell_strtobool(argv[4], 0, &result);
+	param.pa_sync = bt_shell_strtobool(argv[4], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse adv_sid: %d", result);
+		bt_shell_error("Could not parse adv_sid: %d", result);
 
 		return -ENOEXEC;
 	}
 
-	broadcast_id = shell_strtoul(argv[5], 0, &result);
+	broadcast_id = bt_shell_strtoul(argv[5], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse broadcast_id: %d", result);
+		bt_shell_error("Could not parse broadcast_id: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (broadcast_id > BT_AUDIO_BROADCAST_ID_MAX) {
-		shell_error(sh, "Invalid broadcast_id: %lu", broadcast_id);
+		bt_shell_error("Invalid broadcast_id: %lu", broadcast_id);
 
 		return -ENOEXEC;
 	}
@@ -386,9 +386,9 @@ static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
 	if (argc > 6) {
 		unsigned long pa_interval;
 
-		pa_interval = shell_strtoul(argv[6], 0, &result);
+		pa_interval = bt_shell_strtoul(argv[6], 0, &result);
 		if (result) {
-			shell_error(sh, "Could not parse pa_interval: %d",
+			bt_shell_error("Could not parse pa_interval: %d",
 				    result);
 
 			return -ENOEXEC;
@@ -397,7 +397,7 @@ static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
 		if (!IN_RANGE(pa_interval,
 			      BT_GAP_PER_ADV_MIN_INTERVAL,
 			      BT_GAP_PER_ADV_MAX_INTERVAL)) {
-			shell_error(sh, "Invalid pa_interval: %lu",
+			bt_shell_error("Invalid pa_interval: %lu",
 				    pa_interval);
 
 			return -ENOEXEC;
@@ -412,15 +412,15 @@ static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
 	if (argc > 7) {
 		unsigned long bis_sync;
 
-		bis_sync = shell_strtoul(argv[7], 0, &result);
+		bis_sync = bt_shell_strtoul(argv[7], 0, &result);
 		if (result) {
-			shell_error(sh, "Could not parse bis_sync: %d", result);
+			bt_shell_error("Could not parse bis_sync: %d", result);
 
 			return -ENOEXEC;
 		}
 
 		if (!BT_BAP_BASS_VALID_BIT_BITFIELD(bis_sync)) {
-			shell_error(sh, "Invalid bis_sync: %lu", bis_sync);
+			bt_shell_error("Invalid bis_sync: %lu", bis_sync);
 
 			return -ENOEXEC;
 		}
@@ -436,7 +436,7 @@ static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
 				       sizeof(subgroup.metadata));
 
 		if (metadata_len == 0U) {
-			shell_error(sh, "Could not parse metadata");
+			bt_shell_error("Could not parse metadata");
 
 			return -ENOEXEC;
 		}
@@ -451,7 +451,7 @@ static int cmd_bap_broadcast_assistant_add_src(const struct shell *sh,
 
 	result = bt_bap_broadcast_assistant_add_src(default_conn, &param);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
@@ -579,7 +579,7 @@ static struct bt_le_scan_cb scan_callbacks = {
 	.timeout = scan_timeout_cb,
 };
 
-static int cmd_bap_broadcast_assistant_discover(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_discover(const struct bt_shell *sh,
 						size_t argc, char **argv)
 {
 	static bool registered;
@@ -601,13 +601,13 @@ static int cmd_bap_broadcast_assistant_discover(const struct shell *sh,
 
 	result = bt_bap_broadcast_assistant_discover(default_conn);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_bap_broadcast_assistant_add_broadcast_id(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_add_broadcast_id(const struct bt_shell *sh,
 							size_t argc,
 							char **argv)
 {
@@ -616,39 +616,39 @@ static int cmd_bap_broadcast_assistant_add_broadcast_id(const struct shell *sh,
 	int err = 0;
 
 	if (auto_scan.broadcast_id != BT_BAP_INVALID_BROADCAST_ID) {
-		shell_info(sh, "Already scanning, wait for sync or timeout");
+		bt_shell_info("Already scanning, wait for sync or timeout");
 
 		return -ENOEXEC;
 	}
 
-	broadcast_id = shell_strtoul(argv[1], 0, &err);
+	broadcast_id = bt_shell_strtoul(argv[1], 0, &err);
 	if (err != 0) {
-		shell_error(sh, "failed to parse broadcast_id: %d", err);
+		bt_shell_error("failed to parse broadcast_id: %d", err);
 
 		return -ENOEXEC;
 	} else if (broadcast_id > 0xFFFFFF /* 24 bits */) {
-		shell_error(sh, "Broadcast ID maximum 24 bits (was %lu)", broadcast_id);
+		bt_shell_error("Broadcast ID maximum 24 bits (was %lu)", broadcast_id);
 
 		return -ENOEXEC;
 	}
 
-	auto_scan.pa_sync = shell_strtobool(argv[2], 0, &err);
+	auto_scan.pa_sync = bt_shell_strtobool(argv[2], 0, &err);
 	if (err != 0) {
-		shell_error(sh, "Could not parse pa_sync: %d", err);
+		bt_shell_error("Could not parse pa_sync: %d", err);
 
 		return -ENOEXEC;
 	}
 
 	/* TODO: Support multiple subgroups */
 	if (argc > 3) {
-		const unsigned long bis_sync = shell_strtoul(argv[3], 0, &err);
+		const unsigned long bis_sync = bt_shell_strtoul(argv[3], 0, &err);
 
 		if (err != 0) {
-			shell_error(sh, "failed to parse bis_sync: %d", err);
+			bt_shell_error("failed to parse bis_sync: %d", err);
 
 			return -ENOEXEC;
 		} else if (!BT_BAP_BASS_VALID_BIT_BITFIELD(bis_sync)) {
-			shell_error(sh, "Invalid bis_sync: %lu", bis_sync);
+			bt_shell_error("Invalid bis_sync: %lu", bis_sync);
 
 			return -ENOEXEC;
 		}
@@ -661,7 +661,7 @@ static int cmd_bap_broadcast_assistant_add_broadcast_id(const struct shell *sh,
 						sizeof(subgroup.metadata));
 
 		if (subgroup.metadata_len == 0U) {
-			shell_error(sh, "Could not parse metadata");
+			bt_shell_error("Could not parse metadata");
 
 			return -ENOEXEC;
 		}
@@ -669,7 +669,7 @@ static int cmd_bap_broadcast_assistant_add_broadcast_id(const struct shell *sh,
 
 	err = bt_le_scan_start(BT_LE_SCAN_PASSIVE, NULL);
 	if (err) {
-		shell_print(sh, "Fail to start scanning: %d", err);
+		bt_shell_print("Fail to start scanning: %d", err);
 
 		return -ENOEXEC;
 	}
@@ -682,7 +682,7 @@ static int cmd_bap_broadcast_assistant_add_broadcast_id(const struct shell *sh,
 	return 0;
 }
 
-static int cmd_bap_broadcast_assistant_add_broadcast_name(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_add_broadcast_name(const struct bt_shell *sh,
 							  size_t argc, char **argv)
 {
 	struct bt_bap_bass_subgroup subgroup = { 0 };
@@ -693,30 +693,30 @@ static int cmd_bap_broadcast_assistant_add_broadcast_name(const struct shell *sh
 	if (!IN_RANGE(strlen(broadcast_name), BT_AUDIO_BROADCAST_NAME_LEN_MIN,
 	    BT_AUDIO_BROADCAST_NAME_LEN_MAX)) {
 
-		shell_error(sh, "Broadcast name should be minimum %d "
+		bt_shell_error("Broadcast name should be minimum %d "
 			    "and maximum %d characters", BT_AUDIO_BROADCAST_NAME_LEN_MIN,
 			    BT_AUDIO_BROADCAST_NAME_LEN_MAX);
 
 		return -ENOEXEC;
 	}
 
-	auto_scan.pa_sync = shell_strtobool(argv[2], 0, &err);
+	auto_scan.pa_sync = bt_shell_strtobool(argv[2], 0, &err);
 	if (err != 0) {
-		shell_error(sh, "Could not parse pa_sync: %d", err);
+		bt_shell_error("Could not parse pa_sync: %d", err);
 
 		return -ENOEXEC;
 	}
 
 	/* TODO: Support multiple subgroups */
 	if (argc > 3) {
-		const unsigned long bis_sync = shell_strtoul(argv[3], 0, &err);
+		const unsigned long bis_sync = bt_shell_strtoul(argv[3], 0, &err);
 
 		if (err != 0) {
-			shell_error(sh, "failed to parse bis_sync: %d", err);
+			bt_shell_error("failed to parse bis_sync: %d", err);
 
 			return -ENOEXEC;
 		} else if (!BT_BAP_BASS_VALID_BIT_BITFIELD(bis_sync)) {
-			shell_error(sh, "Invalid bis_sync: %lu", bis_sync);
+			bt_shell_error("Invalid bis_sync: %lu", bis_sync);
 
 			return -ENOEXEC;
 		}
@@ -729,7 +729,7 @@ static int cmd_bap_broadcast_assistant_add_broadcast_name(const struct shell *sh
 						sizeof(subgroup.metadata));
 
 		if (subgroup.metadata_len == 0U) {
-			shell_error(sh, "Could not parse metadata");
+			bt_shell_error("Could not parse metadata");
 
 			return -ENOEXEC;
 		}
@@ -737,7 +737,7 @@ static int cmd_bap_broadcast_assistant_add_broadcast_name(const struct shell *sh
 
 	err = bt_le_scan_start(BT_LE_SCAN_PASSIVE, NULL);
 	if (err) {
-		shell_print(sh, "Fail to start scanning: %d", err);
+		bt_shell_print("Fail to start scanning: %d", err);
 
 		return -ENOEXEC;
 	}
@@ -750,7 +750,7 @@ static int cmd_bap_broadcast_assistant_add_broadcast_name(const struct shell *sh
 	return 0;
 }
 
-static int cmd_bap_broadcast_assistant_mod_src(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_mod_src(const struct bt_shell *sh,
 					       size_t argc, char **argv)
 {
 	struct bt_bap_broadcast_assistant_mod_src_param param = { 0 };
@@ -758,23 +758,23 @@ static int cmd_bap_broadcast_assistant_mod_src(const struct shell *sh,
 	unsigned long src_id;
 	int result = 0;
 
-	src_id = shell_strtoul(argv[1], 0, &result);
+	src_id = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse src_id: %d", result);
+		bt_shell_error("Could not parse src_id: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (src_id > UINT8_MAX) {
-		shell_error(sh, "Invalid src_id: %lu", src_id);
+		bt_shell_error("Invalid src_id: %lu", src_id);
 
 		return -ENOEXEC;
 	}
 	param.src_id = src_id;
 
-	param.pa_sync = shell_strtobool(argv[2], 0, &result);
+	param.pa_sync = bt_shell_strtobool(argv[2], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse adv_sid: %d", result);
+		bt_shell_error("Could not parse adv_sid: %d", result);
 
 		return -ENOEXEC;
 	}
@@ -785,16 +785,16 @@ static int cmd_bap_broadcast_assistant_mod_src(const struct shell *sh,
 		} else {
 			unsigned long pa_interval;
 
-			pa_interval = shell_strtoul(argv[3], 0, &result);
+			pa_interval = bt_shell_strtoul(argv[3], 0, &result);
 			if (result) {
-				shell_error(sh, "Could not parse pa_interval: %d", result);
+				bt_shell_error("Could not parse pa_interval: %d", result);
 
 				return -ENOEXEC;
 			}
 
 			if (!IN_RANGE(pa_interval, BT_GAP_PER_ADV_MIN_INTERVAL,
 				      BT_GAP_PER_ADV_MAX_INTERVAL)) {
-				shell_error(sh, "Invalid pa_interval: %lu", pa_interval);
+				bt_shell_error("Invalid pa_interval: %lu", pa_interval);
 
 				return -ENOEXEC;
 			}
@@ -809,15 +809,15 @@ static int cmd_bap_broadcast_assistant_mod_src(const struct shell *sh,
 	if (argc > 4) {
 		unsigned long bis_sync;
 
-		bis_sync = shell_strtoul(argv[4], 0, &result);
+		bis_sync = bt_shell_strtoul(argv[4], 0, &result);
 		if (result) {
-			shell_error(sh, "Could not parse bis_sync: %d", result);
+			bt_shell_error("Could not parse bis_sync: %d", result);
 
 			return -ENOEXEC;
 		}
 
 		if (!BT_BAP_BASS_VALID_BIT_BITFIELD(bis_sync)) {
-			shell_error(sh, "Invalid bis_sync: %lu", bis_sync);
+			bt_shell_error("Invalid bis_sync: %lu", bis_sync);
 
 			return -ENOEXEC;
 		}
@@ -833,7 +833,7 @@ static int cmd_bap_broadcast_assistant_mod_src(const struct shell *sh,
 				       sizeof(subgroup.metadata));
 
 		if (metadata_len == 0U) {
-			shell_error(sh, "Could not parse metadata");
+			bt_shell_error("Could not parse metadata");
 
 			return -ENOEXEC;
 		}
@@ -848,7 +848,7 @@ static int cmd_bap_broadcast_assistant_mod_src(const struct shell *sh,
 
 	result = bt_bap_broadcast_assistant_mod_src(default_conn, &param);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
@@ -904,7 +904,7 @@ static inline bool add_pa_sync_base_subgroup_cb(const struct bt_bap_base_subgrou
 	return true;
 }
 
-static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_add_pa_sync(const struct bt_shell *sh,
 						   size_t argc, char **argv)
 {
 	struct bt_bap_bass_subgroup subgroup_params[CONFIG_BT_BAP_BASS_MAX_SUBGROUPS];
@@ -918,14 +918,14 @@ static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
 	int err;
 
 	if (pa_sync == NULL) {
-		shell_error(sh, "PA not synced");
+		bt_shell_error("PA not synced");
 
 		return -ENOEXEC;
 	}
 
 	err = bt_le_per_adv_sync_get_info(pa_sync, &pa_info);
 	if (err != 0) {
-		shell_error(sh, "Could not get PA sync info: %d", err);
+		bt_shell_error("Could not get PA sync info: %d", err);
 
 		return -ENOEXEC;
 	}
@@ -936,20 +936,20 @@ static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
 
 	memset(&subgroup_params, 0, sizeof(subgroup_params));
 
-	param.pa_sync = shell_strtobool(argv[1], 0, &err);
+	param.pa_sync = bt_shell_strtobool(argv[1], 0, &err);
 	if (err != 0) {
-		shell_error(sh, "Could not parse pa_sync: %d", err);
+		bt_shell_error("Could not parse pa_sync: %d", err);
 
 		return -ENOEXEC;
 	}
 
-	broadcast_id = shell_strtoul(argv[2], 0, &err);
+	broadcast_id = bt_shell_strtoul(argv[2], 0, &err);
 	if (err != 0) {
-		shell_error(sh, "failed to parse broadcast_id: %d", err);
+		bt_shell_error("failed to parse broadcast_id: %d", err);
 
 		return -ENOEXEC;
 	} else if (broadcast_id > BT_AUDIO_BROADCAST_ID_MAX /* 24 bits */) {
-		shell_error(sh, "Invalid Broadcast ID: %x",
+		bt_shell_error("Invalid Broadcast ID: %x",
 			    param.broadcast_id);
 
 		return -ENOEXEC;
@@ -960,17 +960,17 @@ static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
 	bis_bitfield_req = 0U;
 	subgroups_bis_sync = 0U;
 	for (size_t i = 3U; i < argc; i++) {
-		const unsigned long index = shell_strtoul(argv[i], 16, &err);
+		const unsigned long index = bt_shell_strtoul(argv[i], 16, &err);
 
 		if (err != 0) {
-			shell_error(sh, "failed to parse index: %d", err);
+			bt_shell_error("failed to parse index: %d", err);
 
 			return -ENOEXEC;
 		}
 
 		if (index < BT_ISO_BIS_INDEX_MIN ||
 		    index > BT_ISO_BIS_INDEX_MAX) {
-			shell_error(sh, "Invalid index: %ld", index);
+			bt_shell_error("Invalid index: %ld", index);
 
 			return -ENOEXEC;
 		}
@@ -983,7 +983,7 @@ static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
 		err = bt_bap_base_foreach_subgroup((const struct bt_bap_base *)received_base,
 						   add_pa_sync_base_subgroup_cb, &param);
 		if (err < 0) {
-			shell_error(sh, "Could not add BASE to params %d", err);
+			bt_shell_error("Could not add BASE to params %d", err);
 
 			return -ENOEXEC;
 		}
@@ -1005,14 +1005,14 @@ static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
 	if ((subgroups_bis_sync & bis_bitfield_req) != bis_bitfield_req) {
 		/* bis_sync of all subgroups should contain at least all the bits in request */
 		/* Otherwise Command will be rejected */
-		shell_error(sh, "Cannot set BIS index 0x%06X when BASE subgroups only "
+		bt_shell_error("Cannot set BIS index 0x%06X when BASE subgroups only "
 			    "supports %d", bis_bitfield_req, subgroups_bis_sync);
 		return -ENOEXEC;
 	}
 
 	err = bt_bap_broadcast_assistant_add_src(default_conn, &param);
 	if (err != 0) {
-		shell_print(sh, "Fail: %d", err);
+		bt_shell_print("Fail: %d", err);
 
 		return -ENOEXEC;
 	}
@@ -1020,7 +1020,7 @@ static int cmd_bap_broadcast_assistant_add_pa_sync(const struct shell *sh,
 	return 0;
 }
 
-static int cmd_bap_broadcast_assistant_broadcast_code(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_broadcast_code(const struct bt_shell *sh,
 						      size_t argc, char **argv)
 {
 	uint8_t broadcast_code[BT_ISO_BROADCAST_CODE_SIZE] = {0};
@@ -1028,148 +1028,153 @@ static int cmd_bap_broadcast_assistant_broadcast_code(const struct shell *sh,
 	unsigned long src_id;
 	int result = 0;
 
-	src_id = shell_strtoul(argv[1], 0, &result);
+	src_id = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse src_id: %d", result);
+		bt_shell_error("Could not parse src_id: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (src_id > UINT8_MAX) {
-		shell_error(sh, "Invalid src_id: %lu", src_id);
+		bt_shell_error("Invalid src_id: %lu", src_id);
 
 		return -ENOEXEC;
 	}
 
 	broadcast_code_len = strlen(argv[2]);
 	if (!IN_RANGE(broadcast_code_len, 1, BT_ISO_BROADCAST_CODE_SIZE)) {
-		shell_error(sh, "Invalid broadcast code length: %zu", broadcast_code_len);
+		bt_shell_error("Invalid broadcast code length: %zu", broadcast_code_len);
 
 		return -ENOEXEC;
 	}
 
 	memcpy(broadcast_code, argv[2], broadcast_code_len);
 
-	shell_info(sh, "Sending broadcast code:");
-	shell_hexdump(sh, broadcast_code, sizeof(broadcast_code));
+	bt_shell_info("Sending broadcast code:");
+	bt_shell_hexdump(broadcast_code, sizeof(broadcast_code));
 
 	result = bt_bap_broadcast_assistant_set_broadcast_code(default_conn,
 							       src_id,
 							       broadcast_code);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_bap_broadcast_assistant_rem_src(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_rem_src(const struct bt_shell *sh,
 					       size_t argc, char **argv)
 {
 	unsigned long src_id;
 	int result = 0;
 
-	src_id = shell_strtoul(argv[1], 0, &result);
+	src_id = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse src_id: %d", result);
+		bt_shell_error("Could not parse src_id: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (src_id > UINT8_MAX) {
-		shell_error(sh, "Invalid src_id: %lu", src_id);
+		bt_shell_error("Invalid src_id: %lu", src_id);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_bap_broadcast_assistant_rem_src(default_conn, src_id);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_bap_broadcast_assistant_read_recv_state(const struct shell *sh,
+static int cmd_bap_broadcast_assistant_read_recv_state(const struct bt_shell *sh,
 						       size_t argc, char **argv)
 {
 	unsigned long idx;
 	int result = 0;
 
-	idx = shell_strtoul(argv[1], 0, &result);
+	idx = bt_shell_strtoul(argv[1], 0, &result);
 	if (result != 0) {
-		shell_error(sh, "Could not parse idx: %d", result);
+		bt_shell_error("Could not parse idx: %d", result);
 
 		return -ENOEXEC;
 	}
 
 	if (idx > UINT8_MAX) {
-		shell_error(sh, "Invalid idx: %lu", idx);
+		bt_shell_error("Invalid idx: %lu", idx);
 
 		return -ENOEXEC;
 	}
 
 	result = bt_bap_broadcast_assistant_read_recv_state(default_conn, idx);
 	if (result) {
-		shell_print(sh, "Fail: %d", result);
+		bt_shell_print("Fail: %d", result);
 	}
 
 	return result;
 }
 
-static int cmd_bap_broadcast_assistant(const struct shell *sh, size_t argc,
+static int cmd_bap_broadcast_assistant(const struct bt_shell *sh, size_t argc,
 				       char **argv)
 {
 	if (argc > 1) {
-		shell_error(sh, "%s unknown parameter: %s",
+		bt_shell_error("%s unknown parameter: %s",
 			    argv[0], argv[1]);
 	} else {
-		shell_error(sh, "%s Missing subcommand", argv[0]);
+		bt_shell_error("%s Missing subcommand", argv[0]);
 	}
 
 	return -ENOEXEC;
 }
 
-SHELL_STATIC_SUBCMD_SET_CREATE(
+BT_SHELL_SUBCMD_SET_CREATE(
 	bap_broadcast_assistant_cmds,
-	SHELL_CMD_ARG(discover, NULL, "Discover BASS on the server",
+	BT_SHELL_CMD_ARG(discover, NULL, "Discover BASS on the server",
 		      cmd_bap_broadcast_assistant_discover, 1, 0),
-	SHELL_CMD_ARG(scan_start, NULL, "Start scanning for broadcasters",
+	BT_SHELL_CMD_ARG(scan_start, NULL, "Start scanning for broadcasters",
 		      cmd_bap_broadcast_assistant_scan_start, 1, 1),
-	SHELL_CMD_ARG(scan_stop, NULL, "Stop scanning for BISs",
+	BT_SHELL_CMD_ARG(scan_stop, NULL, "Stop scanning for BISs",
 		      cmd_bap_broadcast_assistant_scan_stop, 1, 0),
-	SHELL_CMD_ARG(add_src, NULL,
+	BT_SHELL_CMD_ARG(add_src, NULL,
 		      "Add a source <address: XX:XX:XX:XX:XX:XX> "
 		      "<type: public/random> <adv_sid> <sync_pa> "
 		      "<broadcast_id> [<pa_interval>] [<sync_bis>] "
 		      "[<metadata>]",
 		      cmd_bap_broadcast_assistant_add_src, 6, 3),
-	SHELL_CMD_ARG(add_broadcast_id, NULL,
+	BT_SHELL_CMD_ARG(add_broadcast_id, NULL,
 		      "Add a source by broadcast ID <broadcast_id> <sync_pa> "
 		      "[<sync_bis>] [<metadata>]",
 		      cmd_bap_broadcast_assistant_add_broadcast_id, 3, 2),
-	SHELL_CMD_ARG(add_broadcast_name, NULL,
+	BT_SHELL_CMD_ARG(add_broadcast_name, NULL,
 		      "Add a source by broadcast name <broadcast_name> <sync_pa> "
 		      "[<sync_bis>] [<metadata>]",
 		      cmd_bap_broadcast_assistant_add_broadcast_name, 3, 2),
-	SHELL_CMD_ARG(add_pa_sync, NULL,
+	BT_SHELL_CMD_ARG(add_pa_sync, NULL,
 		      "Add a PA sync as a source <sync_pa> <broadcast_id> "
 		      "[bis_index [bis_index [bix_index [...]]]]>",
 		      cmd_bap_broadcast_assistant_add_pa_sync, 3, BT_ISO_MAX_GROUP_ISO_COUNT),
-	SHELL_CMD_ARG(mod_src, NULL,
+	BT_SHELL_CMD_ARG(mod_src, NULL,
 		      "Set sync <src_id> <sync_pa> [<pa_interval> | \"unknown\"] "
 		      "[<sync_bis>] [<metadata>]",
 		      cmd_bap_broadcast_assistant_mod_src, 3, 2),
-	SHELL_CMD_ARG(broadcast_code, NULL,
+	BT_SHELL_CMD_ARG(broadcast_code, NULL,
 		      "Send a string-based broadcast code of up to 16 bytes "
 		      "<src_id> <broadcast code>",
 		      cmd_bap_broadcast_assistant_broadcast_code, 3, 0),
-	SHELL_CMD_ARG(rem_src, NULL, "Remove a source <src_id>",
+	BT_SHELL_CMD_ARG(rem_src, NULL, "Remove a source <src_id>",
 		      cmd_bap_broadcast_assistant_rem_src, 2, 0),
-	SHELL_CMD_ARG(read_state, NULL, "Remove a source <index>",
+	BT_SHELL_CMD_ARG(read_state, NULL, "Remove a source <index>",
 		      cmd_bap_broadcast_assistant_read_recv_state, 2, 0),
-	SHELL_SUBCMD_SET_END);
+	BT_SHELL_SUBCMD_SET_END);
 
-SHELL_CMD_ARG_REGISTER(bap_broadcast_assistant, &bap_broadcast_assistant_cmds,
+BT_SHELL_CMD_ARG_DEFINE(bap_broadcast_assistant, &bap_broadcast_assistant_cmds,
 		       "Bluetooth BAP broadcast assistant client shell commands",
 		       cmd_bap_broadcast_assistant, 1, 1);
+
+int bt_shell_cmd_bap_broadcast_assistant_register(struct bt_shell *sh)
+{
+	return bt_shell_cmd_register(sh, &bap_broadcast_assistant);
+}

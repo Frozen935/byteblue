@@ -3,7 +3,7 @@
 #
 
 # Default target is to build the library
-all: libbyteblue.a demo
+all: libopenblue.a demo $(if $(filter y 1,$(CONFIG_OPENBLUE_BT_CMD)),btcmd)
 
 # Allow overriding toolchain from environment
 CROSS_COMPILE ?=
@@ -55,7 +55,7 @@ CPPFLAGS += -include $(AUTOCONF_H)
 
 CPPFLAGS += -include shim/include/shim.h
 
-ifneq ($(CONFIG_BYTEBLUE_CRYPTO_USE_MBEDTLS),)
+ifneq ($(CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS),)
 # Prefer system mbed TLS via pkg-config (mbedcrypto or mbedtls). Fallback: local pinned build.
 MBEDTLS_PKG_AVAILABLE := $(shell (pkg-config --exists mbedcrypto || pkg-config --exists mbedtls) && echo yes || echo no)
 
@@ -100,6 +100,7 @@ CSRCS_BASE += base/queue/bt_queue.c
 CSRCS_BASE += base/bt_mem_pool.c
 CSRCS_BASE += base/bt_poll.c
 CSRCS_BASE += base/bt_work.c
+CSRCS_BASE += base/bt_debug.c
 CSRCS_BASE += base/log.c
 
 # Integrate Bluetooth module (platform selection and sources)
@@ -135,7 +136,7 @@ $(AUTOCONF_H): .config kconfig-deps
 	@python3 tools/kconfig/genconfig.py --header-output $@ .config
 
 # Main build target
-libbyteblue.a: $(OBJS)
+libopenblue.a: $(OBJS)
 	@echo "AR $@"
 	$(AR) rcs $@ $(OBJS)
 
@@ -147,32 +148,51 @@ libbyteblue.a: $(OBJS)
 # Include generated dependency files
 -include $(DEPS)
 
+all: libopenblue.a demo btcmd
+
 # Clean target
 clean:
 	@echo "Cleaning..."
-	$(RM) $(OBJS) $(DEPS) libbyteblue.a samples/demo/demo samples/demo/demo.d
+	$(RM) $(OBJS) $(DEPS) libopenblue.a samples/demo/demo samples/demo/demo.d
+	$(RM) samples/cmds/btcmd samples/cmds/btcmd.d
 	$(RM) -r include/generated
 
 # Samples targets
-.PHONY: samples demo
+.PHONY: samples demo btcmd
 
-samples: demo
+samples: demo btcmd
 
-demo: $(MBEDTLS_FALLBACK_TARGET) libbyteblue.a samples/demo/main.c
+ifeq ($(CONFIG_OPENBLUE_SAMPLES), y)
+demo: $(MBEDTLS_FALLBACK_TARGET) libopenblue.a samples/demo/main.c
 	@echo "Building samples/demo..."
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o samples/demo/demo samples/demo/main.c libbyteblue.a $(MBEDTLS_LIBS) -lpthread -lrt
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o samples/demo/demo samples/demo/main.c libopenblue.a $(MBEDTLS_LIBS) -lpthread -lrt
+else
+	@echo "Skipping samples/demo..."
+endif
+
+ifeq ($(CONFIG_OPENBLUE_BT_CMD), y)
+btcmd: $(MBEDTLS_FALLBACK_TARGET) libopenblue.a samples/cmds/bt_cmd_main.c
+	@echo "Building samples/cmds/btcmd..."
+	$(CC) $(CFLAGS) $(CPPFLAGS) -o samples/cmds/btcmd samples/cmds/bt_cmd_main.c libopenblue.a $(MBEDTLS_LIBS) -lpthread -lrt
+else
+btcmd:
+	@echo "Skipping samples/cmds/btcmd..."
+endif
 
 # Kconfig targets
 .PHONY: menuconfig kconfig-deps help genconfig
 
 help:
 	@echo "Targets:"
-	@echo "  make              - build libbyteblue.a"
+	@echo "  make              - build libopenblue.a"
 	@echo "  make menuconfig   - run Kconfig menuconfig UI and write .config"
 	@echo "  make genconfig    - force generate header file from .config"
 	@echo "  make clean        - remove built files"
 	@echo "  make demo         - build samples/demo"
-	@echo "  make samples      - build all samples (currently demo)"
+ifeq ($(filter y 1,$(CONFIG_OPENBLUE_BT_CMD)),y 1)
+	@echo "  make btcmd        - build samples/cmds/btcmd"
+endif
+	@echo "  make all          - build all"
 
 kconfig-deps:
 	@python3 -c "import kconfiglib" 2>/dev/null || pip3 install --user kconfiglib
