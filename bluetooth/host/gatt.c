@@ -578,7 +578,7 @@ static void set_all_change_unaware(void)
 	/* Mark all bonded peers as change-unaware.
 	 * - Can be called when not in a connection with said peers
 	 * - Doesn't have any effect when no bonds are in memory. This is the
-	 *   case when the device has just booted and `settings_load` hasn't yet
+	 *   case when the device has just booted and `bt_storage_load` hasn't yet
 	 *   been called.
 	 * - Expensive to call, as it will write the new status to settings
 	 *   right away.
@@ -5837,7 +5837,7 @@ next:
 	return load->count ? BT_GATT_ITER_CONTINUE : BT_GATT_ITER_STOP;
 }
 
-static int ccc_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int ccc_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		   void *cb_arg)
 {
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
@@ -5848,7 +5848,7 @@ static int ccc_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 		int err;
 		const char *next;
 
-		settings_name_next(name, &next);
+		bt_storage_name_next(name, &next);
 
 		if (!name) {
 			LOG_ERR("Insufficient number of arguments");
@@ -5904,7 +5904,7 @@ static int ccc_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 }
 
 #ifdef CONFIG_BT_SETTINGS
-static int ccc_set_cb(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int ccc_set_cb(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		      void *cb_arg)
 {
 	if (IS_ENABLED(CONFIG_BT_SETTINGS_CCC_LAZY_LOADING)) {
@@ -5918,7 +5918,7 @@ static int ccc_set_cb(const char *name, size_t len_rd, settings_read_cb read_cb,
 BT_SETTINGS_DEFINE(ccc, "ccc", ccc_set_cb, NULL);
 #endif /* CONFIG_BT_SETTINGS */
 
-static int ccc_set_direct(const char *key, size_t len, settings_read_cb read_cb,
+static int ccc_set_direct(const char *key, size_t len, bt_storage_read_cb read_cb,
 			  void *cb_arg, void *param)
 {
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
@@ -5927,7 +5927,7 @@ static int ccc_set_direct(const char *key, size_t len, settings_read_cb read_cb,
 		LOG_DBG("key: %s", (const char *)param);
 
 		/* Only "bt/ccc" settings should ever come here */
-		if (!settings_name_steq((const char *)param, "bt/ccc", &name)) {
+		if (!bt_storage_name_steq((const char *)param, "bt/ccc", &name)) {
 			LOG_ERR("Invalid key");
 			return -EINVAL;
 		}
@@ -5962,7 +5962,7 @@ void bt_gatt_connected(struct bt_conn *conn)
 					       &conn->le.dst, NULL);
 		}
 
-		settings_load_subtree_direct(key, ccc_set_direct, (void *)key);
+		bt_storage_load_subtree_direct(key, ccc_set_direct, (void *)key);
 	}
 
 	bt_gatt_foreach_attr(0x0001, 0xffff, update_ccc, &data);
@@ -6194,7 +6194,7 @@ static int gatt_store_ccc(uint8_t id, const bt_addr_le_t *addr)
 }
 
 #if defined(CONFIG_BT_GATT_SERVICE_CHANGED)
-static int sc_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int sc_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		  void *cb_arg)
 {
 	struct gatt_sc_cfg *cfg;
@@ -6215,7 +6215,7 @@ static int sc_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 		return -EINVAL;
 	}
 
-	settings_name_next(name, &next);
+	bt_storage_name_next(name, &next);
 
 	if (!next) {
 		id = BT_ID_DEFAULT;
@@ -6280,7 +6280,7 @@ BT_SETTINGS_DEFINE(sc, "sc", sc_set, sc_commit);
 #endif /* CONFIG_BT_GATT_SERVICE_CHANGED */
 
 #if defined(CONFIG_BT_GATT_CACHING)
-static int cf_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int cf_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		  void *cb_arg)
 {
 	struct gatt_cf_cfg *cfg;
@@ -6301,7 +6301,7 @@ static int cf_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 		return -EINVAL;
 	}
 
-	settings_name_next(name, &next);
+	bt_storage_name_next(name, &next);
 
 	if (!next) {
 		id = BT_ID_DEFAULT;
@@ -6369,7 +6369,7 @@ static int cf_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 BT_SETTINGS_DEFINE(cf, "cf", cf_set, NULL);
 
 static int db_hash_set(const char *name, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	ssize_t len;
 

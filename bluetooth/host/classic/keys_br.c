@@ -160,7 +160,7 @@ void bt_br_foreach_bond(void (*func)(const struct bt_br_bond_info *info, void *u
 #if defined(CONFIG_BT_SETTINGS)
 
 static int link_key_set(const char *name, size_t len_rd,
-			settings_read_cb read_cb, void *cb_arg)
+			bt_storage_read_cb read_cb, void *cb_arg)
 {
 	int err;
 	ssize_t len;
@@ -210,7 +210,7 @@ static int link_key_set(const char *name, size_t len_rd,
 	return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE(bt_link_key, "bt/link_key", NULL, link_key_set,
+BT_STORAGE_HANDLER_DEFINE(bt_link_key, "bt/link_key", NULL, link_key_set,
 			       NULL, NULL);
 
 #if defined(CONFIG_BT_KEYS_OVERWRITE_OLDEST)

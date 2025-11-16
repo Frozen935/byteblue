@@ -422,7 +422,7 @@ void bt_mesh_cfg_default_set(void)
 }
 
 static int cfg_set(const char *name, size_t len_rd,
-		   settings_read_cb read_cb, void *cb_arg)
+		   bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct cfg_val cfg;
 	int err;
@@ -456,7 +456,7 @@ static void clear_cfg(void)
 {
 	int err;
 
-	err = settings_delete("bt/mesh/Cfg");
+	err = bt_storage_delete("bt/mesh/Cfg");
 	if (err) {
 		LOG_ERR("Failed to clear configuration (err: %d)", err);
 	} else {
@@ -477,7 +477,7 @@ static void store_pending_cfg(void)
 	val.frnd = bt_mesh_friend_get();
 	val.default_ttl = bt_mesh_default_ttl_get();
 
-	err = settings_save_one("bt/mesh/Cfg", &val, sizeof(val));
+	err = bt_storage_save_one("bt/mesh/Cfg", &val, sizeof(val));
 	if (err) {
 		LOG_ERR("Failed to store configuration value");
 	} else {

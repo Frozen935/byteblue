@@ -646,7 +646,7 @@ struct bt_mesh_model_cb {
 	 */
 	int (*const settings_set)(const struct bt_mesh_model *model,
 				  const char *name, size_t len_rd,
-				  settings_read_cb read_cb, void *cb_arg);
+				  bt_storage_read_cb read_cb, void *cb_arg);
 
 	/** @brief Callback called when the mesh is started.
 	 *

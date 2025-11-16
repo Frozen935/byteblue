@@ -46,7 +46,7 @@ static void brg_tbl_compact(int j)
 }
 
 /* Set function for initializing bridging enable state from value stored in settings. */
-static int brg_en_set(const char *name, size_t len_rd, settings_read_cb read_cb, void *cb_arg)
+static int brg_en_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb, void *cb_arg)
 {
 	int err;
 
@@ -71,7 +71,7 @@ static int brg_en_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 BT_MESH_SETTINGS_DEFINE(brg_en, "brg_en", brg_en_set);
 
 /* Set function for initializing bridging table rows from values stored in settings. */
-static int brg_tbl_set(const char *name, size_t len_rd, settings_read_cb read_cb, void *cb_arg)
+static int brg_tbl_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb, void *cb_arg)
 {
 	ssize_t len;
 
@@ -136,9 +136,9 @@ void bt_mesh_brg_cfg_pending_store(void)
 
 	if (atomic_test_and_clear_bit(brg_cfg_flags, STATE_UPDATED)) {
 		if (brg_enabled) {
-			err = settings_save_one(path_en, &brg_enabled, sizeof(brg_enabled));
+			err = bt_storage_save_one(path_en, &brg_enabled, sizeof(brg_enabled));
 		} else {
-			err = settings_delete(path_en);
+			err = bt_storage_delete(path_en);
 		}
 
 		if (err) {
@@ -148,10 +148,10 @@ void bt_mesh_brg_cfg_pending_store(void)
 
 	if (atomic_test_and_clear_bit(brg_cfg_flags, TABLE_UPDATED)) {
 		if (bt_mesh_brg_cfg_row_cnt) {
-			err = settings_save_one(path_tbl, &brg_tbl,
+			err = bt_storage_save_one(path_tbl, &brg_tbl,
 						bt_mesh_brg_cfg_row_cnt * sizeof(brg_tbl[0]));
 		} else {
-			err = settings_delete(path_tbl);
+			err = bt_storage_delete(path_tbl);
 		}
 
 		if (err) {
@@ -210,13 +210,13 @@ int bt_mesh_brg_cfg_tbl_reset(void)
 		return 0;
 	}
 
-	err = settings_delete("bt/mesh/brg_en");
+	err = bt_storage_delete("bt/mesh/brg_en");
 
 	if (err) {
 		return err;
 	}
 
-	err = settings_delete("bt/mesh/brg_tbl");
+	err = bt_storage_delete("bt/mesh/brg_tbl");
 	return err;
 }
 

@@ -468,7 +468,7 @@ static int dfu_srv_init(const struct bt_mesh_model *mod)
 }
 
 static int dfu_srv_settings_set(const struct bt_mesh_model *mod, const char *name,
-				size_t len_rd, settings_read_cb read_cb,
+				size_t len_rd, bt_storage_read_cb read_cb,
 				void *cb_arg)
 {
 	struct bt_mesh_dfu_srv *srv = mod->rt->user_data;

@@ -171,7 +171,7 @@ static uint16_t find_lowest_free_addr(uint8_t num_elem)
 }
 
 static int cdb_net_set(const char *name, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct net_val net;
 	int err;
@@ -207,7 +207,7 @@ static int cdb_net_set(const char *name, size_t len_rd,
 }
 
 static int cdb_node_set(const char *name, size_t len_rd,
-			settings_read_cb read_cb, void *cb_arg)
+			bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct bt_mesh_cdb_node *node;
 	struct node_val val;
@@ -269,7 +269,7 @@ static int cdb_node_set(const char *name, size_t len_rd,
 }
 
 static int cdb_subnet_set(const char *name, size_t len_rd,
-			  settings_read_cb read_cb, void *cb_arg)
+			  bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct bt_mesh_cdb_subnet *sub;
 	struct net_key_val key;
@@ -335,7 +335,7 @@ static int cdb_subnet_set(const char *name, size_t len_rd,
 }
 
 static int cdb_app_key_set(const char *name, size_t len_rd,
-			   settings_read_cb read_cb, void *cb_arg)
+			   bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct bt_mesh_cdb_app_key *app;
 	struct app_key_val key;
@@ -393,7 +393,7 @@ static int cdb_app_key_set(const char *name, size_t len_rd,
 }
 
 static int cdb_set(const char *name, size_t len_rd,
-		   settings_read_cb read_cb, void *cb_arg)
+		   bt_storage_read_cb read_cb, void *cb_arg)
 {
 	int len;
 	const char *next;
@@ -408,7 +408,7 @@ static int cdb_set(const char *name, size_t len_rd,
 	}
 
 
-	len = settings_name_next(name, &next);
+	len = bt_storage_name_next(name, &next);
 
 	if (!next) {
 		LOG_ERR("Insufficient number of arguments");
@@ -452,7 +452,7 @@ static void store_cdb_node(const struct bt_mesh_cdb_node *node)
 
 	snprintf(path, sizeof(path), "bt/mesh/cdb/Node/%x", node->addr);
 
-	err = settings_save_one(path, &val, sizeof(val));
+	err = bt_storage_save_one(path, &val, sizeof(val));
 	if (err) {
 		LOG_ERR("Failed to store Node %s value", path);
 	} else {
@@ -468,7 +468,7 @@ static void clear_cdb_node(uint16_t addr)
 	LOG_DBG("Node 0x%04x", addr);
 
 	snprintf(path, sizeof(path), "bt/mesh/cdb/Node/%x", addr);
-	err = settings_delete(path);
+	err = bt_storage_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear Node 0x%04x", addr);
 	} else {
@@ -492,7 +492,7 @@ static void store_cdb_subnet(const struct bt_mesh_cdb_subnet *sub)
 
 	snprintf(path, sizeof(path), "bt/mesh/cdb/Subnet/%x", sub->net_idx);
 
-	err = settings_save_one(path, &key, sizeof(key));
+	err = bt_storage_save_one(path, &key, sizeof(key));
 	if (err) {
 		LOG_ERR("Failed to store Subnet value");
 	} else {
@@ -508,7 +508,7 @@ static void clear_cdb_subnet(uint16_t net_idx)
 	LOG_DBG("NetKeyIndex 0x%03x", net_idx);
 
 	snprintf(path, sizeof(path), "bt/mesh/cdb/Subnet/%x", net_idx);
-	err = settings_delete(path);
+	err = bt_storage_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear NetKeyIndex 0x%03x", net_idx);
 	} else {
@@ -529,7 +529,7 @@ static void store_cdb_app_key(const struct bt_mesh_cdb_app_key *app)
 
 	snprintf(path, sizeof(path), "bt/mesh/cdb/AppKey/%x", app->app_idx);
 
-	err = settings_save_one(path, &key, sizeof(key));
+	err = bt_storage_save_one(path, &key, sizeof(key));
 	if (err) {
 		LOG_ERR("Failed to store AppKey %s value", path);
 	} else {
@@ -543,7 +543,7 @@ static void clear_cdb_app_key(uint16_t app_idx)
 	int err;
 
 	snprintf(path, sizeof(path), "bt/mesh/cdb/AppKey/%x", app_idx);
-	err = settings_delete(path);
+	err = bt_storage_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear AppKeyIndex 0x%03x", app_idx);
 	} else {
@@ -1107,7 +1107,7 @@ static void clear_cdb_net(void)
 {
 	int err;
 
-	err = settings_delete("bt/mesh/cdb/Net");
+	err = bt_storage_delete("bt/mesh/cdb/Net");
 	if (err) {
 		LOG_ERR("Failed to clear Network");
 	} else {
@@ -1127,7 +1127,7 @@ static void store_cdb_pending_net(void)
 					BT_MESH_CDB_IVU_IN_PROGRESS);
 	net.lowest_avail_addr = bt_mesh_cdb.lowest_avail_addr;
 
-	err = settings_save_one("bt/mesh/cdb/Net", &net, sizeof(net));
+	err = bt_storage_save_one("bt/mesh/cdb/Net", &net, sizeof(net));
 	if (err) {
 		LOG_ERR("Failed to store Network value");
 	} else {

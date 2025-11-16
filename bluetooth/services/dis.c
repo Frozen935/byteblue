@@ -293,7 +293,7 @@ BT_GATT_SERVICE_DEFINE(
 
 #if defined(CONFIG_BT_DIS_SETTINGS)
 #if defined(CONFIG_BT_DIS_UDI)
-static void dis_update_udi_value(const char *new, char *old, settings_read_cb read_cb,
+static void dis_update_udi_value(const char *new, char *old, bt_storage_read_cb read_cb,
 				 const char *logkey)
 {
 	/*
@@ -328,7 +328,7 @@ static void dis_update_udi_value(const char *new, char *old, settings_read_cb re
 }
 #endif
 
-static int dis_set(const char *name, size_t len_rd, settings_read_cb read_cb, void *store)
+static int dis_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb, void *store)
 {
 	ssize_t len;
 	int nlen;
@@ -336,7 +336,7 @@ static int dis_set(const char *name, size_t len_rd, settings_read_cb read_cb, vo
 
 	ARG_UNUSED(len);
 
-	nlen = settings_name_next(name, &next);
+	nlen = bt_storage_name_next(name, &next);
 #if defined(CONFIG_BT_DIS_MANUF_NAME) || defined(CONFIG_BT_DIS_MANUF_DEPRECATED_USED)
 	if (!strncmp(name, "manuf", nlen)) {
 		len = read_cb(store, &dis_manuf, sizeof(dis_manuf) - 1);
@@ -481,6 +481,6 @@ static int dis_set(const char *name, size_t len_rd, settings_read_cb read_cb, vo
 	return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE(bt_dis, "bt/dis", NULL, dis_set, NULL, NULL);
+BT_STORAGE_HANDLER_DEFINE(bt_dis, "bt/dis", NULL, dis_set, NULL, NULL);
 
 #endif /* CONFIG_BT_DIS_SETTINGS*/

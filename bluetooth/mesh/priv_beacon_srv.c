@@ -222,7 +222,7 @@ static void priv_beacon_srv_reset(const struct bt_mesh_model *model)
 
 #ifdef CONFIG_BT_SETTINGS
 static int priv_beacon_srv_settings_set(const struct bt_mesh_model *model, const char *name,
-					size_t len_rd, settings_read_cb read_cb, void *cb_data)
+					size_t len_rd, bt_storage_read_cb read_cb, void *cb_data)
 {
 	int err;
 

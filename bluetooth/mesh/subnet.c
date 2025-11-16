@@ -72,7 +72,7 @@ static void clear_net_key(uint16_t net_idx)
 	LOG_DBG("NetKeyIndex 0x%03x", net_idx);
 
 	snprintf(path, sizeof(path), "bt/mesh/NetKey/%x", net_idx);
-	err = settings_delete(path);
+	err = bt_storage_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear NetKeyIndex 0x%03x", net_idx);
 	} else {
@@ -102,7 +102,7 @@ static void store_subnet(uint16_t net_idx)
 	key.unused = 0U;
 	key.kr_phase = sub->kr_phase;
 
-	err = settings_save_one(path, &key, sizeof(key));
+	err = bt_storage_save_one(path, &key, sizeof(key));
 	if (err) {
 		LOG_ERR("Failed to store NetKey value");
 	} else {
@@ -956,7 +956,7 @@ bool bt_mesh_net_cred_find(struct bt_mesh_net_rx *rx, struct bt_buf_simple *in,
 }
 
 static int net_key_set(const char *name, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct net_key_val key;
 	struct bt_mesh_key val[2];

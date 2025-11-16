@@ -54,7 +54,7 @@ static void clear_rpl(struct bt_mesh_rpl *rpl)
 	atomic_clear_bit(store, rpl_idx(rpl));
 
 	snprintf(path, sizeof(path), "bt/mesh/RPL/%x", rpl->src);
-	err = settings_delete(path);
+	err = bt_storage_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear RPL");
 	} else {
@@ -258,7 +258,7 @@ void bt_mesh_rpl_reset(void)
 }
 
 static int rpl_set(const char *name, size_t len_rd,
-		   settings_read_cb read_cb, void *cb_arg)
+		   bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct bt_mesh_rpl *entry;
 	struct rpl_val rpl;
@@ -326,7 +326,7 @@ static void store_rpl(struct bt_mesh_rpl *entry)
 
 	snprintf(path, sizeof(path), "bt/mesh/RPL/%x", entry->src);
 
-	err = settings_save_one(path, &rpl, sizeof(rpl));
+	err = bt_storage_save_one(path, &rpl, sizeof(rpl));
 	if (err) {
 		LOG_ERR("Failed to store RPL %s value", path);
 	} else {

@@ -95,7 +95,7 @@ void bt_settings_encode_key(char *path, size_t path_size, const char *subsys,
 
 int bt_settings_decode_key(const char *key, bt_addr_le_t *addr)
 {
-	if (settings_name_next(key, NULL) != 13) {
+	if (bt_storage_name_next(key, NULL) != 13) {
 		return -EINVAL;
 	}
 
@@ -116,7 +116,7 @@ int bt_settings_decode_key(const char *key, bt_addr_le_t *addr)
 	return 0;
 }
 
-static int set_setting(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int set_setting(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 	       void *cb_arg)
 {
 	ssize_t len;
@@ -137,7 +137,7 @@ static int set_setting(const char *name, size_t len_rd, settings_read_cb read_cb
 		return -ENOENT;
 	}
 
-	len = settings_name_next(name, &next);
+	len = bt_storage_name_next(name, &next);
 
 	if (!strncmp(name, "id", len)) {
 		/* Any previously provided identities supersede flash */
@@ -281,7 +281,7 @@ static int commit_settings(void)
 	return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE_WITH_CPRIO(bt, "bt", NULL, set_setting, commit_settings, NULL,
+BT_STORAGE_HANDLER_DEFINE_WITH_CPRIO(bt, "bt", NULL, set_setting, commit_settings, NULL,
 					  BT_SETTINGS_CPRIO_0);
 
 int bt_settings_init(void)
@@ -290,9 +290,9 @@ int bt_settings_init(void)
 
 	LOG_DBG("");
 
-	err = settings_subsys_init();
+	err = bt_storage_init();
 	if (err) {
-		LOG_ERR("settings_subsys_init failed (err %d)", err);
+		LOG_ERR("bt_storage_init failed (err %d)", err);
 		return err;
 	}
 
@@ -335,7 +335,7 @@ int bt_settings_store(const char *key, uint8_t id, const bt_addr_le_t *addr, con
 		bt_testing_settings_store_hook(key_str, value, val_len);
 	}
 
-	return settings_save_one(key_str, value, val_len);
+	return bt_storage_save_one(key_str, value, val_len);
 }
 
 int bt_settings_delete(const char *key, uint8_t id, const bt_addr_le_t *addr)
@@ -361,7 +361,7 @@ int bt_settings_delete(const char *key, uint8_t id, const bt_addr_le_t *addr)
 		bt_testing_settings_delete_hook(key_str);
 	}
 
-	return settings_delete(key_str);
+	return bt_storage_delete(key_str);
 }
 
 int bt_settings_store_sc(uint8_t id, const bt_addr_le_t *addr, const void *value, size_t val_len)

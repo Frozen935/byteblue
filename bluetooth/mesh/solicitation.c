@@ -98,9 +98,9 @@ void bt_mesh_sseq_pending_store(void)
 	int err;
 
 	if (sseq_out) {
-		err = settings_save_one(path, &sseq_out, sizeof(sseq_out));
+		err = bt_storage_save_one(path, &sseq_out, sizeof(sseq_out));
 	} else {
-		err = settings_delete(path);
+		err = bt_storage_delete(path);
 	}
 
 	if (err) {
@@ -113,7 +113,7 @@ void bt_mesh_sseq_pending_store(void)
 
 #if CONFIG_BT_MESH_PROXY_SOLICITATION
 static int sseq_set(const char *name, size_t len_rd,
-		    settings_read_cb read_cb, void *cb_arg)
+		    bt_storage_read_cb read_cb, void *cb_arg)
 {
 	int err;
 
@@ -328,7 +328,7 @@ static int sol_pdu_create(struct bt_mesh_subnet *sub, struct bt_buf_simple *pdu)
 
 #if CONFIG_BT_MESH_OD_PRIV_PROXY_SRV
 static int srpl_set(const char *name, size_t len_rd,
-		   settings_read_cb read_cb, void *cb_arg)
+		   bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct srpl_entry *entry;
 	int err;
@@ -398,7 +398,7 @@ static void srpl_entry_clear(int i)
 
 		snprintf(path, sizeof(path), "bt/mesh/SRPL/%x", addr);
 
-		settings_delete(path);
+		bt_storage_delete(path);
 	}
 }
 
@@ -411,7 +411,7 @@ static void srpl_store(struct srpl_entry *entry)
 
 	snprintf(path, sizeof(path), "bt/mesh/SRPL/%x", entry->ssrc);
 
-	err = settings_save_one(path, &entry->sseq, sizeof(entry->sseq));
+	err = bt_storage_save_one(path, &entry->sseq, sizeof(entry->sseq));
 	if (err) {
 		LOG_ERR("Failed to store RPL %s value", path);
 	} else {

@@ -338,7 +338,7 @@ int bt_keys_store(struct bt_keys *keys)
 	return 0;
 }
 
-static int keys_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int keys_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		    void *cb_arg)
 {
 	struct bt_keys *keys;
@@ -368,7 +368,7 @@ static int keys_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 		return -EINVAL;
 	}
 
-	settings_name_next(name, &next);
+	bt_storage_name_next(name, &next);
 
 	if (!next) {
 		id = BT_ID_DEFAULT;

@@ -170,7 +170,7 @@ static void sar_cfg_srv_reset(const struct bt_mesh_model *model)
 
 #ifdef CONFIG_BT_SETTINGS
 static int sar_cfg_srv_settings_set(const struct bt_mesh_model *model, const char *name,
-				    size_t len_rd, settings_read_cb read_cb,
+				    size_t len_rd, bt_storage_read_cb read_cb,
 				    void *cb_data)
 {
 	if (!strncmp(name, "sar_rx", 5)) {

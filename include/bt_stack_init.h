@@ -1,5 +1,5 @@
-#ifndef __STACK_INIT_H__
-#define __STACK_INIT_H__
+#ifndef __INCLUDE_BT_STACK_INIT_H__
+#define __INCLUDE_BT_STACK_INIT_H__
 
 #include <stdint.h>
 

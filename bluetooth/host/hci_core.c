@@ -4457,7 +4457,7 @@ static int bt_init(void)
 
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
 		if (!bt_dev.id_count) {
-			LOG_INF("No ID address. App must call settings_load()");
+			LOG_INF("No ID address. App must call bt_storage_load()");
 			return 0;
 		}
 

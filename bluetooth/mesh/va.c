@@ -207,7 +207,7 @@ int bt_mesh_va_get_idx_by_uuid(const uint8_t *uuid, uint16_t *uuidx)
 
 #if CONFIG_BT_MESH_LABEL_COUNT > 0
 static int va_set(const char *name, size_t len_rd,
-		  settings_read_cb read_cb, void *cb_arg)
+		  bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct va_val va;
 	struct bt_mesh_va *lab;
@@ -273,13 +273,13 @@ void bt_mesh_va_pending_store(void)
 		snprintf(path, sizeof(path), "bt/mesh/Va/%x", i);
 
 		if (IS_VA_DEL(lab)) {
-			err = settings_delete(path);
+			err = bt_storage_delete(path);
 		} else {
 			va.ref = lab->ref;
 			va.addr = lab->addr;
 			memcpy(va.uuid, lab->uuid, 16);
 
-			err = settings_save_one(path, &va, sizeof(va));
+			err = bt_storage_save_one(path, &va, sizeof(va));
 		}
 
 		if (err) {

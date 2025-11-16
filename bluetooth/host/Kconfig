@@ -231,9 +231,9 @@ config BT_SETTINGS
 	  configuration persistently in flash.
 
 	  When this option has been enabled, it's important that the
-	  application makes a call to settings_load() after having done
+	  application makes a call to bt_storage_load() after having done
 	  all necessary initialization (e.g. calling bt_enable). The
-	  reason settings_load() is handled externally to the stack, is
+	  reason bt_storage_load() is handled externally to the stack, is
 	  that there may be other subsystems using the settings API, in
 	  which case it's more efficient to load all settings in one go,
 	  instead of each subsystem doing it independently.
@@ -250,7 +250,7 @@ config BT_SETTINGS_CCC_LAZY_LOADING
 	  Load Client Configuration Characteristic setting right after a bonded
 	  device connects.
 	  Disabling this option will increase memory usage as CCC values for all
-	  bonded devices will be loaded when calling settings_load.
+	  bonded devices will be loaded when calling bt_storage_load.
 
 config BT_SETTINGS_DELAYED_STORE
 	# Enables delayed non-volatile storage mechanism
@@ -554,7 +554,7 @@ config BT_PRIVACY_RANDOMIZE_IR
 	  A description of the exact effect of this setting follows.
 
 	  If the application has not setup an identity before calling
-	  settings_load()/settings_load_subtree("bt") after bt_enable(), the
+	  bt_storage_load()/settings_load_subtree("bt") after bt_enable(), the
 	  Host will automatically try to load saved identities from the settings
 	  subsystem, and if there are none, set up the default identity
 	  (BT_ID_DEFAULT).

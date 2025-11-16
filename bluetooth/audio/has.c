@@ -874,7 +874,7 @@ struct client_context_store {
 	uint8_t last_preset_index_known;
 } __packed;
 
-static int settings_set_cb(const char *name, size_t len_rd, settings_read_cb read_cb, void *cb_arg)
+static int settings_set_cb(const char *name, size_t len_rd, bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct client_context_store store;
 	struct client_context *context;

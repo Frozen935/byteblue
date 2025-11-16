@@ -304,9 +304,9 @@ typedef void (*bt_ready_cb_t)(int err);
  * When @kconfig{CONFIG_BT_SETTINGS} is enabled, the application must load the
  * Bluetooth settings after this API call successfully completes before
  * Bluetooth APIs can be used. Loading the settings before calling this function
- * is insufficient. Bluetooth settings can be loaded with @ref settings_load or
+ * is insufficient. Bluetooth settings can be loaded with @ref bt_storage_load or
  * @ref settings_load_subtree with argument "bt". The latter selectively loads only
- * Bluetooth settings and is recommended if @ref settings_load has been called
+ * Bluetooth settings and is recommended if @ref bt_storage_load has been called
  * earlier.
  *
  * @param cb Callback to notify completion or NULL to perform the
@@ -323,7 +323,7 @@ int bt_enable(bt_ready_cb_t cb);
  *
  * This API will clear all configured identity addresses and keys that are not persistently
  * stored with @kconfig{CONFIG_BT_SETTINGS}. These can be restored
- * with @ref settings_load before reenabling the stack.
+ * with @ref bt_storage_load before reenabling the stack.
  *
  * This API does _not_ clear previously registered callbacks
  * like @ref bt_le_scan_cb_register, @ref bt_conn_cb_register
@@ -439,7 +439,7 @@ void bt_id_get(bt_addr_le_t *addrs, size_t *count);
  *
  * If the application wants to have the stack randomly generate identity addresses
  * and store them in flash for later recovery, the way to do it would be
- * to first initialize the stack (using bt_enable), then call @ref settings_load,
+ * to first initialize the stack (using bt_enable), then call @ref bt_storage_load,
  * and after that check with @ref bt_id_get how many identity addresses were recovered.
  * If an insufficient amount of identity addresses were recovered the app may then
  * call this function to create new ones.

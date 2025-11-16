@@ -19,8 +19,6 @@ int main(int argc, char *argv[])
     bt_stack_init_once();
     bt_shell_init(&sh);
 
-    bt_shell_cmd_bt_register(&sh);
-
 	while (1) {
 		bt_shell_fprintf_print("openblue> ");
 		fflush(stdout);

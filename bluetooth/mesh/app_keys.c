@@ -80,7 +80,7 @@ static void clear_app_key(uint16_t app_idx)
 	int err;
 
 	snprintf(path, sizeof(path), "bt/mesh/AppKey/%x", app_idx);
-	err = settings_delete(path);
+	err = bt_storage_delete(path);
 	if (err) {
 		LOG_ERR("Failed to clear AppKeyIndex 0x%03x", app_idx);
 	} else {
@@ -109,7 +109,7 @@ static void store_app_key(uint16_t app_idx)
 	memcpy(&key.val[0], &app->keys[0].val, sizeof(struct bt_mesh_key));
 	memcpy(&key.val[1], &app->keys[1].val, sizeof(struct bt_mesh_key));
 
-	err = settings_save_one(path, &key, sizeof(key));
+	err = bt_storage_save_one(path, &key, sizeof(key));
 	if (err) {
 		LOG_ERR("Failed to store AppKey %s value", path);
 	} else {
@@ -656,7 +656,7 @@ void bt_mesh_app_keys_reset(void)
 }
 
 static int app_key_set(const char *name, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct app_key_val key;
 	struct bt_mesh_key val[2];

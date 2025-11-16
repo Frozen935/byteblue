@@ -17,7 +17,7 @@
 #define BT_SETTINGS_SIZE(in_size) ((((((in_size) - 1) / 3) * 4) + 4) + 1)
 
 #define BT_SETTINGS_DEFINE(_hname, _subtree, _set, _commit)                                        \
-	SETTINGS_STATIC_HANDLER_DEFINE_WITH_CPRIO(bt_##_hname, "bt/" _subtree, NULL, _set, _commit,\
+	BT_STORAGE_HANDLER_DEFINE_WITH_CPRIO(bt_##_hname, "bt/" _subtree, NULL, _set, _commit,\
 						  NULL, BT_SETTINGS_CPRIO_1)
 
 

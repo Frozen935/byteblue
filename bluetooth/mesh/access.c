@@ -1850,7 +1850,7 @@ bool bt_mesh_model_is_extended(const struct bt_mesh_model *model)
 }
 
 static int mod_set_bind(const struct bt_mesh_model *mod, size_t len_rd,
-			settings_read_cb read_cb, void *cb_arg)
+			bt_storage_read_cb read_cb, void *cb_arg)
 {
 	ssize_t len;
 	int i;
@@ -1878,7 +1878,7 @@ static int mod_set_bind(const struct bt_mesh_model *mod, size_t len_rd,
 }
 
 static int mod_set_sub(const struct bt_mesh_model *mod, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	size_t size = mod->groups_cnt * sizeof(mod->groups[0]);
 	ssize_t len;
@@ -1905,7 +1905,7 @@ static int mod_set_sub(const struct bt_mesh_model *mod, size_t len_rd,
 }
 
 static int mod_set_sub_va(const struct bt_mesh_model *mod, size_t len_rd,
-			  settings_read_cb read_cb, void *cb_arg)
+			  bt_storage_read_cb read_cb, void *cb_arg)
 {
 #if CONFIG_BT_MESH_LABEL_COUNT > 0
 	uint16_t uuidxs[CONFIG_BT_MESH_LABEL_COUNT];
@@ -1942,7 +1942,7 @@ static int mod_set_sub_va(const struct bt_mesh_model *mod, size_t len_rd,
 }
 
 static int mod_set_pub(const struct bt_mesh_model *mod, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct mod_pub_val pub;
 	int err;
@@ -1997,11 +1997,11 @@ static int mod_set_pub(const struct bt_mesh_model *mod, size_t len_rd,
 
 static int mod_data_set(const struct bt_mesh_model *mod,
 			const char *name, size_t len_rd,
-			settings_read_cb read_cb, void *cb_arg)
+			bt_storage_read_cb read_cb, void *cb_arg)
 {
 	const char *next;
 
-	settings_name_next(name, &next);
+	bt_storage_name_next(name, &next);
 
 	if (mod->cb && mod->cb->settings_set) {
 		return mod->cb->settings_set(mod, next, len_rd,
@@ -2012,7 +2012,7 @@ static int mod_data_set(const struct bt_mesh_model *mod,
 }
 
 static int mod_set(bool vnd, const char *name, size_t len_rd,
-		   settings_read_cb read_cb, void *cb_arg)
+		   bt_storage_read_cb read_cb, void *cb_arg)
 {
 	const struct bt_mesh_model *mod;
 	uint8_t elem_idx, mod_idx;
@@ -2037,16 +2037,16 @@ static int mod_set(bool vnd, const char *name, size_t len_rd,
 		return -ENOENT;
 	}
 
-	len = settings_name_next(name, &next);
+	len = bt_storage_name_next(name, &next);
 	if (!next) {
 		LOG_ERR("Insufficient number of arguments");
 		return -ENOENT;
 	}
 
-	/* `len` contains length of model id string representation. Call settings_name_next() again
+	/* `len` contains length of model id string representation. Call bt_storage_name_next() again
 	 * to get length of `next`.
 	 */
-	switch (settings_name_next(next, NULL)) {
+	switch (bt_storage_name_next(next, NULL)) {
 	case 4:
 		if (!strncmp(next, "bind", 4)) {
 			return mod_set_bind(mod, len_rd, read_cb, cb_arg);
@@ -2074,7 +2074,7 @@ static int mod_set(bool vnd, const char *name, size_t len_rd,
 }
 
 static int sig_mod_set(const char *name, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	return mod_set(false, name, len_rd, read_cb, cb_arg);
 }
@@ -2082,14 +2082,14 @@ static int sig_mod_set(const char *name, size_t len_rd,
 BT_MESH_SETTINGS_DEFINE(sig_mod, "s", sig_mod_set);
 
 static int vnd_mod_set(const char *name, size_t len_rd,
-		       settings_read_cb read_cb, void *cb_arg)
+		       bt_storage_read_cb read_cb, void *cb_arg)
 {
 	return mod_set(true, name, len_rd, read_cb, cb_arg);
 }
 
 BT_MESH_SETTINGS_DEFINE(vnd_mod, "v", vnd_mod_set);
 
-static int comp_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int comp_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		    void *cb_arg)
 {
 	/* Only need to know that the entry exists. Will load the contents on
@@ -2131,9 +2131,9 @@ static void store_pending_mod_bind(const struct bt_mesh_model *mod, bool vnd)
 	encode_mod_path(mod, vnd, "bind", path, sizeof(path));
 
 	if (count) {
-		err = settings_save_one(path, keys, count * sizeof(keys[0]));
+		err = bt_storage_save_one(path, keys, count * sizeof(keys[0]));
 	} else {
-		err = settings_delete(path);
+		err = bt_storage_delete(path);
 	}
 
 	if (err) {
@@ -2158,9 +2158,9 @@ static void store_pending_mod_sub(const struct bt_mesh_model *mod, bool vnd)
 	encode_mod_path(mod, vnd, "sub", path, sizeof(path));
 
 	if (count) {
-		err = settings_save_one(path, groups, count * sizeof(groups[0]));
+		err = bt_storage_save_one(path, groups, count * sizeof(groups[0]));
 	} else {
-		err = settings_delete(path);
+		err = bt_storage_delete(path);
 	}
 
 	if (err) {
@@ -2189,9 +2189,9 @@ static void store_pending_mod_sub_va(const struct bt_mesh_model *mod, bool vnd)
 	encode_mod_path(mod, vnd, "subv", path, sizeof(path));
 
 	if (count) {
-		err = settings_save_one(path, uuidxs, count * sizeof(uuidxs[0]));
+		err = bt_storage_save_one(path, uuidxs, count * sizeof(uuidxs[0]));
 	} else {
-		err = settings_delete(path);
+		err = bt_storage_delete(path);
 	}
 
 	if (err) {
@@ -2211,7 +2211,7 @@ static void store_pending_mod_pub(const struct bt_mesh_model *mod, bool vnd)
 	encode_mod_path(mod, vnd, "pub", path, sizeof(path));
 
 	if (!mod->pub || mod->pub->addr == BT_MESH_ADDR_UNASSIGNED) {
-		err = settings_delete(path);
+		err = bt_storage_delete(path);
 	} else {
 		pub.base.addr = mod->pub->addr;
 		pub.base.key = mod->pub->key;
@@ -2225,7 +2225,7 @@ static void store_pending_mod_pub(const struct bt_mesh_model *mod, bool vnd)
 			(void)bt_mesh_va_get_idx_by_uuid(mod->pub->uuid, &pub.uuidx);
 		}
 
-		err = settings_save_one(path, &pub, sizeof(pub));
+		err = bt_storage_save_one(path, &pub, sizeof(pub));
 	}
 
 	if (err) {
@@ -2383,7 +2383,7 @@ int bt_mesh_comp_store(void)
 			return err;
 		}
 
-		err = settings_save_one(comp_data_pages[i].path, buf.data, buf.len);
+		err = bt_storage_save_one(comp_data_pages[i].path, buf.data, buf.len);
 		if (err) {
 			LOG_ERR("Failed to store CDP%d: %d", comp_data_pages[i].page, err);
 			return err;
@@ -2409,7 +2409,7 @@ static void comp_data_clear(void)
 	int err;
 
 	for (int i = 0; i < ARRAY_SIZE(comp_data_pages); i++) {
-		err = settings_delete(comp_data_pages[i].path);
+		err = bt_storage_delete(comp_data_pages[i].path);
 		if (err) {
 			LOG_ERR("Failed to clear CDP%d: %d", comp_data_pages[i].page,
 				err);
@@ -2419,7 +2419,7 @@ static void comp_data_clear(void)
 	atomic_clear_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY);
 }
 
-static int read_comp_cb(const char *key, size_t len, settings_read_cb read_cb,
+static int read_comp_cb(const char *key, size_t len, bt_storage_read_cb read_cb,
 			void *cb_arg, void *param)
 {
 	struct bt_buf_simple *buf = param;
@@ -2456,7 +2456,7 @@ int bt_mesh_comp_read(struct bt_buf_simple *buf, uint8_t page)
 		return -ENOENT;
 	}
 
-	err = settings_load_subtree_direct(comp_data_pages[i].path, read_comp_cb, buf);
+	err = bt_storage_load_subtree_direct(comp_data_pages[i].path, read_comp_cb, buf);
 
 	if (err) {
 		LOG_ERR("Failed reading composition data: %d", err);
@@ -2482,9 +2482,9 @@ int bt_mesh_model_data_store(const struct bt_mesh_model *mod, bool vnd,
 	}
 
 	if (data_len) {
-		err = settings_save_one(path, data, data_len);
+		err = bt_storage_save_one(path, data, data_len);
 	} else {
-		err = settings_delete(path);
+		err = bt_storage_delete(path);
 	}
 
 	if (err) {
@@ -2496,7 +2496,7 @@ int bt_mesh_model_data_store(const struct bt_mesh_model *mod, bool vnd,
 }
 
 #if defined(CONFIG_BT_MESH_LARGE_COMP_DATA_SRV)
-static int metadata_set(const char *name, size_t len_rd, settings_read_cb read_cb, void *cb_arg)
+static int metadata_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb, void *cb_arg)
 {
 	/* Only need to know that the entry exists. Will load the contents on
 	 * demand.
@@ -2533,7 +2533,7 @@ int bt_mesh_models_metadata_store(void)
 
 	LOG_DBG("bt/mesh/metadata len %d", buf.len);
 
-	err = settings_save_one("bt/mesh/metadata", buf.data, buf.len);
+	err = bt_storage_save_one("bt/mesh/metadata", buf.data, buf.len);
 	if (err) {
 		LOG_ERR("Failed to store models metadata: %d", err);
 	} else {
@@ -2555,7 +2555,7 @@ int bt_mesh_models_metadata_read(struct bt_buf_simple *buf, size_t offset)
 
 	bt_buf_simple_init(&stored_buf, 0);
 
-	err = settings_load_subtree_direct("bt/mesh/metadata", read_comp_cb, &stored_buf);
+	err = bt_storage_load_subtree_direct("bt/mesh/metadata", read_comp_cb, &stored_buf);
 	if (err) {
 		LOG_ERR("Failed reading models metadata: %d", err);
 		return err;
@@ -2587,7 +2587,7 @@ static void models_metadata_clear(void)
 {
 	int err;
 
-	err = settings_delete("bt/mesh/metadata");
+	err = bt_storage_delete("bt/mesh/metadata");
 	if (err) {
 		LOG_ERR("Failed to clear models metadata: %d", err);
 	} else {

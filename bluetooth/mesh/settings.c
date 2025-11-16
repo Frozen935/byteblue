@@ -57,7 +57,7 @@ static struct bt_work_q settings_work_q;
 static struct bt_work_delayable pending_store;
 static ATOMIC_DEFINE(pending_flags, BT_MESH_SETTINGS_FLAG_COUNT);
 
-int bt_mesh_settings_set(settings_read_cb read_cb, void *cb_arg,
+int bt_mesh_settings_set(bt_storage_read_cb read_cb, void *cb_arg,
 			 void *out, size_t read_len)
 {
 	ssize_t len;
@@ -109,7 +109,7 @@ static int mesh_commit(void)
 	return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE_WITH_CPRIO(bt_mesh, "bt/mesh", NULL, NULL, mesh_commit, NULL,
+BT_STORAGE_HANDLER_DEFINE_WITH_CPRIO(bt_mesh, "bt/mesh", NULL, NULL, mesh_commit, NULL,
 					  BT_SETTINGS_CPRIO_2);
 
 /* Pending flags that use OS_TIMEOUT_NO_WAIT as the storage timeout */

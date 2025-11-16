@@ -1381,7 +1381,7 @@ static void bt_ready(int err)
 	bt_shell_print("Bluetooth initialized");
 
 	if (IS_ENABLED(CONFIG_SETTINGS) && !no_settings_load) {
-		settings_load();
+		bt_storage_load();
 		bt_shell_print("Settings Loaded");
 	}
 
@@ -1448,7 +1448,7 @@ static int cmd_settings_load(const struct bt_shell *sh, size_t argc,
 {
 	int err;
 
-	err = settings_load();
+	err = bt_storage_load();
 	if (err) {
 		bt_shell_error("Settings load failed (err %d)", err);
 		return err;

@@ -28,7 +28,7 @@ enum bt_mesh_settings_flag {
 
 #ifdef CONFIG_BT_SETTINGS
 #define BT_MESH_SETTINGS_DEFINE(_hname, _subtree, _set)                                            \
-	static int pre_##_set(const char *name, size_t len_rd, settings_read_cb read_cb,           \
+	static int pre_##_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,           \
 			      void *cb_arg)                                                        \
 	{                                                                                          \
 		if (!atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {                               \
@@ -36,7 +36,7 @@ enum bt_mesh_settings_flag {
 		}                                                                                  \
 		return _set(name, len_rd, read_cb, cb_arg);                                        \
 	}                                                                                          \
-	SETTINGS_STATIC_HANDLER_DEFINE(bt_mesh_##_hname, "bt/mesh/" _subtree, NULL, pre_##_set,    \
+	BT_STORAGE_HANDLER_DEFINE(bt_mesh_##_hname, "bt/mesh/" _subtree, NULL, pre_##_set,    \
 				       NULL, NULL)
 #else
 /* Declaring non static settings handler helps avoid unnecessary ifdefs
@@ -53,5 +53,5 @@ void bt_mesh_settings_init(void);
 void bt_mesh_settings_store_schedule(enum bt_mesh_settings_flag flag);
 void bt_mesh_settings_store_cancel(enum bt_mesh_settings_flag flag);
 void bt_mesh_settings_store_pending(void);
-int bt_mesh_settings_set(settings_read_cb read_cb, void *cb_arg,
+int bt_mesh_settings_set(bt_storage_read_cb read_cb, void *cb_arg,
 			 void *out, size_t read_len);

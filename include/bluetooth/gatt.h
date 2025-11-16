@@ -643,23 +643,23 @@ int bt_gatt_authorization_cb_register(const struct bt_gatt_authorization_cb *cb)
  *
  *  When using @kconfig{CONFIG_BT_SETTINGS} then all services that should have
  *  bond configuration loaded, i.e. CCC values, must be registered before
- *  calling @ref settings_load.
+ *  calling @ref bt_storage_load.
  *
  *  When using @kconfig{CONFIG_BT_GATT_CACHING} and @kconfig{CONFIG_BT_SETTINGS}
  *  then all services that should be included in the GATT Database Hash
- *  calculation should be added before calling @ref settings_load.
- *  All services registered after settings_load will trigger a new database hash
+ *  calculation should be added before calling @ref bt_storage_load.
+ *  All services registered after bt_storage_load will trigger a new database hash
  *  calculation and a new hash stored.
  *
  *  There are two situations where this function can be called: either before
- *  `bt_init()` has been called, or after `settings_load()` has been called.
+ *  `bt_init()` has been called, or after `bt_storage_load()` has been called.
  *  Registering a service in the middle is not supported and will return an
  *  error.
  *
  *  @param svc Service containing the available attributes
  *
  *  @return 0 in case of success or negative value in case of error.
- *  @return -EAGAIN if ``bt_init()`` has been called but ``settings_load()`` hasn't yet.
+ *  @return -EAGAIN if ``bt_init()`` has been called but ``bt_storage_load()`` hasn't yet.
  */
 int bt_gatt_service_register(struct bt_gatt_service *svc);
 

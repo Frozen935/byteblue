@@ -67,19 +67,19 @@ static int slot_store(const struct slot *slot_to_store)
 	char buf[SLOT_ENTRY_BUFLEN];
 	int err;
 
-	err = settings_save_one(slot_entry_encode(idx, buf, PROP_HEADER),
+	err = bt_storage_save_one(slot_entry_encode(idx, buf, PROP_HEADER),
 				slot_to_store, HEADER_SIZE);
 	if (err) {
 		return err;
 	}
 
-	err = settings_save_one(slot_entry_encode(idx, buf, PROP_FWID),
+	err = bt_storage_save_one(slot_entry_encode(idx, buf, PROP_FWID),
 				slot_to_store->slot.fwid, slot_to_store->slot.fwid_len);
 	if (err) {
 		return err;
 	}
 
-	err = settings_save_one(slot_entry_encode(idx, buf,
+	err = bt_storage_save_one(slot_entry_encode(idx, buf,
 						  PROP_METADATA),
 				slot_to_store->slot.metadata, slot_to_store->slot.metadata_len);
 
@@ -91,9 +91,9 @@ static void slot_erase(struct slot *slot_to_erase)
 	uint16_t idx = ARRAY_INDEX(slots, slot_to_erase);
 	char buf[SLOT_ENTRY_BUFLEN];
 
-	(void)settings_delete(slot_entry_encode(idx, buf, PROP_HEADER));
-	(void)settings_delete(slot_entry_encode(idx, buf, PROP_FWID));
-	(void)settings_delete(slot_entry_encode(idx, buf, PROP_METADATA));
+	(void)bt_storage_delete(slot_entry_encode(idx, buf, PROP_HEADER));
+	(void)bt_storage_delete(slot_entry_encode(idx, buf, PROP_FWID));
+	(void)bt_storage_delete(slot_entry_encode(idx, buf, PROP_METADATA));
 }
 
 static void slot_index_defrag(void)
@@ -328,7 +328,7 @@ size_t bt_mesh_dfu_slot_foreach(bt_mesh_dfu_slot_cb_t cb, void *user_data)
 }
 
 static int slot_data_load(const char *key, size_t len_rd,
-			  settings_read_cb read_cb, void *cb_arg)
+			  bt_storage_read_cb read_cb, void *cb_arg)
 {
 	const char *prop;
 	size_t len;
@@ -340,7 +340,7 @@ static int slot_data_load(const char *key, size_t len_rd,
 		return 0;
 	}
 
-	len = settings_name_next(key, &prop);
+	len = bt_storage_name_next(key, &prop);
 
 	if (!strncmp(prop, PROP_HEADER, len)) {
 		if (read_cb(cb_arg, &slots[idx], HEADER_SIZE) > 0) {
@@ -394,5 +394,5 @@ static int slot_data_load(const char *key, size_t len_rd,
 	return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE(bt_mesh_dfu_slots, DFU_SLOT_SETTINGS_PATH, NULL,
+BT_STORAGE_HANDLER_DEFINE(bt_mesh_dfu_slots, DFU_SLOT_SETTINGS_PATH, NULL,
 			       slot_data_load, NULL, NULL);

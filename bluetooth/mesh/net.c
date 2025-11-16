@@ -991,7 +991,7 @@ void bt_mesh_net_init(void)
 	bt_work_init(&bt_mesh.local_work, bt_mesh_net_local);
 }
 
-static int net_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int net_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		   void *cb_arg)
 {
 	struct net_val net;
@@ -1029,7 +1029,7 @@ static int net_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 
 BT_MESH_SETTINGS_DEFINE(net, "Net", net_set);
 
-static int iv_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int iv_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		  void *cb_arg)
 {
 	struct iv_val iv;
@@ -1061,7 +1061,7 @@ static int iv_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 
 BT_MESH_SETTINGS_DEFINE(iv, "IV", iv_set);
 
-static int seq_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int seq_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		   void *cb_arg)
 {
 	struct seq_val seq;
@@ -1100,7 +1100,7 @@ static int seq_set(const char *name, size_t len_rd, settings_read_cb read_cb,
 BT_MESH_SETTINGS_DEFINE(seq, "Seq", seq_set);
 
 #if defined(CONFIG_BT_MESH_RPR_SRV)
-static int dev_key_cand_set(const char *name, size_t len_rd, settings_read_cb read_cb,
+static int dev_key_cand_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 		   void *cb_arg)
 {
 	int err;
@@ -1133,10 +1133,10 @@ void bt_mesh_net_pending_dev_key_cand_store(void)
 	int err;
 
 	if (atomic_test_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
-		err = settings_save_one("bt/mesh/DevKeyC", &bt_mesh.dev_key_cand,
+		err = bt_storage_save_one("bt/mesh/DevKeyC", &bt_mesh.dev_key_cand,
 					sizeof(struct bt_mesh_key));
 	} else {
-		err = settings_delete("bt/mesh/DevKeyC");
+		err = bt_storage_delete("bt/mesh/DevKeyC");
 	}
 
 	if (err) {
@@ -1156,7 +1156,7 @@ static void clear_iv(void)
 {
 	int err;
 
-	err = settings_delete("bt/mesh/IV");
+	err = bt_storage_delete("bt/mesh/IV");
 	if (err) {
 		LOG_ERR("Failed to clear IV");
 	} else {
@@ -1173,7 +1173,7 @@ static void store_pending_iv(void)
 	iv.iv_update = atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_IN_PROGRESS);
 	iv.iv_duration = bt_mesh.ivu_duration;
 
-	err = settings_save_one("bt/mesh/IV", &iv, sizeof(iv));
+	err = bt_storage_save_one("bt/mesh/IV", &iv, sizeof(iv));
 	if (err) {
 		LOG_ERR("Failed to store IV value");
 	} else {
@@ -1194,7 +1194,7 @@ static void clear_net(void)
 {
 	int err;
 
-	err = settings_delete("bt/mesh/Net");
+	err = bt_storage_delete("bt/mesh/Net");
 	if (err) {
 		LOG_ERR("Failed to clear Network");
 	} else {
@@ -1213,7 +1213,7 @@ static void store_pending_net(void)
 	net.primary_addr = bt_mesh_primary_addr();
 	memcpy(&net.dev_key, &bt_mesh.dev_key, sizeof(struct bt_mesh_key));
 
-	err = settings_save_one("bt/mesh/Net", &net, sizeof(net));
+	err = bt_storage_save_one("bt/mesh/Net", &net, sizeof(net));
 	if (err) {
 		LOG_ERR("Failed to store Network value");
 	} else {
@@ -1238,14 +1238,14 @@ void bt_mesh_net_pending_seq_store(void)
 	if (atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		sys_put_le24(bt_mesh.seq, seq.val);
 
-		err = settings_save_one("bt/mesh/Seq", &seq, sizeof(seq));
+		err = bt_storage_save_one("bt/mesh/Seq", &seq, sizeof(seq));
 		if (err) {
 			LOG_ERR("Failed to stor Seq value");
 		} else {
 			LOG_DBG("Stored Seq value");
 		}
 	} else {
-		err = settings_delete("bt/mesh/Seq");
+		err = bt_storage_delete("bt/mesh/Seq");
 		if (err) {
 			LOG_ERR("Failed to clear Seq value");
 		} else {

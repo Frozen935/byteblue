@@ -16,6 +16,7 @@
 #include <stdio.h>
 
 #include "bt_toolchain_macro.h"
+#include "bt_storage.h"
 
 #if defined(__has_include)
 #if __has_include(<bluetooth/addr.h>)
@@ -61,7 +62,5 @@ extern struct bt_work_q main_work_q;
 #include <bluetooth/addr.h>
 #endif
 #endif
-
-#include "shim_settings.h"
 
 #endif /* ZEPHYR_SHIM_SHIM_H */

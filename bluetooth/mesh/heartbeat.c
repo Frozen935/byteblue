@@ -407,7 +407,7 @@ void bt_mesh_hb_resume(void)
 }
 
 static int hb_pub_set(const char *name, size_t len_rd,
-		      settings_read_cb read_cb, void *cb_arg)
+		      bt_storage_read_cb read_cb, void *cb_arg)
 {
 	struct bt_mesh_hb_pub hb_pub;
 	struct hb_pub_val hb_val;
@@ -448,7 +448,7 @@ void bt_mesh_hb_pub_pending_store(void)
 
 	bt_mesh_hb_pub_get(&hb_pub);
 	if (hb_pub.dst == BT_MESH_ADDR_UNASSIGNED) {
-		err = settings_delete("bt/mesh/HBPub");
+		err = bt_storage_delete("bt/mesh/HBPub");
 	} else {
 		val.indefinite = (hb_pub.count == 0xffff);
 		val.dst = hb_pub.dst;
@@ -457,7 +457,7 @@ void bt_mesh_hb_pub_pending_store(void)
 		val.feat = hb_pub.feat;
 		val.net_idx = hb_pub.net_idx;
 
-		err = settings_save_one("bt/mesh/HBPub", &val, sizeof(val));
+		err = bt_storage_save_one("bt/mesh/HBPub", &val, sizeof(val));
 	}
 
 	if (err) {

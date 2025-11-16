@@ -90,7 +90,7 @@ static int csip_settings_commit(void)
  * to ensure csip_settings_commit() runs after BT keys settings are loaded.
  * Priority is reduced to ensure existing bonds are loaded first.
  */
-SETTINGS_STATIC_HANDLER_DEFINE_WITH_CPRIO(bt_csip_set_member, "bt/csip", NULL, NULL,
+BT_STORAGE_HANDLER_DEFINE_WITH_CPRIO(bt_csip_set_member, "bt/csip", NULL, NULL,
 					csip_settings_commit, NULL, BT_SETTINGS_CPRIO_2);
 #endif /* CONFIG_BT_SETTINGS */
 

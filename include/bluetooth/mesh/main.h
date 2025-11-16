@@ -537,7 +537,7 @@ int bt_mesh_reprovision_remote(struct bt_mesh_rpr_cli *cli,
  *  This API can be used to check if the local node has been provisioned
  *  or not. It can e.g. be helpful to determine if there was a stored
  *  network in flash, i.e. if the network was restored after calling
- *  settings_load().
+ *  bt_storage_load().
  *
  *  @return True if the node is provisioned. False otherwise.
  */
