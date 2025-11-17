@@ -27,7 +27,6 @@
 #include <unistd.h>
 #include <limits.h>
 #include <pthread.h>
-#include <debug.h>
 
 #include <base/byteorder.h>
 
@@ -35,15 +34,17 @@
 #include <bluetooth/hci.h>
 #include <drivers/bluetooth.h>
 
+#define HCI_DEV_NAME "/dev/ttyHCI0"
 struct h4_data {
 	int fd;
 	os_mutex_t mutex;
+	bool ready;
 	bt_hci_recv_t recv;
 };
 
 #define HCI_DEBUG 0
 
-static struct k_thread rx_thread_data;
+static os_thread_t rx_thread_handle;
 
 static void h4_data_dump(const char *tag, uint8_t type, uint8_t *data, uint32_t len)
 {
@@ -207,9 +208,6 @@ static void h4_rx_thread(void *p1)
 	const struct bt_hci_transport *transport = p1;
 	struct h4_data *h4 = transport->user_data;
 
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
-
 	LOG_DBG("started");
 
 	ssize_t frame_size = 0;
@@ -329,7 +327,6 @@ static int h4_send(const struct bt_hci_transport *transport, struct bt_buf *buf)
 			bt_buf_push_u8(buf, BT_HCI_H4_ISO);
 			break;
 		}
-		__fallthrough;
 	default:
 		LOG_ERR("Unknown buffer type");
 		return -EINVAL;
@@ -337,7 +334,7 @@ static int h4_send(const struct bt_hci_transport *transport, struct bt_buf *buf)
 
 	h4_data_dump("BT TX", buf->data[0], buf->data + 1, buf->len - 1);
 
-	os_mutex_lock(&h4->mutex);
+	os_mutex_lock(&h4->mutex, OS_TIMEOUT_FOREVER);
 	len = buf->len;
 	ret = h4_send_data(h4, buf->data, buf->len);
 	if (ret != len) {
@@ -355,15 +352,15 @@ static int h4_open(const struct bt_hci_transport *transport, bt_hci_recv_t recv)
 	int ret;
 	struct h4_data *h4 = transport->user_data;
 
-	ret = open(CONFIG_BT_UART_ON_DEV_NAME, O_RDWR | O_BINARY | O_CLOEXEC);
+	ret = open(HCI_DEV_NAME, O_RDWR | O_BINARY | O_CLOEXEC);
 	if (ret < 0) {
 		goto bail;
 	}
 
 	h4->fd = ret;
-	LOG_DBG("H4: %s opened as fd %d", CONFIG_BT_UART_ON_DEV_NAME, h4->fd);
+	LOG_DBG("H4: %s opened as fd %d", HCI_DEV_NAME, h4->fd);
 
-	ret = (int)os_thread_create(&rx_thread_data, h4_rx_thread, (void *)transport,
+	ret = (int)os_thread_create(&rx_thread_handle, h4_rx_thread, (void *)transport,
 				    "BT H4 Driver", OS_PRIORITY(CONFIG_BT_RX_PRIO), 3072);
 	if (ret < 0) {
 		goto bail;
@@ -373,7 +370,7 @@ static int h4_open(const struct bt_hci_transport *transport, bt_hci_recv_t recv)
 
 	h4->recv = recv;
 
-	os_thread_name_set(&rx_thread_data, "BT H4 Driver");
+	os_thread_name_set(&rx_thread_handle, "BT H4 Driver");
 	LOG_DBG("returning");
 
 	return 0;
@@ -390,18 +387,41 @@ static const struct bt_hci_driver_api h4_drv_api = {
 	.send = h4_send,
 };
 
-static int h4_init(const struct bt_hci_transport *transport)
+static bool h4_is_ready(const struct bt_hci_transport *transport)
 {
-	LOG_INF("Bluetooth H4 driver");
+	struct h4_data *h4 = transport->user_data;
+
+	return h4->ready;
+}
+
+static struct h4_data _h4_data = {
+	.fd = -1,
+	.ready = false,
+};
+
+const struct bt_hci_transport h4_transport = {
+	.name = "h4",
+	.bus = BT_HCI_BUS_UART,
+	.api = &h4_drv_api,
+	.user_data = &_h4_data,
+	.is_ready = h4_is_ready,
+};
+
+static int h4_init(void)
+{
+	struct h4_data *h4 = &_h4_data;
+
+	LOG_DBG("Bluetooth H4 driver init");
+	bt_hci_transport_register(&h4_transport);
+
+	os_mutex_init(&h4->mutex);
+	h4->fd = -1;
+	h4->ready = true;
+
 	return 0;
 }
 
-#define H4_DEVICE_INIT(inst)                                                                       \
-	static struct h4_data h4_data_##inst = {                                                   \
-		.fd = -1,                                                                          \
-		.mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP,                                   \
-	};                                                                                         \
-	DEVICE_DT_INST_DEFINE(inst, h4_init, NULL, &h4_data_##inst, NULL, STACK_RUN_INIT,             \
-			      CONFIG_KERNEL_INIT_PRIORITY_DEVICE, &h4_drv_api)
-
-H4_DEVICE_INIT(0);
+int bt_driver_h4_init(void)
+{
+	return h4_init();
+}
