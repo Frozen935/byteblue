@@ -5,18 +5,23 @@
 #define LOG_TAG "blue"
 #endif
 
-#define LOG_EN 1
-
 #include <base/bt_debug.h>
+
+#define 	LOG_LEVEL_NONE  0
+#define 	LOG_LEVEL_ERR   1
+#define 	LOG_LEVEL_WRN   2
+#define 	LOG_LEVEL_INF   3
+#define 	LOG_LEVEL_DBG   4
 
 /* Log level constants to satisfy switch/array usage */
 enum stack_log_level {
-	LOG_LEVEL_NONE = 0,
-	LOG_LEVEL_ERR = 1,
-	LOG_LEVEL_WRN = 2,
-	LOG_LEVEL_INF = 3,
-	LOG_LEVEL_DBG = 4
+	STACK_LOG_LEVEL_NONE = LOG_LEVEL_NONE,
+	STACK_LOG_LEVEL_ERR = LOG_LEVEL_ERR,
+	STACK_LOG_LEVEL_WRN = LOG_LEVEL_WRN,
+	STACK_LOG_LEVEL_INF = LOG_LEVEL_INF,
+	STACK_LOG_LEVEL_DBG = LOG_LEVEL_DBG
 };
+#define LOG_EN 1
 
 /* ===== Logging macros (safe no-op) ===== */
 
@@ -30,7 +35,7 @@ enum stack_log_level {
 extern bool bt_log_level_check(enum stack_log_level log_level);
 
 #define LOG_IMPL(level, fmt, ...)                                                                  \
-	bt_debug_print("[%d][%s:%d] " fmt "\n", level, LOG_TAG, __LINE__, ##__VA_ARGS__);
+	bt_debug_print("[%d][%s:%4d] %s: " fmt "\n", level, LOG_TAG, __LINE__, __func__, ##__VA_ARGS__);
 
 #if CONFIG_STACK_LOG_LEVEL >= LOG_LEVEL_DBG
 #define LOG_DBG(fmt, ...)                                                                          \

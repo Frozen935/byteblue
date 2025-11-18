@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 menuconfig BT_IAS
-	bool "Support for GATT Immediate Alert Service [EXPERIMENTAL]"
+	bool "Support for GATT Immediate Alert Service"
 
 if BT_IAS
 

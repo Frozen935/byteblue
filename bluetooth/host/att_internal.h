@@ -7,7 +7,6 @@
 #include <bluetooth/conn.h>
 #include <bluetooth/l2cap.h>
 
-#include "autoconf.h"
 /*
  * Copyright (c) 2015-2016 Intel Corporation
  *

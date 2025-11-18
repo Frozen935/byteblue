@@ -1,12 +1,10 @@
 /*
- * Zephyr compatibility shim (empty/safe definitions)
- * TODO: migrate to Zephyr
+ * shim (empty/safe definitions)
  */
-#ifndef ZEPHYR_SHIM_SHIM_H
-#define ZEPHYR_SHIM_SHIM_H
+#ifndef OPENBLUE_SHIM_SHIM_H
+#define OPENBLUE_SHIM_SHIM_H
 
 /* Mark shim presence to avoid duplicate typedefs/macros in local dep headers */
-#define ZEPHYR_SHIM_PRESENT 1
 
 /* Standard headers */
 #include <stdint.h>
@@ -63,4 +61,4 @@ extern struct bt_work_q main_work_q;
 #endif
 #endif
 
-#endif /* ZEPHYR_SHIM_SHIM_H */
+#endif /* OPENBLUE_SHIM_SHIM_H */

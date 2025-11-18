@@ -40,6 +40,20 @@ make clean; make all
 - `make clean`：清理构建产物（不清理 `third_party/mbedtls` 源码与库）
 - `make menuconfig`：打开 Kconfig 菜单并更新 `.config`
 
+## 运行示例
+
+在构建完成后，运行示例程序：
+
+```
+sudo ./samples/demo/demo
+```
+
+运行 `btcmd` 启动命令行接口：
+
+```
+sudo ./samples/cmds/btcmd
+```
+
 ## 交叉编译
 可通过环境变量覆盖工具链：
 

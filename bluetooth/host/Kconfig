@@ -133,7 +133,7 @@ config BT_DRIVER_RX_HIGH_PRIO
 	default 6
 
 config BT_CONN_TX_NOTIFY_WQ
-	bool "Use a separate workqueue for connection TX notify processing [EXPERIMENTAL]"
+	bool "Use a separate workqueue for connection TX notify processing"
 	depends on BT_CONN_TX
 	help
 	  Use a separate workqueue instead of system workqueue for
@@ -164,8 +164,8 @@ menu "Bluetooth Host"
 
 if BT_HCI_HOST
 
-source "bluetooth/mesh/Kconfig"
-source "bluetooth/audio/Kconfig"
+rsource "../mesh/Kconfig"
+rsource "../audio/Kconfig"
 
 config BT_BUF_EVT_DISCARDABLE_SIZE
 	int "Maximum supported discardable HCI Event buffer length"
@@ -486,21 +486,21 @@ config BT_SMP
 if BT_SMP
 
 config BT_SECURITY_ERR_TO_STR
-	bool "Print security error codes as strings [EXPERIMENTAL]"
+	bool "Print security error codes as strings"
 	help
 	  This configuration enables printing of security error
 	  codes represented as strings.
 	  See bt_security_err_to_str() for more details.
 
 config BT_SMP_ERR_TO_STR
-	bool "Print SMP error codes as strings [EXPERIMENTAL]"
+	bool "Print SMP error codes as strings"
 	help
 	  This configuration enables printing of SMP error
 	  codes represented as strings.
 	  See bt_smp_err_to_str() for more details.
 
 config BT_PASSKEY_KEYPRESS
-	bool "Passkey Keypress Notification support [EXPERIMENTAL]"
+	bool "Passkey Keypress Notification support"
 	help
 	  Enable support for receiving and sending Keypress Notifications during
 	  Passkey Entry during pairing.
@@ -819,9 +819,9 @@ config BT_SMP_MIN_ENC_KEY_SIZE
 
 endif # BT_SMP
 
-source "bluetooth/host/Kconfig.l2cap"
-source "bluetooth/host/Kconfig.gatt"
-source "bluetooth/services/Kconfig"
+rsource "Kconfig.l2cap"
+rsource "Kconfig.gatt"
+rsource "../services/Kconfig"
 
 config BT_MAX_PAIRED
 	int "Maximum number of paired devices"
@@ -970,7 +970,7 @@ config BT_ID_MAX
 	  products this is safe to leave as the default value (1).
 
 config BT_DF
-	bool "Direction Finding support [EXPERIMENTAL]"
+	bool "Direction Finding support"
 	depends on !HAS_BT_CTLR || BT_CTLR_DF_SUPPORT
 	help
 	  Enable support for Bluetooth 5.1 Direction Finding.
@@ -1146,7 +1146,7 @@ config BT_CONN_DISABLE_SECURITY
 	  WARNING: This option enables anyone to snoop on-air traffic.
 	  Use of this feature in production is strongly discouraged.
 
-source "bluetooth/host/classic/Kconfig"
+rsource "classic/Kconfig"
 
 config BT_HCI_VS_EVT_USER
 	bool "User Vendor-Specific event handling"

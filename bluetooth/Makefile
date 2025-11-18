@@ -1,6 +1,6 @@
-# Standalone Bluetooth build Makefile for external_zblue/bluetooth
+# Standalone Bluetooth build Makefile for openblue/bluetooth
 # This Makefile allows building libopenblue_bt.a independently.
-# It assumes .config exists in ZBLUE_ROOT and autoconf.h has been generated.
+# It assumes .config exists in OPENBLUE_ROOT and autoconf.h has been generated.
 
 # Default toolchain (override via environment)
 CROSS_COMPILE ?=
@@ -31,7 +31,7 @@ MBEDTLS_PKG_AVAILABLE := $(shell (pkg-config --exists mbedcrypto || pkg-config -
 ifeq ($(MBEDTLS_PKG_AVAILABLE),yes)
   MBEDTLS_CFLAGS := $(shell pkg-config --cflags mbedcrypto 2>/dev/null || pkg-config --cflags mbedtls 2>/dev/null)
 else
-  MBEDTLS_LOCAL_DIR := $(ZBLUE_ROOT)/third_party/mbedtls
+  MBEDTLS_LOCAL_DIR := $(OPENBLUE_ROOT)/third_party/mbedtls
   MBEDTLS_LOCAL_TAG := v2.28.8
   MBEDTLS_CFLAGS    := -I$(MBEDTLS_LOCAL_DIR)/include
 endif

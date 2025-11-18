@@ -272,7 +272,7 @@ config BT_ASSERT_PANIC
 endif # BT_ASSERT
 
 config BT_HCI_ERR_TO_STR
-	bool "Print HCI error codes as strings [EXPERIMENTAL]"
+	bool "Print HCI error codes as strings"
 
 	help
 	  This configuration enables printing of HCI error

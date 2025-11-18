@@ -329,5 +329,5 @@ config BT_BAP_SHELL_USB_20_EXTENSION_DESC
 	  Set bcdUSB value to 0201 and use default USB 2.0 Extension Descriptor.
 endif # LIBLC3 && USBD_AUDIO2_CLASS && BT_SHELL && BT_BAP_STREAM
 
-source "bluetooth/audio/Kconfig.pacs"
-source "bluetooth/audio/Kconfig.ascs"
+rsource "Kconfig.pacs"
+rsource "Kconfig.ascs"

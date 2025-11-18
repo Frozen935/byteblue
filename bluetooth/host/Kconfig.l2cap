@@ -59,7 +59,7 @@ config BT_L2CAP_ECRED
 	  Enhanced Credit Based Flow Control support on dynamic L2CAP Channels.
 
 config BT_L2CAP_SEG_RECV
-	bool "L2CAP Receive segment direct API [EXPERIMENTAL]"
+	bool "L2CAP Receive segment direct API"
 	help
 	  Enable API for direct receiving of L2CAP SDU segments, bypassing the
 	  Host's fixed-function SDU re-assembler, RX SDU buffer management and
@@ -69,7 +69,7 @@ config BT_L2CAP_SEG_RECV
 	  flexible and semantically simple as possible.
 
 config BT_L2CAP_RECONFIGURE_EXPLICIT
-	bool "L2CAP Explicit reconfigure API [EXPERIMENTAL]"
+	bool "L2CAP Explicit reconfigure API"
 	help
 	  Enable API for explicit reconfiguration of an L2CAP channel's MTU and
 	  MPS.

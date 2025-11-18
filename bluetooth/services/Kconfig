@@ -6,20 +6,20 @@
 menu "GATT Services"
 	depends on BT_CONN
 
-source "bluetooth/services/Kconfig.dis"
+rsource "Kconfig.dis"
 
-source "bluetooth/services/Kconfig.cts"
+rsource "Kconfig.cts"
 
-source "bluetooth/services/Kconfig.hrs"
+rsource "Kconfig.hrs"
 
-source "bluetooth/services/Kconfig.tps"
+rsource "Kconfig.tps"
 
-source "bluetooth/services/nus/Kconfig.nus"
+rsource "nus/Kconfig.nus"
 
-source "bluetooth/services/ias/Kconfig.ias"
+rsource "ias/Kconfig.ias"
 
-source "bluetooth/services/ots/Kconfig"
+rsource "ots/Kconfig"
 
-source "bluetooth/services/bas/Kconfig.bas"
+rsource "bas/Kconfig.bas"
 
 endmenu

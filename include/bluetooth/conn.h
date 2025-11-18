@@ -21,8 +21,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <autoconf.h>
-
 #include <bluetooth/addr.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/direction.h>

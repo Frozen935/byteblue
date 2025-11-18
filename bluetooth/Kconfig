@@ -8,7 +8,6 @@ menuconfig BT
 	bool "Bluetooth"
 	# Some BT threads use co-op priorities to implement critical sections,
 	# will need some refactoring to work on SMP systems.
-	depends on !SMP
 	select BT_BUF
 	help
 	  This option enables Bluetooth support.
@@ -96,7 +95,7 @@ config BT_OBSERVER
 	help
 	  Select this for LE Observer role support.
 
-source "bluetooth/Kconfig.adv"
+rsource "Kconfig.adv"
 
 config BT_CONN
 	bool
@@ -229,13 +228,13 @@ config BT_FRAME_SPACE_UPDATE
 	  Enable support for Bluetooth 6.0 Frame Space Update feature.
 
 config BT_CHANNEL_SOUNDING
-	bool "Channel Sounding [EXPERIMENTAL]"
+	bool "Channel Sounding"
 	depends on !HAS_BT_CTLR || BT_CTLR_CHANNEL_SOUNDING_SUPPORT
 	help
 	  Enable support for Bluetooth 6.0 Channel Sounding feature.
 
 config BT_CHANNEL_SOUNDING_TEST
-	bool "Channel Sounding Test [EXPERIMENTAL]"
+	bool "Channel Sounding Test"
 	depends on BT_CHANNEL_SOUNDING
 	help
 	  Enable support for Channel Sounding test mode.
@@ -405,11 +404,11 @@ config BT_ISO_MAX_BIG
 endif # BT_ISO_BROADCAST
 endif # BT_ISO
 
-source "bluetooth/common/Kconfig"
-source "bluetooth/host/Kconfig"
+rsource "common/Kconfig"
+rsource "host/Kconfig"
 
-source "bluetooth/crypto/Kconfig"
-source "bluetooth/lib/Kconfig"
+rsource "crypto/Kconfig"
+rsource "lib/Kconfig"
 
 
 config BT_SHELL

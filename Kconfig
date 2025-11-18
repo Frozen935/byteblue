@@ -3,6 +3,8 @@
 
 mainmenu "OpenBlue Bluetooth Configuration"
 
+rsource "Kconfig.constants"
+
 config BIG_ENDIAN
 	bool "Big-endian"
 	default n
@@ -67,6 +69,7 @@ config OPENBLUE_SAMPLES
 
 config OPENBLUE_BT_CMD
 	bool "Enable Bluetooth command samples"
+	depends on BT_SHELL
 	default n
 	help
 	  This option enables building Bluetooth command samples.
@@ -100,4 +103,4 @@ choice OPENBLUE_PLATFORM
 endchoice
 
 # Source Bluetooth Kconfig tree (relative paths work with Kconfiglib)
-source "bluetooth/Kconfig"
+rsource "bluetooth/Kconfig"

@@ -1918,7 +1918,7 @@ endif # BT_MESH_SETTINGS_WORKQ
 
 endmenu # Persistent storage
 
-source "bluetooth/mesh/shell/Kconfig"
+rsource "shell/Kconfig"
 
 if BT_CONN
 
@@ -1939,7 +1939,7 @@ config BT_MESH_SELF_TEST
 	  mesh networking is initialized.
 
 config BT_MESH_STATISTIC
-	bool "The frame handling statistics [EXPERIMENTAL]"
+	bool "The frame handling statistics"
 	help
 	  The module gathers statistics of received, relayed, and transmitted
 	  frames. This helps to estimate the quality of the communication and

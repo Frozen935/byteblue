@@ -17,7 +17,6 @@ BT_AUTOCONF_H ?= $(BT_ROOT)/include/generated/autoconf.h
 BT_CPPFLAGS := \
 	-I$(BT_ROOT) \
 	-I$(BT_ROOT)/include \
-	-I$(BT_ROOT)/include/generated \
 	-I$(BT_ROOT)/bluetooth \
 	-I$(BT_ROOT)/bluetooth/host \
 	-I$(BT_ROOT)/bluetooth/host/classic \

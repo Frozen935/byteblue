@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 config BT_OTS
-	bool "Object Transfer Service (OTS) [EXPERIMENTAL]"
+	bool "Object Transfer Service (OTS)"
 	select BT_L2CAP_DYNAMIC_CHANNEL
 	select BT_GATT_DYNAMIC_DB
 	select BT_SMP

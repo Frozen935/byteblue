@@ -7,21 +7,20 @@
 
 #include "bt_stack_init.h"
 
-/* Start/Stop symbols provided by GNU ld for the section named exactly
- * as used in the attribute. No custom linker script required.
- */
-extern const struct stack_init_entry __start_stack_init[];
-extern const struct stack_init_entry __stop_stack_init[];
-
-extern const struct stack_init_entry __stack_init_entry_main_work_init;
-extern const struct stack_init_entry __stack_init_entry_uc_init;
-
 extern int bt_driver_userchan_init(void);
 extern int bt_work_main_work_init(void);
+extern int bt_driver_h4_init(void);
+
 int bt_stack_init_once(void)
 {
 	bt_work_main_work_init();
+#ifdef CONFIG_OPENBLUE_BT_DRIVER_TYPE_USERCHAN
 	bt_driver_userchan_init();
+#endif
+
+#ifdef CONFIG_OPENBLUE_BT_DRIVER_TYPE_H4
+	bt_driver_h4_init();
+#endif
 
 	return 0;
 }

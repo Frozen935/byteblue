@@ -190,10 +190,12 @@ void bt_shell_help(const struct bt_shell *sh)
 		return;
 	}
 
+	bt_shell_fprintf_info("Subcommands:\n");
 	pcmds = pcmds->subcmd;
 	for (; pcmds && pcmds->syntax; pcmds++) {
-		bt_shell_fprintf_info("\t%s mands:%d opts:%d help:%s\n", pcmds->syntax,
-				      pcmds->args.mandatory, pcmds->args.optional, pcmds->help);
+		bt_shell_fprintf_info("%s mands:%d opts:%d\n", pcmds->syntax,
+				      pcmds->args.mandatory, pcmds->args.optional);
+		bt_shell_fprintf_info("\t%s\n", pcmds->help);
 	}
 }
 

@@ -6,7 +6,7 @@
 menu "ATT and GATT Options"
 
 config BT_ATT_ERR_TO_STR
-	bool "Print ATT error codes as strings [EXPERIMENTAL]"
+	bool "Print ATT error codes as strings"
 	help
 	  This configuration enables printing of ATT error
 	  codes represented as strings.
@@ -38,7 +38,7 @@ config BT_ATT_RETRY_ON_SEC_ERR
 	  try to elevate the security level and retry the ATT request.
 
 config BT_EATT
-	bool "Enhanced ATT Bearers support [EXPERIMENTAL]"
+	bool "Enhanced ATT Bearers support"
 	depends on BT_L2CAP_ECRED
 	select BT_GATT_READ_MULT_VAR_LEN
 	help
