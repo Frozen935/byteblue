@@ -19,12 +19,15 @@
 #include <limits.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 #define BTPROTO_HCI      1
 #define HCI_CHANNEL_USER 1
+#define HCIDEVDOWN  0x400448ca
 
 struct sockaddr_hci {
-	sa_family_t    hci_family;
+	sa_family_t hci_family;
 	unsigned short hci_dev;
 	unsigned short hci_channel;
 };
@@ -53,6 +56,11 @@ int hci_sock_socket_open(unsigned short bt_dev_index)
 		return fd;
 	}
 
+	ret = ioctl(fd, HCIDEVDOWN, bt_dev_index);
+	if (ret < 0) {
+		return ret;
+	}
+
 	(void)memset(&addr, 0, sizeof(addr));
 	addr.hci_family = AF_BLUETOOTH;
 	addr.hci_dev = bt_dev_index;
@@ -66,7 +74,6 @@ int hci_sock_socket_open(unsigned short bt_dev_index)
 
 	return fd;
 }
-
 
 int hci_sock_net_connect(char ip_addr[], unsigned int port)
 {

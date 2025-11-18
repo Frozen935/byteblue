@@ -40,6 +40,17 @@ The first execution will automatically install `kconfiglib` and generate `includ
 - `make clean`: Clean build artifacts (does not clean `third_party/mbedtls` source code and libraries)
 - `make menuconfig`: Open Kconfig menu and update `.config`
 
+## Run the Demo
+After building, run the demo program:
+```
+sudo ./samples/demo/demo
+```
+
+run btcmd to start the command line interface:
+```
+sudo ./samples/cmds/btcmd
+```
+
 ## Cross Compilation
 Toolchain can be overridden via environment variables:
 `CROSS_COMPILE=aarch64-linux-gnu- make`

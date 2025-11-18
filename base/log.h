@@ -35,7 +35,7 @@ enum stack_log_level {
 extern bool bt_log_level_check(enum stack_log_level log_level);
 
 #define LOG_IMPL(level, fmt, ...)                                                                  \
-	bt_debug_print("[%d][%s:%d] " fmt "\n", level, LOG_TAG, __LINE__, ##__VA_ARGS__);
+	bt_debug_print("[%d][%s:%4d] %s: " fmt "\n", level, LOG_TAG, __LINE__, __func__, ##__VA_ARGS__);
 
 #if CONFIG_STACK_LOG_LEVEL >= LOG_LEVEL_DBG
 #define LOG_DBG(fmt, ...)                                                                          \
