@@ -1320,7 +1320,14 @@ int bt_buf_id(const struct bt_buf *buf);
  *
  * @return New buffer or NULL if out of buffers.
  */
+#if defined(CONFIG_BT_BUF_LOG)
+struct bt_buf *__must_check bt_buf_alloc_fixed_debug(struct bt_buf_pool *pool, int32_t timeout,
+						     const char *func, int line);
+#define bt_buf_alloc_fixed(pool, timeout)                                                          \
+	bt_buf_alloc_fixed_debug(pool, timeout, __func__, __LINE__)
+#else
 struct bt_buf *__must_check bt_buf_alloc_fixed(struct bt_buf_pool *pool, int32_t timeout);
+#endif
 
 /**
  * @copydetails bt_buf_alloc_fixed
@@ -1345,8 +1352,15 @@ static inline struct bt_buf *__must_check bt_buf_alloc(struct bt_buf_pool *pool,
  *
  * @return New buffer or NULL if out of buffers.
  */
+#if defined(CONFIG_BT_BUF_LOG)
+struct bt_buf *bt_buf_alloc_len_debug(struct bt_buf_pool *pool, size_t size, int32_t timeout,
+				      const char *func, int line);
+#define bt_buf_alloc_len(pool, size, timeout)                                                      \
+	bt_buf_alloc_len_debug(pool, size, timeout, __func__, __LINE__)
+#else
 struct bt_buf *__must_check bt_buf_alloc_len(struct bt_buf_pool *pool, size_t size,
 					     int32_t timeout);
+#endif
 
 /**
  * @brief Allocate a new buffer from a pool but with external data pointer.
@@ -1436,7 +1450,12 @@ struct bt_buf *__must_check bt_buf_slist_get(bt_slist_t *list);
  *
  * @param buf A valid pointer on a buffer
  */
+#if defined(CONFIG_BT_BUF_LOG)
+void bt_buf_unref_debug(struct bt_buf *buf, const char *func, int line);
+#define bt_buf_unref(buf) bt_buf_unref_debug(buf, __func__, __LINE__)
+#else
 void bt_buf_unref(struct bt_buf *buf);
+#endif
 /**
  * @brief Increment the reference count of a buffer.
  *

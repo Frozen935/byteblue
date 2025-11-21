@@ -63,6 +63,8 @@
 #define DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
 #endif
 
+#define _XXXX1 _YYYY,
+
 #define __IS_ENABLED3(ignore_this, val, ...) val
 #define __IS_ENABLED2(one_or_two_args)       __IS_ENABLED3(one_or_two_args 1, 0)
 #define __IS_ENABLED1(config_macro)          __IS_ENABLED2(_XXXX##config_macro)

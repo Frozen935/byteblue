@@ -5,6 +5,7 @@
 #define OPENBLUE_SHIM_SHIM_H
 
 /* Mark shim presence to avoid duplicate typedefs/macros in local dep headers */
+#define CONFIG_BT_BUF_LOG 1
 
 /* Standard headers */
 #include <stdint.h>

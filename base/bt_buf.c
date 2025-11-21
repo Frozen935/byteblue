@@ -8,9 +8,13 @@
 #include <base/byteorder.h>
 #include <base/bt_buf.h>
 
+#if defined(CONFIG_BT_BUF_LOG)
+#define BT_BUF_DBG(fmt, ...) LOG_DBG(fmt, ##__VA_ARGS__)
+#define BT_BUF_ERR(fmt, ...) LOG_ERR(fmt, ##__VA_ARGS__)
+#else
 #define BT_BUF_DBG(fmt, ...)
 #define BT_BUF_ERR(fmt, ...)
-
+#endif
 #define GET_ALIGN(pool) MAX(sizeof(void *), pool->alloc->alignment)
 
 int bt_buf_id(const struct bt_buf *buf)
@@ -190,7 +194,13 @@ static uint8_t *data_ref(struct bt_buf *buf, uint8_t *data)
 	return pool->alloc->cb->ref(buf, data);
 }
 
+#if defined(CONFIG_BT_BUF_LOG)
+struct bt_buf *bt_buf_alloc_len_debug(struct bt_buf_pool *pool, size_t size, int32_t timeout,
+				      const char *func, int line)
+
+#else
 struct bt_buf *bt_buf_alloc_len(struct bt_buf_pool *pool, size_t size, int32_t timeout)
+#endif
 {
 	struct bt_buf *buf;
 
@@ -265,10 +275,18 @@ success:
 	return buf;
 }
 
+#if defined(CONFIG_BT_BUF_LOG)
+struct bt_buf *bt_buf_alloc_fixed_debug(struct bt_buf_pool *pool, int32_t timeout, const char *func,
+					int line)
+{
+	return bt_buf_alloc_len_debug(pool, pool->alloc->max_alloc_size, timeout, func, line);
+}
+#else
 struct bt_buf *bt_buf_alloc_fixed(struct bt_buf_pool *pool, int32_t timeout)
 {
 	return bt_buf_alloc_len(pool, pool->alloc->max_alloc_size, timeout);
 }
+#endif
 
 struct bt_buf *bt_buf_alloc_with_data(struct bt_buf_pool *pool, void *data, size_t size,
 				      int32_t timeout)
@@ -313,7 +331,11 @@ struct bt_buf *bt_buf_slist_get(bt_slist_t *list)
 	return buf;
 }
 
+#if defined(CONFIG_BT_BUF_LOG)
+void bt_buf_unref_debug(struct bt_buf *buf, const char *func, int line)
+#else
 void bt_buf_unref(struct bt_buf *buf)
+#endif
 {
 	assert(buf);
 
@@ -323,9 +345,12 @@ void bt_buf_unref(struct bt_buf *buf)
 
 		assert(buf->ref);
 		if (!buf->ref) {
+			BT_BUF_ERR("%s():%d: buf %p double free", func, line, buf);
 			return;
 		}
-		BT_BUF_DBG("buf %p ref %u pool %p frags %p", buf, buf->ref, buf->pool, buf->frags);
+
+		BT_BUF_DBG("%s():%d: buf %p ref %u pool %p frags %p", func, line, buf, buf->ref,
+			   buf->pool, buf->frags);
 
 		if (--buf->ref > 0) {
 			return;

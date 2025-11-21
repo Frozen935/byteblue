@@ -924,6 +924,7 @@ int bt_br_init(void)
 	}
 
 	rp = (void *)rsp->data;
+	bt_buf_unref(rsp);
 	default_link_policy_settings = rp->default_link_policy_settings;
 
 	bool should_enable = IS_ENABLED(CONFIG_BT_DEFAULT_ROLE_SWITCH_ENABLE);

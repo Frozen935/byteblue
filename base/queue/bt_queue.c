@@ -3,23 +3,6 @@
 
 #include "base/queue/bt_queue.h"
 
-/* Internal node type */
-typedef struct queue_node {
-	bt_snode_t node; /* must be first */
-	void *data;
-} queue_node_t;
-
-static queue_node_t *node_from_data(void *data)
-{
-	queue_node_t *n = (queue_node_t *)os_malloc(sizeof(queue_node_t));
-	if (!n) {
-		return NULL;
-	}
-	n->node.next = NULL;
-	n->data = data;
-	return n;
-}
-
 void bt_queue_init(struct bt_queue *queue)
 {
 	if (!queue) {
@@ -36,7 +19,8 @@ void bt_queue_append(struct bt_queue *queue, void *data)
 	if (!queue) {
 		return;
 	}
-	queue_node_t *n = node_from_data(data);
+
+	bt_snode_t *n = (bt_snode_t *)data;
 	if (!n) {
 		/* Drop silently on OOM to avoid crashing; caller can choose to
 		 * check with unique_append */
@@ -44,23 +28,8 @@ void bt_queue_append(struct bt_queue *queue, void *data)
 	}
 
 	os_mutex_lock(&queue->lock, OS_TIMEOUT_FOREVER);
-	bt_slist_append(&queue->list, &n->node);
+	bt_slist_append(&queue->list, n);
 	/* Wake one waiter */
-	os_cond_signal(&queue->cond);
-	os_mutex_unlock(&queue->lock);
-}
-
-void bt_queue_prepend_typed(struct bt_queue *queue, void *data)
-{
-	if (!queue) {
-		return;
-	}
-	queue_node_t *n = node_from_data(data);
-	if (!n) {
-		return;
-	}
-	os_mutex_lock(&queue->lock, OS_TIMEOUT_FOREVER);
-	bt_slist_prepend(&queue->list, &n->node);
 	os_cond_signal(&queue->cond);
 	os_mutex_unlock(&queue->lock);
 }
@@ -75,12 +44,21 @@ void bt_queue_cancel_wait(struct bt_queue *queue)
 	os_mutex_unlock(&queue->lock);
 }
 
-void bt_queue_prepend(void *queue, void *data)
+void bt_queue_prepend(struct bt_queue *queue, void *data)
 {
 	if (!queue) {
 		return;
 	}
-	bt_queue_prepend_typed((struct bt_queue *)queue, data);
+
+	bt_snode_t *n = (bt_snode_t *)data;
+	if (!n) {
+		return;
+	}
+	os_mutex_lock(&queue->lock, OS_TIMEOUT_FOREVER);
+	bt_slist_prepend(&queue->list, n);
+	/* Wake one waiter */
+	os_cond_signal(&queue->cond);
+	os_mutex_unlock(&queue->lock);
 }
 
 static void *pop_head_unlocked(struct bt_queue *queue)
@@ -89,10 +67,8 @@ static void *pop_head_unlocked(struct bt_queue *queue)
 	if (!node) {
 		return NULL;
 	}
-	queue_node_t *qn = (queue_node_t *)node;
-	void *data = qn->data;
-	os_free(qn);
-	return data;
+
+	return (void *)node;
 }
 
 void *bt_queue_get(struct bt_queue *queue, os_timeout_t timeout)
@@ -161,8 +137,7 @@ void *bt_queue_peek_head(struct bt_queue *queue)
 	bt_snode_t *node = bt_slist_peek_head(&queue->list);
 	void *ret = NULL;
 	if (node) {
-		queue_node_t *qn = (queue_node_t *)node;
-		ret = qn->data;
+		ret = (void *)node;
 	}
 	os_mutex_unlock(&queue->lock);
 	return ret;
@@ -177,8 +152,7 @@ void *bt_queue_peek_tail(struct bt_queue *queue)
 	bt_snode_t *node = bt_slist_peek_tail(&queue->list);
 	void *ret = NULL;
 	if (node) {
-		queue_node_t *qn = (queue_node_t *)node;
-		ret = qn->data;
+		ret = (void *)node;
 	}
 	os_mutex_unlock(&queue->lock);
 	return ret;
@@ -189,22 +163,19 @@ bool bt_queue_remove(struct bt_queue *queue, void *data)
 	if (!queue || !data) {
 		return false;
 	}
+	bt_snode_t *next = NULL;
+	bt_snode_t *cur = queue->list.head;
+	bt_snode_t *prev = NULL;
 
 	os_mutex_lock(&queue->lock, OS_TIMEOUT_FOREVER);
 
-	/* Traverse list to find node whose data matches */
-	bt_snode_t *prev = NULL;
-	bt_snode_t *cur = queue->list.head;
-	while (cur) {
-		queue_node_t *qn = (queue_node_t *)cur;
-		if (qn->data == data) {
+	BT_SLIST_FOR_EACH_NODE_SAFE(&queue->list, cur, next) {
+		if (cur == (bt_snode_t *)data) {
 			bt_slist_remove(&queue->list, prev, cur);
 			os_mutex_unlock(&queue->lock);
-			os_free(qn);
 			return true;
 		}
 		prev = cur;
-		cur = cur->next;
 	}
 
 	os_mutex_unlock(&queue->lock);
@@ -222,8 +193,7 @@ bool bt_queue_unique_append(struct bt_queue *queue, void *data)
 	/* Check for existence */
 	bt_snode_t *cur = queue->list.head;
 	while (cur) {
-		queue_node_t *qn = (queue_node_t *)cur;
-		if (qn->data == data) {
+		if (cur == (bt_snode_t *)data) {
 			os_mutex_unlock(&queue->lock);
 			return false;
 		}
@@ -231,12 +201,12 @@ bool bt_queue_unique_append(struct bt_queue *queue, void *data)
 	}
 
 	/* Not found: append */
-	queue_node_t *n = node_from_data(data);
+	bt_snode_t *n = (bt_snode_t *)data;
 	if (!n) {
 		os_mutex_unlock(&queue->lock);
 		return false;
 	}
-	bt_slist_append(&queue->list, &n->node);
+	bt_slist_append(&queue->list, n);
 	os_cond_signal(&queue->cond);
 
 	os_mutex_unlock(&queue->lock);

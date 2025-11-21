@@ -32,10 +32,7 @@ void bt_queue_init(struct bt_queue *queue);
 /* Append item to tail (FIFO) */
 void bt_queue_append(struct bt_queue *queue, void *data);
 
-/* Prepend item to head (LIFO). Typed variant. */
-void bt_queue_prepend_typed(struct bt_queue *queue, void *data);
-
-void bt_queue_prepend(void *queue, void *data);
+void bt_queue_prepend(struct bt_queue *queue, void *data);
 
 void bt_queue_cancel_wait(struct bt_queue *queue);
 

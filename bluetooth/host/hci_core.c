@@ -4597,10 +4597,14 @@ int bt_enable(bt_ready_cb_t cb)
 
 #if defined(CONFIG_BT_RECV_WORKQ_BT)
 	/* RX thread */
+	const struct bt_work_queue_config bt_workq_cfg = {
+		.name = "BT RX WQ",
+	};
+
 	bt_work_queue_init(&bt_workq);
 	bt_work_queue_start(&bt_workq,
 			   CONFIG_BT_RX_STACK_SIZE,
-			   OS_PRIORITY(CONFIG_BT_RX_PRIO), NULL);
+			   OS_PRIORITY(CONFIG_BT_RX_PRIO), &bt_workq_cfg);
 	os_thread_name_set(&bt_workq.thread, "BT RX WQ");
 #endif
 

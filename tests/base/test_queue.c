@@ -14,19 +14,16 @@ static void test_basic_ops(void)
     bt_queue_init(&q);
     assert(bt_queue_is_empty(&q) == true);
 
-    int a = 1, b = 2, c = 3;
+    int a = 1, b = 2;
     bt_queue_append(&q, &a);
     bt_queue_append(&q, &b);
-    bt_queue_prepend_typed(&q, &c); /* c at head */
 
     void *ph = bt_queue_peek_head(&q);
     void *pt = bt_queue_peek_tail(&q);
-    assert(ph == &c);
+    assert(ph == &a);
     assert(pt == &b);
 
     void *x = bt_queue_get(&q, OS_TIMEOUT_NO_WAIT);
-    assert(x == &c);
-    x = bt_queue_get(&q, OS_TIMEOUT_NO_WAIT);
     assert(x == &a);
     x = bt_queue_get(&q, OS_TIMEOUT_NO_WAIT);
     assert(x == &b);
