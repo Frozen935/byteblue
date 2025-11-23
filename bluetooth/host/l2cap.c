@@ -88,6 +88,8 @@ struct bt_l2cap {
 static const struct bt_l2cap_ecred_cb *ecred_cb;
 static struct bt_l2cap bt_l2cap_pool[CONFIG_BT_MAX_CONN];
 
+static bt_slist_t le_fixed_chans = BT_SLIST_STATIC_INIT(&le_fixed_chans);
+
 void bt_l2cap_register_ecred_cb(const struct bt_l2cap_ecred_cb *cb)
 {
 	ecred_cb = cb;
@@ -2932,13 +2934,39 @@ static int l2cap_accept(struct bt_conn *conn, struct bt_l2cap_chan **chan)
 	return -ENOMEM;
 }
 
-BT_L2CAP_FIXED_CHANNEL_DEFINE(le_fixed_chan) = {
+BT_L2CAP_FIXED_CHANNEL_DEFINE(le_sig_fixed_chan) = {
 	.cid = BT_L2CAP_CID_LE_SIG,
 	.accept = l2cap_accept,
 };
 
+int bt_l2cap_chan_register(struct bt_l2cap_fixed_chan *chan)
+{
+	if (!chan->accept) {
+		return -EINVAL;
+	}
+
+	if (bt_slist_find(&le_fixed_chans, &chan->node, NULL)) {
+		return -EEXIST;
+	}
+
+	bt_slist_append(&le_fixed_chans, &chan->node);
+
+	return 0;
+}
+
+void bt_l2cap_chan_unregister(struct bt_l2cap_fixed_chan *chan)
+{
+	bt_slist_find_and_remove(&le_fixed_chans, &chan->node);
+}
+
 void bt_l2cap_init(void)
 {
+	/* Initialize fixed channels list */
+	bt_slist_init(&le_fixed_chans);
+
+	/* Register LE signal channel */
+	bt_l2cap_chan_register(&le_sig_fixed_chan);
+
 	if (IS_ENABLED(CONFIG_BT_CLASSIC)) {
 		bt_l2cap_br_init();
 	}

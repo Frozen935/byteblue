@@ -449,6 +449,7 @@ static void stream_recv(struct bt_a2dp_stream *stream,
 	sink_sbc_streamer_data(stream, buf, seq_num, ts);
 }
 
+#if defined(CONFIG_BT_A2DP_SOURCE)
 static int app_delay_report_req(struct bt_a2dp_stream *stream, uint16_t value,
 				uint8_t *rsp_err_code)
 {
@@ -456,6 +457,7 @@ static int app_delay_report_req(struct bt_a2dp_stream *stream, uint16_t value,
 	bt_shell_print("receive delay report and accept");
 	return 0;
 }
+#endif
 
 static void app_delay_report_rsp(struct bt_a2dp_stream *stream, uint8_t rsp_err_code)
 {
@@ -616,10 +618,12 @@ static int cmd_disconnect(const struct bt_shell *sh, int32_t argc, char *argv[])
 	return 0;
 }
 
+#if defined(CONFIG_BT_A2DP_SOURCE)
 static void delay_report(struct bt_a2dp_stream *stream, uint16_t value)
 {
 	bt_shell_print("received delay report: %d 1/10ms", value);
 }
+#endif
 
 static struct bt_a2dp_stream_ops stream_ops = {
 	.configured = stream_configured,

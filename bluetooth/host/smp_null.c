@@ -102,5 +102,7 @@ BT_L2CAP_FIXED_CHANNEL_DEFINE(smp_fixed_chan) = {
 
 int bt_smp_init(void)
 {
+	bt_l2cap_chan_register(&smp_fixed_chan);
+
 	return 0;
 }

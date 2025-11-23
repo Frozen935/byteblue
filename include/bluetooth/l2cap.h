@@ -310,6 +310,9 @@ struct bt_l2cap_le_chan {
  *  @ref BT_L2CAP_FIXED_CHANNEL_DEFINE macro.
  */
 struct bt_l2cap_fixed_chan {
+	/** @brief L2CAP channel node */
+	bt_snode_t node;
+
 	/** @brief Channel Identifier (CID)
 	 *
 	 *  @note Shall be in the range 0x0001 to 0x003F (Core 3.A.2.1 v6.0). The CIDs in this range
@@ -365,8 +368,7 @@ struct bt_l2cap_fixed_chan {
  *  will be initialized in the same order.
  */
 #define BT_L2CAP_FIXED_CHANNEL_DEFINE(_name)                                                       \
-	static const STRUCT_SECTION_ITERABLE(bt_l2cap_fixed_chan,                                  \
-					     UTIL_CONCAT(bt_l2cap_fixed_chan, _name))
+	static struct bt_l2cap_fixed_chan _name
 
 /** L2CAP Endpoint Link Mode. Basic mode. */
 #define BT_L2CAP_BR_LINK_MODE_BASIC  0x00

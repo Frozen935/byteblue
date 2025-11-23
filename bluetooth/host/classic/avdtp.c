@@ -45,7 +45,7 @@
 #define AVDTP_SEID_GET(val)  FIELD_GET(AVDTP_SEID_MASK, val)
 
 static struct bt_avdtp_event_cb *event_cb;
-static bt_slist_t seps;
+static bt_slist_t seps = BT_SLIST_STATIC_INIT(&seps);
 
 #define AVDTP_CHAN(_ch) CONTAINER_OF(_ch, struct bt_avdtp, br_chan.chan)
 

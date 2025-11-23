@@ -11,6 +11,9 @@
 
 typedef ssize_t (*bt_storage_read_cb)(void *cb_arg, void *data, size_t len);
 
+typedef int (*bt_storage_load_direct_cb)(const char *key, size_t len, bt_storage_read_cb read_cb,
+					 void *cb_arg, void *param);
+
 typedef struct {
 	int (*storage_init)(void);
 	int (*storage_load)(void);
@@ -20,7 +23,8 @@ typedef struct {
 } bt_storage_backend_t;
 
 int bt_storage_name_steq(const char *name, const char *key, const char **next);
-int bt_storage_load_subtree_direct(const char *subtree, bt_storage_read_cb read_cb, void *param);
+int bt_storage_load_subtree_direct(const char *subtree, bt_storage_load_direct_cb read_cb,
+				   void *param);
 int bt_storage_name_next(const char *name, const char **next);
 int bt_storage_init(void);
 int bt_storage_save_one(const char *key, const void *value, size_t len);

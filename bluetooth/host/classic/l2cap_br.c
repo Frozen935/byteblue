@@ -195,10 +195,11 @@ enum {
 
 static bt_slist_t br_servers;
 
+static bt_slist_t br_fixed_chans = BT_SLIST_STATIC_INIT(&br_fixed_chans);
 
 /* Pool for outgoing BR/EDR signaling packets, min MTU is 48 */
 BT_BUF_POOL_FIXED_DEFINE(br_sig_pool, CONFIG_BT_MAX_CONN,
-			  BT_L2CAP_BUF_SIZE(L2CAP_BR_MIN_MTU), 8, NULL);
+			  BT_L2CAP_BUF_SIZE(L2CAP_BR_MIN_MTU), CONFIG_BT_CONN_TX_USER_DATA_SIZE, NULL);
 
 #if defined(CONFIG_BT_L2CAP_RET_FC)
 static void br_tx_buf_destroy(struct bt_buf *buf)
@@ -1857,9 +1858,10 @@ done:
 static uint8_t get_fixed_channels_mask(void)
 {
 	uint8_t mask = 0U;
+	struct bt_l2cap_br_fixed_chan *fchan;
 
 	/* this needs to be enhanced if AMP Test Manager support is added */
-	STRUCT_SECTION_FOREACH(bt_l2cap_br_fixed_chan, fchan) {
+	BT_SLIST_FOR_EACH_CONTAINER(&br_fixed_chans, fchan, node) {
 		mask |= BIT(fchan->cid);
 	}
 
@@ -1939,8 +1941,9 @@ static int l2cap_br_info_req(struct bt_l2cap_br *l2cap, uint8_t ident,
 void bt_l2cap_br_connected(struct bt_conn *conn)
 {
 	struct bt_l2cap_chan *chan;
+	struct bt_l2cap_br_fixed_chan *fchan;
 
-	STRUCT_SECTION_FOREACH(bt_l2cap_br_fixed_chan, fchan) {
+	BT_SLIST_FOR_EACH_CONTAINER(&br_fixed_chans, fchan, node) {
 		struct bt_l2cap_br_chan *br_chan;
 
 		if (!fchan->accept) {
@@ -3642,7 +3645,7 @@ static void l2cap_br_conf_rsp(struct bt_l2cap_br *l2cap, uint8_t ident, uint16_t
 	struct bt_conn *conn = l2cap->chan.chan.conn;
 	struct bt_l2cap_chan *chan;
 	struct bt_l2cap_conf_rsp *rsp = (void *)buf->data;
-	uint16_t flags, scid, result, opt_len;
+	__maybe_unused uint16_t flags, scid, result, opt_len;
 	struct bt_l2cap_br_chan *br_chan;
 	int err;
 
@@ -4624,7 +4627,7 @@ static void l2cap_br_disconn_req(struct bt_l2cap_br *l2cap, uint8_t ident, struc
 	struct bt_l2cap_disconn_req *req = (void *)buf->data;
 	struct bt_l2cap_disconn_rsp *rsp;
 	struct bt_l2cap_sig_hdr *hdr;
-	uint16_t scid, dcid;
+	__maybe_unused uint16_t scid, dcid;
 
 	if (buf->len < sizeof(*req)) {
 		LOG_ERR("Too small disconn req packet size");
@@ -4728,7 +4731,7 @@ static void l2cap_br_disconn_rsp(struct bt_l2cap_br *l2cap, uint8_t ident, struc
 	struct bt_conn *conn = l2cap->chan.chan.conn;
 	struct bt_l2cap_br_chan *chan;
 	struct bt_l2cap_disconn_rsp *rsp = (void *)buf->data;
-	uint16_t dcid, scid;
+	__maybe_unused uint16_t dcid, scid;
 
 	if (buf->len < sizeof(*rsp)) {
 		LOG_ERR("Too small disconn rsp packet size");
@@ -4857,7 +4860,7 @@ static void l2cap_br_conn_rsp(struct bt_l2cap_br *l2cap, uint8_t ident, struct b
 	struct bt_conn *conn = l2cap->chan.chan.conn;
 	struct bt_l2cap_chan *chan;
 	struct bt_l2cap_conn_rsp *rsp = (void *)buf->data;
-	uint16_t dcid, scid, result, status;
+	__maybe_unused uint16_t dcid, scid, result, status;
 	struct bt_l2cap_br_chan *br_chan;
 
 	if (buf->len < sizeof(*rsp)) {
@@ -6177,11 +6180,49 @@ static int l2cap_br_accept(struct bt_conn *conn, struct bt_l2cap_chan **chan)
 	return -ENOMEM;
 }
 
-BT_L2CAP_BR_CHANNEL_DEFINE(br_fixed_chan, BT_L2CAP_CID_BR_SIG, l2cap_br_accept);
+BT_L2CAP_BR_CHANNEL_DEFINE(br_sig_fixed_chan, BT_L2CAP_CID_BR_SIG, l2cap_br_accept);
+
+#if defined(CONFIG_BT_L2CAP_CONNLESS)
+static int l2cap_br_connless_accept(struct bt_conn *conn, struct bt_l2cap_chan **chan);
+BT_L2CAP_BR_CHANNEL_DEFINE(br_fixed_chan_connless, BT_L2CAP_CID_CONNLESS, l2cap_br_connless_accept);
+#endif /* CONFIG_BT_L2CAP_CONNLESS */
+
+int bt_l2cap_br_chan_register(struct bt_l2cap_br_fixed_chan *chan)
+{
+	if (!chan->accept) {
+		return -EINVAL;
+	}
+
+	if (bt_slist_find(&br_fixed_chans, &chan->node, NULL)) {
+		LOG_ERR("Channel 0x%04x already registered", chan->cid);
+		return -EEXIST;
+	}
+
+	bt_slist_append(&br_fixed_chans, &chan->node);
+
+	return 0;
+}
+
+void bt_l2cap_br_chan_unregister(struct bt_l2cap_br_fixed_chan *chan)
+{
+	if (!bt_slist_find_and_remove(&br_fixed_chans, &chan->node)) {
+		LOG_ERR("Channel 0x%04x not registered", chan->cid);
+	}
+}
 
 void bt_l2cap_br_init(void)
 {
 	bt_slist_init(&br_servers);
+
+	/* Initialize br fixed channels list */
+	bt_slist_init(&br_fixed_chans);
+
+	/* Register BR signal channel */
+	bt_l2cap_br_chan_register(&br_sig_fixed_chan);
+
+#if defined(CONFIG_BT_L2CAP_CONNLESS)
+	bt_l2cap_br_chan_register(&br_fixed_chan_connless);
+#endif
 
 	if (IS_ENABLED(CONFIG_BT_RFCOMM)) {
 		bt_rfcomm_init();
@@ -6525,5 +6566,5 @@ static int l2cap_br_connless_accept(struct bt_conn *conn, struct bt_l2cap_chan *
 	return 0;
 }
 
-BT_L2CAP_BR_CHANNEL_DEFINE(br_fixed_chan_connless, BT_L2CAP_CID_CONNLESS, l2cap_br_connless_accept);
 #endif /* CONFIG_BT_L2CAP_CONNLESS */
+

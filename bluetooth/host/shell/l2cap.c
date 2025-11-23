@@ -560,6 +560,11 @@ static int cmd_l2cap(const struct bt_shell *sh, size_t argc, char **argv)
 BT_SHELL_CMD_ARG_DEFINE(l2cap, &l2cap_cmds, "Bluetooth L2CAP shell commands",
 		       cmd_l2cap, 1, 1);
 
+void bt_shell_l2cap_conn_cb_register(void)
+{
+	bt_conn_cb_register((struct bt_conn_cb *)&bt_conn_cb_l2cap_conn_callbacks);
+}
+
 int bt_shell_cmd_l2cap_register(struct bt_shell *sh)
 {
 	return bt_shell_cmd_register(sh, &l2cap);

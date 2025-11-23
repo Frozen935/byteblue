@@ -158,14 +158,12 @@ config BT_RFCOMM_TX_MAX
 
 config BT_HFP_HF
 	bool "Bluetooth Handsfree profile HF Role support"
-	depends on PRINTK
 	select BT_RFCOMM
 	help
 	  This option enables Bluetooth HF support
 
 config BT_HFP_AG
 	bool "Bluetooth Handsfree profile AG Role support"
-	depends on PRINTK
 	select BT_RFCOMM
 	help
 	  This option enables Bluetooth AG support

@@ -26,7 +26,7 @@ enum stack_log_level {
 /* ===== Logging macros (safe no-op) ===== */
 
 #ifndef CONFIG_STACK_LOG_LEVEL
-#define CONFIG_STACK_LOG_LEVEL LOG_LEVEL_DBG
+#define CONFIG_STACK_LOG_LEVEL LOG_LEVEL_INF
 #endif
 
 #if LOG_EN

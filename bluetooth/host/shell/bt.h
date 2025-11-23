@@ -47,4 +47,6 @@ void conn_addr_str(struct bt_conn *conn, char *addr, size_t len);
  */
 bool is_substring(const char *substr, const char *str);
 
+void bt_shell_l2cap_conn_cb_register(void);
+
 #endif /* __BT_H */

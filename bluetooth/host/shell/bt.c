@@ -1380,6 +1380,13 @@ static void bt_ready(int err)
 
 	bt_shell_print("Bluetooth initialized");
 
+#if defined(CONFIG_BT_CONN)
+	/* Register connection callbacks */
+	bt_conn_cb_register((struct bt_conn_cb *)&bt_conn_cb_conn_callbacks);
+#endif
+
+	bt_shell_l2cap_conn_cb_register();
+
 	if (IS_ENABLED(CONFIG_SETTINGS) && !no_settings_load) {
 		bt_storage_load();
 		bt_shell_print("Settings Loaded");
@@ -1439,6 +1446,8 @@ static int cmd_init(const struct bt_shell *sh, size_t argc, char *argv[])
 
 static int cmd_disable(const struct bt_shell *sh, size_t argc, char *argv[])
 {
+	bt_conn_cb_unregister((struct bt_conn_cb *)&bt_conn_cb_conn_callbacks);
+
 	return bt_disable();
 }
 
@@ -2407,7 +2416,7 @@ static int cmd_adv_data(const struct bt_shell *sh, size_t argc, char *argv[])
 
 			len = strlen(arg);
 			memcpy(&hex_data[hex_data_len], arg, len);
-			name_value = &hex_data[hex_data_len];
+			name_value = (const char *)&hex_data[hex_data_len];
 
 			set_ad_name_complete(&data[*data_len], name_value);
 

@@ -1480,7 +1480,7 @@ void bt_conn_unref(struct bt_conn *conn)
 {
 	atomic_val_t old;
 	bool deallocated;
-	uint16_t conn_handle;
+	__maybe_unused uint16_t conn_handle;
 	/* Used only if CONFIG_ASSERT and CONFIG_BT_CONN_TX. */
 	__maybe_unused bool conn_tx_is_pending;
 
@@ -1494,7 +1494,7 @@ void bt_conn_unref(struct bt_conn *conn)
 	 * then unset the local pointer.
 	 */
 	conn_handle = conn->handle;
-#if CONFIG_BT_CONN_TX && CONFIG_ASSERT
+#if CONFIG_BT_CONN_TX
 	conn_tx_is_pending = bt_work_is_pending(&conn->tx_complete_work);
 #endif
 	old = atomic_dec(&conn->ref);
@@ -4227,14 +4227,14 @@ int bt_conn_init(void)
 		bt_fifo_put(&free_tx, &conn_tx[i]);
 	}
 
+	bt_l2cap_init();
+
 	bt_att_init();
 
 	err = bt_smp_init();
 	if (err) {
 		return err;
 	}
-
-	bt_l2cap_init();
 
 	/* Initialize background scan */
 	if (IS_ENABLED(CONFIG_BT_CENTRAL)) {

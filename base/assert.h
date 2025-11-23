@@ -16,8 +16,10 @@
 
 #define __ASSERT_MSG(test, msg, ...)                                                               \
 	do {                                                                                       \
-		LOG_ERR(msg, ##__VA_ARGS__);                                                       \
-		__ASSERT_NO_MSG(test);                                                             \
+		if (!(test)) {                                                                     \
+			LOG_ERR(msg, ##__VA_ARGS__);                                               \
+			assert(test);                                                              \
+		}                                                                                  \
 	} while (false)
 
 #define __ASSERT_PRINT(fmt, ...)                                                                   \

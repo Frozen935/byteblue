@@ -168,12 +168,12 @@ static inline bool bt_slist_find_and_remove(bt_slist_t *list, bt_snode_t *node)
 {
 	bt_snode_t *prev = NULL;
 
-	if (!bt_slist_find(list, node, &prev)) {
-		return false;
+	if (bt_slist_find(list, node, &prev)) {
+		bt_slist_remove(list, prev, node);
+		return true;
 	}
 
-	bt_slist_remove(list, prev, node);
-	return true;
+	return false;
 }
 
 static inline size_t bt_slist_len(const bt_slist_t *list)

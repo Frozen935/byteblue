@@ -9,18 +9,25 @@
 
 /* Need a name different than bt_l2cap_fixed_chan for a different section */
 struct bt_l2cap_br_fixed_chan {
+	bt_snode_t		node;
 	uint16_t		cid;
 	int (*accept)(struct bt_conn *conn, struct bt_l2cap_chan **chan);
 };
 
 #define BT_L2CAP_BR_CHANNEL_DEFINE(_name, _cid, _accept)		\
-	const STRUCT_SECTION_ITERABLE(bt_l2cap_br_fixed_chan, _name) = { \
+	static struct bt_l2cap_br_fixed_chan _name = { \
 				.cid = _cid,			\
 				.accept = _accept,		\
 			}
 
 /* Initialize BR/EDR L2CAP signal layer */
 void bt_l2cap_br_init(void);
+
+/* Register BR/EDR L2CAP fixed channel */
+int bt_l2cap_br_chan_register(struct bt_l2cap_br_fixed_chan *chan);
+
+/* Unregister BR/EDR L2CAP fixed channel */
+void bt_l2cap_br_chan_unregister(struct bt_l2cap_br_fixed_chan *chan);
 
 /* Notify BR/EDR L2CAP channels about established new ACL connection */
 void bt_l2cap_br_connected(struct bt_conn *conn);

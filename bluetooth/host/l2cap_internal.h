@@ -200,6 +200,12 @@ int bt_l2cap_update_conn_param(struct bt_conn *conn,
 /* Initialize L2CAP and supported channels */
 void bt_l2cap_init(void);
 
+/* Register a fixed channel */
+int bt_l2cap_chan_register(struct bt_l2cap_fixed_chan *chan);
+
+/* Unregister a fixed channel */
+void bt_l2cap_chan_unregister(struct bt_l2cap_fixed_chan *chan);
+
 /* Lookup channel by Transmission CID */
 struct bt_l2cap_chan *bt_l2cap_le_lookup_tx_cid(struct bt_conn *conn,
 						uint16_t cid);

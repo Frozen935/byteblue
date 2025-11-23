@@ -19,7 +19,7 @@
 
 #define BT_SHELL_CMD_HELP_PRINTED 0
 
-#define BT_SHELL_SUBCMD_SET_END
+#define BT_SHELL_SUBCMD_SET_END {0}
 
 struct bt_shell;
 

@@ -464,8 +464,7 @@ static void work_queue_main(void *workq_ptr)
 		flag_clear(&work->flags, BT_WORK_RUNNING_BIT);
 		if (flag_test(&work->flags, BT_WORK_FLUSHING_BIT)) {
 			finalize_flush_locked(work);
-		}
-		if (flag_test(&work->flags, BT_WORK_CANCELING_BIT)) {
+		} else if (flag_test(&work->flags, BT_WORK_CANCELING_BIT)) {
 			finalize_cancel_locked(work);
 		}
 

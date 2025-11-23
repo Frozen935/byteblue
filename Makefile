@@ -15,7 +15,7 @@ OBJDUMP := $(CROSS_COMPILE)objdump
 
 # Build flags
 # CFLAGS for compiler options, CPPFLAGS for preprocessor options (like -I)
-CFLAGS ?= -g -O2 -Wall
+CFLAGS ?= -g -O2 -Wall -fsanitize=address
 CPPFLAGS ?=
 # Add flags for dependency generation
 CFLAGS += -MMD -MP
