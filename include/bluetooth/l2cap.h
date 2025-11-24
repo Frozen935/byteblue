@@ -230,7 +230,7 @@ struct bt_l2cap_le_endpoint {
 	/** Endpoint Maximum PDU payload Size */
 	uint16_t				mps;
 	/** Endpoint credits */
-	atomic_t			credits;
+	bt_atomic_t			credits;
 };
 
 /** @brief LE L2CAP Channel structure. */
@@ -489,7 +489,7 @@ struct bt_l2cap_br_chan {
 	/** Channel Transmission Endpoint */
 	struct bt_l2cap_br_endpoint     tx;
 	/* For internal use only */
-	atomic_t                        flags[1];
+	bt_atomic_t                        flags[1];
 
 	bt_l2cap_chan_state_t           state;
 	/** Remote PSM to be connected */
@@ -505,7 +505,7 @@ struct bt_l2cap_br_chan {
 	/** @internal To be used with @ref bt_conn.upper_data_ready */
 	bt_snode_t                     _pdu_ready;
 	/** @internal To be used with @ref bt_conn.upper_data_ready */
-	atomic_t                        _pdu_ready_lock;
+	bt_atomic_t                        _pdu_ready_lock;
 	/** @internal List of net bufs not yet sent to lower layer */
 	bt_slist_t                     _pdu_tx_queue;
 
@@ -696,7 +696,7 @@ struct bt_l2cap_chan_ops {
 	 *  @param chan The channel which status changed
 	 *  @param status The channel status
 	 */
-	void (*status)(struct bt_l2cap_chan *chan, atomic_t *status);
+	void (*status)(struct bt_l2cap_chan *chan, bt_atomic_t *status);
 
 	/* @brief Channel released callback
 	 *

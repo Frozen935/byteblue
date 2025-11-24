@@ -196,12 +196,12 @@ static int cdb_net_set(const char *name, size_t len_rd,
 	bt_mesh_cdb.iv_index = net.iv.index;
 
 	if (net.iv.update) {
-		atomic_set_bit(bt_mesh_cdb.flags, BT_MESH_CDB_IVU_IN_PROGRESS);
+		bt_atomic_set_bit(bt_mesh_cdb.flags, BT_MESH_CDB_IVU_IN_PROGRESS);
 	}
 
 	bt_mesh_cdb.lowest_avail_addr = net.lowest_avail_addr;
 
-	atomic_set_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID);
+	bt_atomic_set_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID);
 
 	return 0;
 }
@@ -252,7 +252,7 @@ static int cdb_node_set(const char *name, size_t len_rd,
 	}
 
 	if (val.flags & F_NODE_CONFIGURED) {
-		atomic_set_bit(node->flags, BT_MESH_CDB_NODE_CONFIGURED);
+		bt_atomic_set_bit(node->flags, BT_MESH_CDB_NODE_CONFIGURED);
 	}
 
 	memcpy(node->uuid, val.uuid, 16);
@@ -443,7 +443,7 @@ static void store_cdb_node(const struct bt_mesh_cdb_node *node)
 	val.num_elem = node->num_elem;
 	val.flags = 0;
 
-	if (atomic_test_bit(node->flags, BT_MESH_CDB_NODE_CONFIGURED)) {
+	if (bt_atomic_test_bit(node->flags, BT_MESH_CDB_NODE_CONFIGURED)) {
 		val.flags |= F_NODE_CONFIGURED;
 	}
 
@@ -553,7 +553,7 @@ static void clear_cdb_app_key(uint16_t app_idx)
 
 static void schedule_cdb_store(int flag)
 {
-	atomic_set_bit(bt_mesh_cdb.flags, flag);
+	bt_atomic_set_bit(bt_mesh_cdb.flags, flag);
 	bt_mesh_settings_store_schedule(BT_MESH_SETTINGS_CDB_PENDING);
 }
 
@@ -730,7 +730,7 @@ int bt_mesh_cdb_create(const uint8_t key[16])
 	struct bt_mesh_cdb_subnet *sub;
 	int err;
 
-	if (atomic_test_and_set_bit(bt_mesh_cdb.flags,
+	if (bt_atomic_test_and_set_bit(bt_mesh_cdb.flags,
 				    BT_MESH_CDB_VALID)) {
 		return -EALREADY;
 	}
@@ -760,7 +760,7 @@ void bt_mesh_cdb_clear(void)
 {
 	int i;
 
-	atomic_clear_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID);
+	bt_atomic_clear_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID);
 
 	for (i = 0; i < ARRAY_SIZE(bt_mesh_cdb.nodes); ++i) {
 		if (bt_mesh_cdb.nodes[i].addr != BT_MESH_ADDR_UNASSIGNED) {
@@ -797,7 +797,7 @@ void bt_mesh_cdb_iv_update(uint32_t iv_index, bool iv_update)
 
 	bt_mesh_cdb.iv_index = iv_index;
 
-	atomic_set_bit_to(bt_mesh_cdb.flags, BT_MESH_CDB_IVU_IN_PROGRESS,
+	bt_atomic_set_bit_to(bt_mesh_cdb.flags, BT_MESH_CDB_IVU_IN_PROGRESS,
 			  iv_update);
 
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
@@ -871,7 +871,7 @@ uint8_t bt_mesh_cdb_subnet_flags(const struct bt_mesh_cdb_subnet *sub)
 		flags |= BT_MESH_NET_FLAG_KR;
 	}
 
-	if (atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_IVU_IN_PROGRESS)) {
+	if (bt_atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_IVU_IN_PROGRESS)) {
 		flags |= BT_MESH_NET_FLAG_IVU;
 	}
 
@@ -914,7 +914,7 @@ struct bt_mesh_cdb_node *bt_mesh_cdb_node_alloc(const uint8_t uuid[16], uint16_t
 			node->addr = addr;
 			node->num_elem = num_elem;
 			node->net_idx = net_idx;
-			atomic_set(node->flags, 0);
+			bt_atomic_set(node->flags, 0);
 			return node;
 		}
 	}
@@ -1123,7 +1123,7 @@ static void store_cdb_pending_net(void)
 	LOG_DBG("");
 
 	net.iv.index = bt_mesh_cdb.iv_index;
-	net.iv.update = atomic_test_bit(bt_mesh_cdb.flags,
+	net.iv.update = bt_atomic_test_bit(bt_mesh_cdb.flags,
 					BT_MESH_CDB_IVU_IN_PROGRESS);
 	net.lowest_avail_addr = bt_mesh_cdb.lowest_avail_addr;
 
@@ -1212,9 +1212,9 @@ static void store_cdb_pending_keys(void)
 
 void bt_mesh_cdb_pending_store(void)
 {
-	if (atomic_test_and_clear_bit(bt_mesh_cdb.flags,
+	if (bt_atomic_test_and_clear_bit(bt_mesh_cdb.flags,
 				      BT_MESH_CDB_SUBNET_PENDING)) {
-		if (atomic_test_bit(bt_mesh_cdb.flags,
+		if (bt_atomic_test_bit(bt_mesh_cdb.flags,
 				    BT_MESH_CDB_VALID)) {
 			store_cdb_pending_net();
 		} else {
@@ -1222,12 +1222,12 @@ void bt_mesh_cdb_pending_store(void)
 		}
 	}
 
-	if (atomic_test_and_clear_bit(bt_mesh_cdb.flags,
+	if (bt_atomic_test_and_clear_bit(bt_mesh_cdb.flags,
 				      BT_MESH_CDB_NODES_PENDING)) {
 		store_cdb_pending_nodes();
 	}
 
-	if (atomic_test_and_clear_bit(bt_mesh_cdb.flags,
+	if (bt_atomic_test_and_clear_bit(bt_mesh_cdb.flags,
 				      BT_MESH_CDB_KEYS_PENDING)) {
 		store_cdb_pending_keys();
 	}

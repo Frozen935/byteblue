@@ -157,27 +157,27 @@ static int adv_start(struct bt_mesh_ext_adv *ext_adv,
 		return -ENODEV;
 	}
 
-	if (atomic_test_and_set_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
+	if (bt_atomic_test_and_set_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
 		LOG_ERR("Advertiser is busy");
 		return -EBUSY;
 	}
 
-	if (atomic_test_bit(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS)) {
+	if (bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS)) {
 		err = bt_le_ext_adv_update_param(ext_adv->instance, param);
 		if (err) {
 			LOG_ERR("Failed updating adv params: %d", err);
-			atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
+			bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
 			return err;
 		}
 
-		atomic_set_bit_to(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS,
+		bt_atomic_set_bit_to(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS,
 				  param != &ext_adv->adv_param);
 	}
 
 	err = bt_le_ext_adv_set_data(ext_adv->instance, ad, ad_len, sd, sd_len);
 	if (err) {
 		LOG_ERR("Failed setting adv data: %d", err);
-		atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
+		bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
 		return err;
 	}
 
@@ -186,7 +186,7 @@ static int adv_start(struct bt_mesh_ext_adv *ext_adv,
 	err = bt_le_ext_adv_start(ext_adv->instance, start);
 	if (err) {
 		LOG_ERR("Advertising failed: err %d", err);
-		atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
+		bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
 	}
 
 	return err;
@@ -205,7 +205,7 @@ static int bt_data_send(struct bt_mesh_ext_adv *ext_adv, uint8_t num_events, uin
 	if (ext_adv->adv_param.interval_min != BT_MESH_ADV_SCAN_UNIT(adv_interval)) {
 		ext_adv->adv_param.interval_min = BT_MESH_ADV_SCAN_UNIT(adv_interval);
 		ext_adv->adv_param.interval_max = ext_adv->adv_param.interval_min;
-		atomic_set_bit(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS);
+		bt_atomic_set_bit(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS);
 	}
 
 	return adv_start(ext_adv, &ext_adv->adv_param, &start, ad, ad_len, NULL, 0);
@@ -245,15 +245,15 @@ static int stop_proxy_adv(struct bt_mesh_ext_adv *ext_adv)
 {
 	int err;
 
-	if (atomic_test_bit(ext_adv->flags, ADV_FLAG_PROXY)) {
+	if (bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_PROXY)) {
 		err = bt_le_ext_adv_stop(ext_adv->instance);
 		if (err) {
 			LOG_ERR("Failed to stop proxy advertising: %d", err);
 			return err;
 		}
 
-		atomic_clear_bit(ext_adv->flags, ADV_FLAG_PROXY);
-		atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
+		bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_PROXY);
+		bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
 	}
 
 	return 0;
@@ -317,9 +317,9 @@ static void start_proxy_sol_or_proxy_adv(struct bt_mesh_ext_adv *ext_adv)
 			return;
 		}
 
-		if (!atomic_test_and_set_bit(ext_adv->flags, ADV_FLAG_PROXY)) {
+		if (!bt_atomic_test_and_set_bit(ext_adv->flags, ADV_FLAG_PROXY)) {
 			if (bt_mesh_adv_gatt_send()) {
-				atomic_clear_bit(ext_adv->flags, ADV_FLAG_PROXY);
+				bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_PROXY);
 				return;
 			}
 		}
@@ -340,19 +340,19 @@ static void send_pending_adv(struct bt_work *work)
 
 	ext_adv = CONTAINER_OF(work, struct bt_mesh_ext_adv, work);
 
-	if (atomic_test_bit(ext_adv->flags, ADV_FLAG_SUSPENDING)) {
+	if (bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_SUSPENDING)) {
 		LOG_DBG("Advertiser is suspending");
 		return;
 	}
 
-	if (atomic_test_and_clear_bit(ext_adv->flags, ADV_FLAG_SENT)) {
+	if (bt_atomic_test_and_clear_bit(ext_adv->flags, ADV_FLAG_SENT)) {
 		LOG_DBG("Advertising stopped after %u ms for %s adv",
 			k_uptime_get_32() - ext_adv->timestamp,
 			ext_adv->adv ? adv_tag_to_str[ext_adv->adv->ctx.tag]
 				     : adv_tag_to_str[BT_MESH_ADV_TAG_PROXY]);
 
-		atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
-		atomic_clear_bit(ext_adv->flags, ADV_FLAG_PROXY);
+		bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_ACTIVE);
+		bt_atomic_clear_bit(ext_adv->flags, ADV_FLAG_PROXY);
 
 		if (ext_adv->adv) {
 			struct bt_mesh_adv_ctx ctx = ext_adv->adv->ctx;
@@ -375,7 +375,7 @@ static void send_pending_adv(struct bt_work *work)
 
 static bool schedule_send(struct bt_mesh_ext_adv *ext_adv)
 {
-	if (atomic_test_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
+	if (bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
 		/* We don't need to resubmit the `send_pending_adv` work if the mesh advertiser
 		 * is sending a mesh packet. The `send_pending_adv` work is resubmitted when the
 		 * current advertising is finished, which is done through the `adv_sent` callback.
@@ -383,7 +383,7 @@ static bool schedule_send(struct bt_mesh_ext_adv *ext_adv)
 		 * The proxy advertisement in turns doesn't timeout or stop quickly and has less
 		 * priority than regular mesh messages, thus needs to be stopped immeditaly.
 		 */
-		if (!atomic_test_bit(ext_adv->flags, ADV_FLAG_PROXY)) {
+		if (!bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_PROXY)) {
 			return false;
 		}
 	}
@@ -431,7 +431,7 @@ void bt_mesh_adv_friend_ready(void)
 
 static void adv_sent(struct bt_mesh_ext_adv *ext_adv)
 {
-	atomic_set_bit(ext_adv->flags, ADV_FLAG_SENT);
+	bt_atomic_set_bit(ext_adv->flags, ADV_FLAG_SENT);
 
 	bt_mesh_wq_submit(&ext_adv->work);
 }
@@ -447,7 +447,7 @@ int bt_mesh_adv_terminate(struct bt_mesh_adv *adv)
 			continue;
 		}
 
-		if (!atomic_test_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
+		if (!bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
 			return 0;
 		}
 
@@ -511,7 +511,7 @@ static void ext_adv_set_sent(struct bt_le_ext_adv *instance, struct bt_le_ext_ad
 		return;
 	}
 
-	if (!atomic_test_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
+	if (!bt_atomic_test_bit(ext_adv->flags, ADV_FLAG_ACTIVE)) {
 		LOG_DBG("Advertiser %p ADV_FLAG_ACTIVE not set", ext_adv);
 		return;
 	}
@@ -548,7 +548,7 @@ int bt_mesh_adv_disable(void)
 	int err;
 
 	for (int i = 0; i < ARRAY_SIZE(advs); i++) {
-		atomic_set_bit(advs[i].flags, ADV_FLAG_SUSPENDING);
+		bt_atomic_set_bit(advs[i].flags, ADV_FLAG_SUSPENDING);
 
 		if (os_thread_self() != bt_work_queue_thread_get(MESH_WORKQ) ||
 		    (bt_work_busy_get(&advs[i].work) & BT_WORK_RUNNING) == 0) {
@@ -569,7 +569,7 @@ int bt_mesh_adv_disable(void)
 
 		advs[i].instance = NULL;
 
-		atomic_clear_bit(advs[i].flags, ADV_FLAG_SUSPENDING);
+		bt_atomic_clear_bit(advs[i].flags, ADV_FLAG_SUSPENDING);
 
 		/* `adv_sent` is called to finish transmission of an adv buffer that was pushed to
 		 * the host before the advertiser was stopped, but did not finish.
@@ -593,7 +593,7 @@ int bt_mesh_adv_gatt_start(const struct bt_le_adv_param *param,
 
 	LOG_DBG("Start advertising %d ms", duration);
 
-	atomic_set_bit(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS);
+	bt_atomic_set_bit(ext_adv->flags, ADV_FLAG_UPDATE_PARAMS);
 
 	return adv_start(ext_adv, param, &start, ad, ad_len, sd, sd_len);
 }

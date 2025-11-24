@@ -57,7 +57,7 @@ static int handle_large_comp_data_get(const struct bt_mesh_model *model,
 	bt_buf_simple_add_u8(&rsp, page);
 	bt_buf_simple_add_le16(&rsp, offset);
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) && page < 128) {
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) && page < 128) {
 		size_t msg_space;
 
 		BT_BUF_SIMPLE_DEFINE(temp_buf, CONFIG_BT_MESH_COMP_PST_BUF_SIZE);
@@ -115,7 +115,7 @@ static int handle_models_metadata_get(const struct bt_mesh_model *model,
 
 	LOG_DBG("page %u offset %u", page, offset);
 
-	if (page >= 128U && atomic_test_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY)) {
+	if (page >= 128U && bt_atomic_test_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY)) {
 		LOG_DBG("Models Metadata Page 128");
 		page = 128U;
 	} else if (page != 0U) {
@@ -127,7 +127,7 @@ static int handle_models_metadata_get(const struct bt_mesh_model *model,
 	bt_buf_simple_add_u8(&rsp, page);
 	bt_buf_simple_add_le16(&rsp, offset);
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY) == (page == 0U)) {
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY) == (page == 0U)) {
 		rsp.size -= BT_MESH_MIC_SHORT;
 		err = bt_mesh_models_metadata_read(&rsp, offset);
 		if (err) {

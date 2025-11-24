@@ -535,7 +535,7 @@ static int handle_xfer_start(const struct bt_mesh_model *mod, struct bt_mesh_msg
 
 	memset(srv->state.blocks, 0, sizeof(srv->state.blocks));
 	for (int i = 0; i < block_count; i++) {
-		atomic_set_bit(srv->state.blocks, i);
+		bt_atomic_set_bit(srv->state.blocks, i);
 	}
 
 	err = io_open(srv);
@@ -680,7 +680,7 @@ static int handle_block_start(const struct bt_mesh_model *mod, struct bt_mesh_ms
 	srv->block.offset = block_number * (1UL << srv->state.xfer.block_size_log);
 
 	if (srv->phase == BT_MESH_BLOB_XFER_PHASE_COMPLETE ||
-	    !atomic_test_bit(srv->state.blocks, block_number)) {
+	    !bt_atomic_test_bit(srv->state.blocks, block_number)) {
 		memset(srv->block.missing, 0, sizeof(srv->block.missing));
 		status = BT_MESH_BLOB_SUCCESS;
 		goto rsp;
@@ -786,7 +786,7 @@ static int handle_chunk(const struct bt_mesh_model *mod, struct bt_mesh_msg_ctx 
 		srv->io->block_end(srv->io, &srv->state.xfer, &srv->block);
 	}
 
-	atomic_clear_bit(srv->state.blocks, srv->block.number);
+	bt_atomic_clear_bit(srv->state.blocks, srv->block.number);
 
 	if (!all_blocks_received(srv)) {
 		phase_set(srv, BT_MESH_BLOB_XFER_PHASE_WAITING_FOR_BLOCK);
@@ -1026,7 +1026,7 @@ uint8_t bt_mesh_blob_srv_progress(const struct bt_mesh_blob_srv *srv)
 
 	received = 0;
 	for (int i = 0; i < total; ++i) {
-		if (!atomic_test_bit(srv->state.blocks, i)) {
+		if (!bt_atomic_test_bit(srv->state.blocks, i)) {
 			received++;
 		}
 	}

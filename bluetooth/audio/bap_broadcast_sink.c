@@ -62,7 +62,7 @@ static bool find_recv_state_by_src_id_cb(const struct bt_bap_scan_delegator_recv
 {
 	const struct bt_bap_broadcast_sink *sink = user_data;
 
-	if (atomic_test_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID) &&
+	if (bt_atomic_test_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID) &&
 	    sink->bass_src_id == recv_state->src_id) {
 		return true;
 	}
@@ -432,7 +432,7 @@ static struct bt_bap_broadcast_sink *broadcast_sink_free_get(void)
 {
 	/* Find free entry */
 	for (int i = 0; i < ARRAY_SIZE(broadcast_sinks); i++) {
-		if (!atomic_test_bit(broadcast_sinks[i].flags,
+		if (!bt_atomic_test_bit(broadcast_sinks[i].flags,
 				     BT_BAP_BROADCAST_SINK_FLAG_INITIALIZED)) {
 			broadcast_sinks[i].index = i;
 			broadcast_sinks[i].broadcast_id = BT_BAP_INVALID_BROADCAST_ID;
@@ -490,7 +490,7 @@ static void broadcast_sink_add_src(struct bt_bap_broadcast_sink *sink)
 			sink, err);
 	} else {
 		sink->bass_src_id = (uint8_t)err;
-		atomic_set_bit(sink->flags,
+		bt_atomic_set_bit(sink->flags,
 			       BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID);
 	}
 }
@@ -671,7 +671,7 @@ static bool pa_decode_base(struct bt_data *data, void *user_data)
 	if (base_size != sink->base_size || memcmp(base, sink->base, base_size) != 0) {
 		/* New BASE, parse */
 
-		if (atomic_test_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_BIGINFO_RECEIVED)) {
+		if (bt_atomic_test_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_BIGINFO_RECEIVED)) {
 			int ret;
 
 			ret = base_get_bis_count(base);
@@ -702,7 +702,7 @@ static bool pa_decode_base(struct bt_data *data, void *user_data)
 			sink->base_size = base_size;
 		}
 
-		if (atomic_test_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID)) {
+		if (bt_atomic_test_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID)) {
 			update_recv_state_base(sink, base);
 		}
 	}
@@ -774,7 +774,7 @@ static void update_recv_state_encryption(const struct bt_bap_broadcast_sink *sin
 	(void)memset(&mod_src_param, 0, sizeof(mod_src_param));
 
 	/* Only change the encrypt state, and leave the rest as is */
-	if (atomic_test_bit(sink->flags,
+	if (bt_atomic_test_bit(sink->flags,
 			    BT_BAP_BROADCAST_SINK_FLAG_BIG_ENCRYPTED)) {
 		mod_src_param.encrypt_state = BT_BAP_BIG_ENC_STATE_BCODE_REQ;
 	} else {
@@ -818,17 +818,17 @@ static void biginfo_recv(struct bt_le_per_adv_sync *sync,
 		return;
 	}
 
-	atomic_set_bit(sink->flags,
+	bt_atomic_set_bit(sink->flags,
 		       BT_BAP_BROADCAST_SINK_FLAG_BIGINFO_RECEIVED);
 	sink->iso_interval = biginfo->iso_interval;
 	sink->biginfo_num_bis = biginfo->num_bis;
-	if (biginfo->encryption != atomic_test_bit(sink->flags,
+	if (biginfo->encryption != bt_atomic_test_bit(sink->flags,
 						   BT_BAP_BROADCAST_SINK_FLAG_BIG_ENCRYPTED)) {
-		atomic_set_bit_to(sink->flags,
+		bt_atomic_set_bit_to(sink->flags,
 				  BT_BAP_BROADCAST_SINK_FLAG_BIG_ENCRYPTED,
 				  biginfo->encryption);
 
-		if (atomic_test_bit(sink->flags,
+		if (bt_atomic_test_bit(sink->flags,
 				    BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID)) {
 			update_recv_state_encryption(sink);
 		}
@@ -1106,10 +1106,10 @@ int bt_bap_broadcast_sink_create(struct bt_le_per_adv_sync *pa_sync, uint32_t br
 			}
 		}
 
-		atomic_set_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID);
+		bt_atomic_set_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_SRC_ID_VALID);
 	}
 
-	atomic_set_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_INITIALIZED);
+	bt_atomic_set_bit(sink->flags, BT_BAP_BROADCAST_SINK_FLAG_INITIALIZED);
 
 	*out_sink = sink;
 	return 0;
@@ -1280,7 +1280,7 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(sink->flags,
+	if (!bt_atomic_test_bit(sink->flags,
 			     BT_BAP_BROADCAST_SINK_FLAG_BIGINFO_RECEIVED)) {
 		/* TODO: We could store the request to sync and start the sync
 		 * once the BIGInfo has been received, and then do the sync
@@ -1290,7 +1290,7 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 		return -EAGAIN;
 	}
 
-	if (atomic_test_bit(sink->flags,
+	if (bt_atomic_test_bit(sink->flags,
 			    BT_BAP_BROADCAST_SINK_FLAG_BIG_ENCRYPTED) &&
 	    broadcast_code == NULL) {
 		LOG_DBG("Broadcast code required");
@@ -1360,7 +1360,7 @@ int bt_bap_broadcast_sink_sync(struct bt_bap_broadcast_sink *sink, uint32_t inde
 	param.bis_bitfield = indexes_bitfield;
 	param.mse = 0; /* Let controller decide */
 	param.sync_timeout = interval_to_sync_timeout(sink->iso_interval);
-	param.encryption = atomic_test_bit(sink->flags,
+	param.encryption = bt_atomic_test_bit(sink->flags,
 					   BT_BAP_BROADCAST_SINK_FLAG_BIG_ENCRYPTED);
 	if (param.encryption) {
 		memcpy(param.bcode, broadcast_code, sizeof(param.bcode));

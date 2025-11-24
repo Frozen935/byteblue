@@ -125,7 +125,7 @@ static void l2cap_sent(struct bt_l2cap_chan *chan)
 	bt_shell_print("Outgoing data channel %p transmitted", chan);
 }
 
-static void l2cap_status(struct bt_l2cap_chan *chan, atomic_t *status)
+static void l2cap_status(struct bt_l2cap_chan *chan, bt_atomic_t *status)
 {
 	bt_shell_print("Channel %p status %u", chan, (uint32_t)*status);
 }

@@ -909,7 +909,7 @@ static void mod_publish(struct bt_work *work)
 	int err;
 
 	if (pub->addr == BT_MESH_ADDR_UNASSIGNED ||
-	    atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
+	    bt_atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
 		/* Publication is no longer active, but the cancellation of the
 		 * delayed work failed. Abandon recurring timer.
 		 */
@@ -2096,7 +2096,7 @@ static int comp_set(const char *name, size_t len_rd, bt_storage_read_cb read_cb,
 	 * demand.
 	 */
 	if (len_rd > 0) {
-		atomic_set_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY);
+		bt_atomic_set_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY);
 	}
 
 	return 0;
@@ -2416,7 +2416,7 @@ static void comp_data_clear(void)
 		}
 	}
 
-	atomic_clear_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY);
+	bt_atomic_clear_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY);
 }
 
 static int read_comp_cb(const char *key, size_t len, bt_storage_read_cb read_cb,
@@ -2502,7 +2502,7 @@ static int metadata_set(const char *name, size_t len_rd, bt_storage_read_cb read
 	 * demand.
 	 */
 	if (len_rd > 0) {
-		atomic_set_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY);
+		bt_atomic_set_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY);
 	}
 
 	return 0;
@@ -2594,7 +2594,7 @@ static void models_metadata_clear(void)
 		LOG_DBG("Cleared models metadata");
 	}
 
-	atomic_clear_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY);
+	bt_atomic_clear_bit(bt_mesh.flags, BT_MESH_METADATA_DIRTY);
 }
 
 void bt_mesh_comp_data_pending_clear(void)
@@ -2670,14 +2670,14 @@ uint8_t bt_mesh_comp_parse_page(struct bt_buf_simple *buf)
 	uint8_t page = bt_buf_simple_pull_u8(buf);
 
 	if (page >= 130U && IS_ENABLED(CONFIG_BT_MESH_COMP_PAGE_2) &&
-	    (atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) ||
+	    (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) ||
 	     IS_ENABLED(CONFIG_BT_MESH_RPR_SRV))) {
 		page = 130U;
 	} else if (page >= 129U && IS_ENABLED(CONFIG_BT_MESH_COMP_PAGE_1) &&
-		   (atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) ||
+		   (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) ||
 		    IS_ENABLED(CONFIG_BT_MESH_RPR_SRV))) {
 		page = 129U;
-	} else if (page >= 128U && (atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) ||
+	} else if (page >= 128U && (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_COMP_DIRTY) ||
 				    IS_ENABLED(CONFIG_BT_MESH_RPR_SRV))) {
 		page = 128U;
 	} else if (page >= 2U && IS_ENABLED(CONFIG_BT_MESH_COMP_PAGE_2)) {

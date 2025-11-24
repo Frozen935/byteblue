@@ -3,7 +3,6 @@
 #include <string.h>
 #include <assert.h>
 #include "base/bt_buf.h"
-#include "base/queue/bt_lifo.h"
 
 /* Define a fixed-size bt_buf pool: 8 buffers, data size 64 bytes, user data 16 bytes */
 BT_BUF_POOL_DEFINE(my_pool, 8, 64, 16, NULL);

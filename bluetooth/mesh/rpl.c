@@ -51,7 +51,7 @@ static void clear_rpl(struct bt_mesh_rpl *rpl)
 		return;
 	}
 
-	atomic_clear_bit(store, rpl_idx(rpl));
+	bt_atomic_clear_bit(store, rpl_idx(rpl));
 
 	snprintf(path, sizeof(path), "bt/mesh/RPL/%x", rpl->src);
 	err = bt_storage_delete(path);
@@ -64,7 +64,7 @@ static void clear_rpl(struct bt_mesh_rpl *rpl)
 
 static void schedule_rpl_store(struct bt_mesh_rpl *entry, bool force)
 {
-	atomic_set_bit(store, rpl_idx(entry));
+	bt_atomic_set_bit(store, rpl_idx(entry));
 
 	if (force
 #ifdef CONFIG_BT_MESH_RPL_STORE_TIMEOUT
@@ -126,8 +126,8 @@ bool bt_mesh_rpl_check(struct bt_mesh_net_rx *rx, struct bt_mesh_rpl **match, bo
 		/* Existing slot for given address */
 		if (rpl->src == rx->ctx.addr) {
 			if (!rpl->old_iv &&
-			    atomic_test_bit(rpl_flags, PENDING_RESET) &&
-			    !atomic_test_bit(store, i)) {
+			    bt_atomic_test_bit(rpl_flags, PENDING_RESET) &&
+			    !bt_atomic_test_bit(store, i)) {
 				/* Until rpl reset is finished, entry with old_iv == false and
 				 * without "store" bit set will be removed, therefore it can be
 				 * reused. If such entry is reused, "store" bit will be set and
@@ -171,7 +171,7 @@ void bt_mesh_rpl_clear(void)
 		return;
 	}
 
-	atomic_set_bit(rpl_flags, PENDING_CLEAR);
+	bt_atomic_set_bit(rpl_flags, PENDING_CLEAR);
 
 	bt_mesh_settings_store_schedule(BT_MESH_SETTINGS_RPL_PENDING);
 }
@@ -221,12 +221,12 @@ void bt_mesh_rpl_reset(void)
 			/* Entries with "store" bit set will be stored, other entries will be
 			 * removed.
 			 */
-			atomic_set_bit_to(store, i, !rpl->old_iv);
+			bt_atomic_set_bit_to(store, i, !rpl->old_iv);
 			rpl->old_iv = !rpl->old_iv;
 		}
 
 		if (i != 0) {
-			atomic_set_bit(rpl_flags, PENDING_RESET);
+			bt_atomic_set_bit(rpl_flags, PENDING_RESET);
 			bt_mesh_settings_store_schedule(BT_MESH_SETTINGS_RPL_PENDING);
 		}
 	} else {
@@ -351,8 +351,8 @@ void bt_mesh_rpl_pending_store(uint16_t addr)
 		bt_mesh_settings_store_cancel(BT_MESH_SETTINGS_RPL_PENDING);
 	}
 
-	clr = atomic_test_and_clear_bit(rpl_flags, PENDING_CLEAR);
-	rst = atomic_test_bit(rpl_flags, PENDING_RESET);
+	clr = bt_atomic_test_and_clear_bit(rpl_flags, PENDING_CLEAR);
+	rst = bt_atomic_test_bit(rpl_flags, PENDING_RESET);
 
 	for (int i = 0; i < ARRAY_SIZE(replay_list); i++) {
 		struct bt_mesh_rpl *rpl = &replay_list[i];
@@ -364,7 +364,7 @@ void bt_mesh_rpl_pending_store(uint16_t addr)
 		if (clr) {
 			clear_rpl(rpl);
 			shift++;
-		} else if (atomic_test_and_clear_bit(store, i)) {
+		} else if (bt_atomic_test_and_clear_bit(store, i)) {
 			if (shift > 0) {
 				replay_list[i - shift] = *rpl;
 			}
@@ -376,9 +376,9 @@ void bt_mesh_rpl_pending_store(uint16_t addr)
 			/* Check if this entry was re-used during removal. If so, shift it as well.
 			 * Otherwise, increment shift counter.
 			 */
-			if (atomic_test_and_clear_bit(store, i)) {
+			if (bt_atomic_test_and_clear_bit(store, i)) {
 				replay_list[i - shift] = *rpl;
-				atomic_set_bit(store, i - shift);
+				bt_atomic_set_bit(store, i - shift);
 			} else {
 				shift++;
 			}
@@ -391,7 +391,7 @@ void bt_mesh_rpl_pending_store(uint16_t addr)
 		}
 	}
 
-	atomic_clear_bit(rpl_flags, PENDING_RESET);
+	bt_atomic_clear_bit(rpl_flags, PENDING_RESET);
 
 	if (addr == BT_MESH_ADDR_ALL_NODES) {
 		(void)memset(&replay_list[last - shift + 1], 0, sizeof(struct bt_mesh_rpl) * shift);

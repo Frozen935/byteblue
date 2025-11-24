@@ -104,7 +104,7 @@ struct bt_goep {
 	struct bt_conn *_acl;
 
 	/** @internal Saves the current transport state, @ref bt_goep_transport_state */
-	atomic_t _state;
+	bt_atomic_t _state;
 
 	/** @brief GOEP transport operations
 	 *

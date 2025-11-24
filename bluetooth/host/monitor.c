@@ -41,45 +41,45 @@ enum {
 	BT_CONSOLE_BUSY,
 };
 
-static atomic_t flags;
+static bt_atomic_t flags;
 
 static struct {
-	atomic_t cmd;
-	atomic_t evt;
-	atomic_t acl_tx;
-	atomic_t acl_rx;
+	bt_atomic_t cmd;
+	bt_atomic_t evt;
+	bt_atomic_t acl_tx;
+	bt_atomic_t acl_rx;
 #if defined(CONFIG_BT_CLASSIC)
-	atomic_t sco_tx;
-	atomic_t sco_rx;
+	bt_atomic_t sco_tx;
+	bt_atomic_t sco_rx;
 #endif
-	atomic_t other;
+	bt_atomic_t other;
 } drops;
 
 static void drop_add(uint16_t opcode)
 {
 	switch (opcode) {
 	case BT_MONITOR_COMMAND_PKT:
-		atomic_inc(&drops.cmd);
+		bt_atomic_inc(&drops.cmd);
 		break;
 	case BT_MONITOR_EVENT_PKT:
-		atomic_inc(&drops.evt);
+		bt_atomic_inc(&drops.evt);
 		break;
 	case BT_MONITOR_ACL_TX_PKT:
-		atomic_inc(&drops.acl_tx);
+		bt_atomic_inc(&drops.acl_tx);
 		break;
 	case BT_MONITOR_ACL_RX_PKT:
-		atomic_inc(&drops.acl_rx);
+		bt_atomic_inc(&drops.acl_rx);
 		break;
 #if defined(CONFIG_BT_CLASSIC)
 	case BT_MONITOR_SCO_TX_PKT:
-		atomic_inc(&drops.sco_tx);
+		bt_atomic_inc(&drops.sco_tx);
 		break;
 	case BT_MONITOR_SCO_RX_PKT:
-		atomic_inc(&drops.sco_rx);
+		bt_atomic_inc(&drops.sco_rx);
 		break;
 #endif
 	default:
-		atomic_inc(&drops.other);
+		bt_atomic_inc(&drops.other);
 		break;
 	}
 }
@@ -153,11 +153,11 @@ static void monitor_send(const void *data, size_t len)
 #endif /* CONFIG_BT_DEBUG_MONITOR_UART */
 
 static void encode_drops(struct bt_monitor_hdr *hdr, uint8_t type,
-			 atomic_t *val)
+			 bt_atomic_t *val)
 {
-	atomic_val_t count;
+	bt_atomic_val_t count;
 
-	count = atomic_set(val, 0);
+	count = bt_atomic_set(val, 0);
 	if (count) {
 		hdr->ext[hdr->hdr_len++] = type;
 		hdr->ext[hdr->hdr_len++] = MIN(count, 255);
@@ -207,7 +207,7 @@ void bt_monitor_send(uint16_t opcode, const void *data, size_t len)
 {
 	struct bt_monitor_hdr hdr;
 
-	if (atomic_test_and_set_bit(&flags, BT_LOG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(&flags, BT_LOG_BUSY)) {
 		drop_add(opcode);
 		return;
 	}
@@ -217,7 +217,7 @@ void bt_monitor_send(uint16_t opcode, const void *data, size_t len)
 	monitor_send(&hdr, BT_MONITOR_BASE_HDR_LEN + hdr.hdr_len);
 	monitor_send(data, len);
 
-	atomic_clear_bit(&flags, BT_LOG_BUSY);
+	bt_atomic_clear_bit(&flags, BT_LOG_BUSY);
 }
 
 void bt_monitor_new_index(uint8_t type, uint8_t bus, const bt_addr_t *addr,
@@ -240,13 +240,13 @@ static int monitor_console_out(int c)
 	static char buf[MONITOR_MSG_MAX];
 	static size_t len;
 
-	if (atomic_test_and_set_bit(&flags, BT_CONSOLE_BUSY)) {
+	if (bt_atomic_test_and_set_bit(&flags, BT_CONSOLE_BUSY)) {
 		return c;
 	}
 
 	if (c != '\n' && len < sizeof(buf) - 1) {
 		buf[len++] = c;
-		atomic_clear_bit(&flags, BT_CONSOLE_BUSY);
+		bt_atomic_clear_bit(&flags, BT_CONSOLE_BUSY);
 		return c;
 	}
 
@@ -255,7 +255,7 @@ static int monitor_console_out(int c)
 	bt_monitor_send(BT_MONITOR_SYSTEM_NOTE, buf, len);
 	len = 0;
 
-	atomic_clear_bit(&flags, BT_CONSOLE_BUSY);
+	bt_atomic_clear_bit(&flags, BT_CONSOLE_BUSY);
 
 	return c;
 }
@@ -322,7 +322,7 @@ static void monitor_log_process(const struct log_backend *const backend,
 	log_output_msg_process(&monitor_log_output, &msg->log,
 			       LOG_OUTPUT_FLAG_CRLF_NONE);
 
-	if (atomic_test_and_set_bit(&flags, BT_LOG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(&flags, BT_LOG_BUSY)) {
 		drop_add(BT_MONITOR_USER_LOGGING);
 		return;
 	}
@@ -342,7 +342,7 @@ static void monitor_log_process(const struct log_backend *const backend,
 	/* Terminate the string with null */
 	poll_out('\0');
 
-	atomic_clear_bit(&flags, BT_LOG_BUSY);
+	bt_atomic_clear_bit(&flags, BT_LOG_BUSY);
 }
 
 static void monitor_log_panic(const struct log_backend *const backend)

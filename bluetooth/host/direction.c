@@ -385,7 +385,7 @@ int hci_df_prepare_connectionless_iq_report(struct bt_buf *buf,
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(per_adv_sync->flags, BT_PER_ADV_SYNC_CTE_ENABLED)) {
+	if (!bt_atomic_test_bit(per_adv_sync->flags, BT_PER_ADV_SYNC_CTE_ENABLED)) {
 		LOG_ERR("Received PA CTE report when CTE receive disabled");
 		return -EINVAL;
 	}
@@ -433,7 +433,7 @@ int hci_df_vs_prepare_connectionless_iq_report(struct bt_buf *buf,
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(per_adv_sync->flags, BT_PER_ADV_SYNC_CTE_ENABLED)) {
+	if (!bt_atomic_test_bit(per_adv_sync->flags, BT_PER_ADV_SYNC_CTE_ENABLED)) {
 		LOG_ERR("Received PA CTE report when CTE receive disabled");
 		return -EINVAL;
 	}
@@ -645,7 +645,7 @@ static int hci_df_set_conn_cte_rx_enable(struct bt_conn *conn, bool enable,
 		 * params must be set at least once for connection object to successfully execute
 		 * CTE REQ procedure.
 		 */
-		atomic_set_bit(conn->flags, BT_CONN_CTE_RX_PARAMS_SET);
+		bt_atomic_set_bit(conn->flags, BT_CONN_CTE_RX_PARAMS_SET);
 	}
 
 	bt_buf_unref(rsp);
@@ -674,7 +674,7 @@ int hci_df_prepare_connection_iq_report(struct bt_buf *buf,
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_CTE_RX_ENABLED)) {
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_CTE_RX_ENABLED)) {
 		LOG_ERR("Received conn CTE report when CTE receive disabled");
 		bt_conn_unref(conn);
 		return -EINVAL;
@@ -726,7 +726,7 @@ int hci_df_vs_prepare_connection_iq_report(struct bt_buf *buf,
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_CTE_RX_ENABLED)) {
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_CTE_RX_ENABLED)) {
 		LOG_ERR("Received conn CTE report when CTE receive disabled");
 		bt_conn_unref(conn);
 		return -EINVAL;
@@ -850,7 +850,7 @@ int hci_df_prepare_conn_cte_req_failed(struct bt_buf *buf,
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_CTE_REQ_ENABLED)) {
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_CTE_REQ_ENABLED)) {
 		LOG_ERR("Received conn CTE request notification when CTE REQ disabled");
 		bt_conn_unref(conn);
 		return -EINVAL;
@@ -957,11 +957,11 @@ int bt_df_set_adv_cte_tx_param(struct bt_le_ext_adv *adv,
 	/* Check if BT_ADV_PARAMS_SET is set, because it implies the set
 	 * has already been created.
 	 */
-	if (!atomic_test_bit(adv->flags, BT_ADV_PARAMS_SET)) {
+	if (!bt_atomic_test_bit(adv->flags, BT_ADV_PARAMS_SET)) {
 		return -EINVAL;
 	}
 
-	if (atomic_test_bit(adv->flags, BT_PER_ADV_CTE_ENABLED)) {
+	if (bt_atomic_test_bit(adv->flags, BT_PER_ADV_CTE_ENABLED)) {
 		return -EINVAL;
 	}
 
@@ -970,22 +970,22 @@ int bt_df_set_adv_cte_tx_param(struct bt_le_ext_adv *adv,
 		return err;
 	}
 
-	atomic_set_bit(adv->flags, BT_PER_ADV_CTE_PARAMS_SET);
+	bt_atomic_set_bit(adv->flags, BT_PER_ADV_CTE_PARAMS_SET);
 
 	return 0;
 }
 
 static int bt_df_set_adv_cte_tx_enabled(struct bt_le_ext_adv *adv, bool enable)
 {
-	if (!atomic_test_bit(adv->flags, BT_PER_ADV_PARAMS_SET)) {
+	if (!bt_atomic_test_bit(adv->flags, BT_PER_ADV_PARAMS_SET)) {
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(adv->flags, BT_PER_ADV_CTE_PARAMS_SET)) {
+	if (!bt_atomic_test_bit(adv->flags, BT_PER_ADV_CTE_PARAMS_SET)) {
 		return -EINVAL;
 	}
 
-	if (enable == atomic_test_bit(adv->flags, BT_PER_ADV_CTE_ENABLED)) {
+	if (enable == bt_atomic_test_bit(adv->flags, BT_PER_ADV_CTE_ENABLED)) {
 		return -EALREADY;
 	}
 
@@ -1013,12 +1013,12 @@ bt_df_set_per_adv_sync_cte_rx_enable(struct bt_le_per_adv_sync *sync, bool enabl
 		return -ENOTSUP;
 	}
 
-	if (!atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_SYNCED)) {
+	if (!bt_atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_SYNCED)) {
 		return -EINVAL;
 	}
 
 	if (!enable &&
-	    !atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_CTE_ENABLED)) {
+	    !bt_atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_CTE_ENABLED)) {
 		return -EALREADY;
 	}
 
@@ -1104,7 +1104,7 @@ int bt_df_set_conn_cte_tx_param(struct bt_conn *conn, const struct bt_df_conn_ct
 		return -ENOTCONN;
 	}
 
-	if (atomic_test_bit(conn->flags, BT_CONN_CTE_RSP_ENABLED)) {
+	if (bt_atomic_test_bit(conn->flags, BT_CONN_CTE_RSP_ENABLED)) {
 		LOG_WRN("CTE response procedure is enabled");
 		return -EINVAL;
 	}
@@ -1128,7 +1128,7 @@ static int bt_df_set_conn_cte_req_enable(struct bt_conn *conn, bool enable,
 		return -ENOTCONN;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_CTE_RX_PARAMS_SET)) {
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_CTE_RX_PARAMS_SET)) {
 		LOG_ERR("Can't start CTE request procedure before CTE RX params setup");
 		return -EINVAL;
 	}
@@ -1176,7 +1176,7 @@ static int bt_df_set_conn_cte_rsp_enable(struct bt_conn *conn, bool enable)
 		return -ENOTCONN;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_CTE_TX_PARAMS_SET)) {
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_CTE_TX_PARAMS_SET)) {
 		LOG_ERR("Can't start CTE response procedure before CTE TX params setup");
 		return -EINVAL;
 	}

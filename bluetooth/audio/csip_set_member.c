@@ -133,13 +133,13 @@ static void notify_clients(struct bt_csip_set_member_svc_inst *svc_inst,
 
 		client = &svc_inst->clients[i];
 
-		if (atomic_test_bit(client->flags, FLAG_ACTIVE)) {
+		if (bt_atomic_test_bit(client->flags, FLAG_ACTIVE)) {
 			if (excluded_client != NULL &&
 			    bt_addr_le_eq(bt_conn_get_dst(excluded_client), &client->addr)) {
 				continue;
 			}
 
-			atomic_set_bit(client->flags, flag);
+			bt_atomic_set_bit(client->flags, flag);
 			submit_work = true;
 		}
 	}
@@ -491,7 +491,7 @@ static void csip_security_changed(struct bt_conn *conn, bt_security_t level,
 		for (size_t j = 0U; j < ARRAY_SIZE(svc_inst->clients); j++) {
 			client = &svc_inst->clients[j];
 
-			if (atomic_test_bit(client->flags, FLAG_ACTIVE) &&
+			if (bt_atomic_test_bit(client->flags, FLAG_ACTIVE) &&
 			    bt_addr_le_eq(peer_addr, &client->addr)) {
 				found = true;
 				break;
@@ -509,7 +509,7 @@ static void csip_security_changed(struct bt_conn *conn, bt_security_t level,
 		}
 
 		/* Check if client is set with FLAG_NOTIFY_LOCK */
-		if (atomic_test_bit(client->flags, FLAG_NOTIFY_LOCK)) {
+		if (bt_atomic_test_bit(client->flags, FLAG_NOTIFY_LOCK)) {
 			notify_work_reschedule(OS_TIMEOUT_NO_WAIT);
 			break;
 		}
@@ -567,7 +567,7 @@ static void handle_csip_auth_complete(struct bt_csip_set_member_svc_inst *svc_in
 
 		client = &svc_inst->clients[i];
 
-		if (atomic_test_bit(client->flags, FLAG_ACTIVE) &&
+		if (bt_atomic_test_bit(client->flags, FLAG_ACTIVE) &&
 		    bt_addr_le_eq(bt_conn_get_dst(conn), &client->addr)) {
 			return;
 		}
@@ -579,8 +579,8 @@ static void handle_csip_auth_complete(struct bt_csip_set_member_svc_inst *svc_in
 
 		client = &svc_inst->clients[i];
 
-		if (!atomic_test_bit(client->flags, FLAG_ACTIVE)) {
-			atomic_set_bit(client->flags, FLAG_ACTIVE);
+		if (!bt_atomic_test_bit(client->flags, FLAG_ACTIVE)) {
+			bt_atomic_set_bit(client->flags, FLAG_ACTIVE);
 			memcpy(&client->addr, bt_conn_get_dst(conn), sizeof(bt_addr_le_t));
 
 			/* Send out all pending notifications */
@@ -625,9 +625,9 @@ static void csip_bond_deleted(uint8_t id, const bt_addr_le_t *peer)
 		for (size_t j = 0U; j < ARRAY_SIZE(svc_inst->clients); j++) {
 
 			/* Check if match, and if active, if so, reset */
-			if (atomic_test_bit(svc_inst->clients[i].flags, FLAG_ACTIVE) &&
+			if (bt_atomic_test_bit(svc_inst->clients[i].flags, FLAG_ACTIVE) &&
 			    bt_addr_le_eq(peer, &svc_inst->clients[i].addr)) {
-				atomic_clear(svc_inst->clients[i].flags);
+				bt_atomic_clear(svc_inst->clients[i].flags);
 				(void)memset(&svc_inst->clients[i].addr, 0, sizeof(bt_addr_le_t));
 				break;
 			}
@@ -831,7 +831,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 
 			client = &svc_inst->clients[j];
 
-			if (atomic_test_bit(client->flags, FLAG_ACTIVE) &&
+			if (bt_atomic_test_bit(client->flags, FLAG_ACTIVE) &&
 			    bt_addr_le_eq(bt_conn_get_dst(conn), &client->addr)) {
 				client_found = true;
 				break;
@@ -842,19 +842,19 @@ static void notify_cb(struct bt_conn *conn, void *data)
 			goto unlock_and_return;
 		}
 
-		if (atomic_test_and_clear_bit(client->flags, FLAG_NOTIFY_LOCK)) {
+		if (bt_atomic_test_and_clear_bit(client->flags, FLAG_NOTIFY_LOCK)) {
 			notify(svc_inst, conn, BT_UUID_CSIS_SET_LOCK, &svc_inst->set_lock,
 			       sizeof(svc_inst->set_lock));
 		}
 
 		if (IS_ENABLED(CONFIG_BT_CSIP_SET_MEMBER_SIRK_NOTIFIABLE) &&
-		    atomic_test_and_clear_bit(client->flags, FLAG_NOTIFY_SIRK)) {
+		    bt_atomic_test_and_clear_bit(client->flags, FLAG_NOTIFY_SIRK)) {
 			notify(svc_inst, conn, BT_UUID_CSIS_SIRK, &svc_inst->sirk,
 			       sizeof(svc_inst->sirk));
 		}
 
 		if (IS_ENABLED(CONFIG_BT_CSIP_SET_MEMBER_SIZE_NOTIFIABLE) &&
-		    atomic_test_and_clear_bit(client->flags, FLAG_NOTIFY_SIZE)) {
+		    bt_atomic_test_and_clear_bit(client->flags, FLAG_NOTIFY_SIZE)) {
 			notify(svc_inst, conn, BT_UUID_CSIS_SET_SIZE, &svc_inst->set_size,
 			       sizeof(svc_inst->set_size));
 		}
@@ -878,10 +878,10 @@ static void add_bonded_addr_to_client_list(const struct bt_bond_info *info, void
 
 		for (size_t j = 0U; j < ARRAY_SIZE(svc_inst->clients); j++) {
 			/* Check if device is registered, it not, add it */
-			if (!atomic_test_bit(svc_inst->clients[j].flags, FLAG_ACTIVE)) {
+			if (!bt_atomic_test_bit(svc_inst->clients[j].flags, FLAG_ACTIVE)) {
 				char addr_str[BT_ADDR_LE_STR_LEN];
 
-				atomic_set_bit(svc_inst->clients[j].flags, FLAG_ACTIVE);
+				bt_atomic_set_bit(svc_inst->clients[j].flags, FLAG_ACTIVE);
 				memcpy(&svc_inst->clients[j].addr, &info->addr,
 				       sizeof(bt_addr_le_t));
 				bt_addr_le_to_str(&svc_inst->clients[j].addr, addr_str,

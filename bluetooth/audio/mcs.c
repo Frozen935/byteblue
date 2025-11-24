@@ -93,8 +93,8 @@ static ssize_t read_player_name(struct bt_conn *conn,
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
 		if (offset == 0) {
-			atomic_clear_bit(client->flags, FLAG_PLAYER_NAME_CHANGED);
-		} else if (atomic_test_bit(client->flags, FLAG_PLAYER_NAME_CHANGED)) {
+			bt_atomic_clear_bit(client->flags, FLAG_PLAYER_NAME_CHANGED);
+		} else if (bt_atomic_test_bit(client->flags, FLAG_PLAYER_NAME_CHANGED)) {
 			return BT_GATT_ERR(BT_MCS_ERR_LONG_VAL_CHANGED);
 		}
 	}
@@ -138,8 +138,8 @@ static ssize_t read_icon_url(struct bt_conn *conn,
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
 		if (offset == 0) {
-			atomic_clear_bit(client->flags, FLAG_ICON_URL_CHANGED);
-		} else if (atomic_test_bit(client->flags, FLAG_ICON_URL_CHANGED)) {
+			bt_atomic_clear_bit(client->flags, FLAG_ICON_URL_CHANGED);
+		} else if (bt_atomic_test_bit(client->flags, FLAG_ICON_URL_CHANGED)) {
 			return BT_GATT_ERR(BT_MCS_ERR_LONG_VAL_CHANGED);
 		}
 	}
@@ -165,8 +165,8 @@ static ssize_t read_track_title(struct bt_conn *conn,
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
 		if (offset == 0) {
-			atomic_clear_bit(client->flags, FLAG_TRACK_TITLE_CHANGED);
-		} else if (atomic_test_bit(client->flags, FLAG_TRACK_TITLE_CHANGED)) {
+			bt_atomic_clear_bit(client->flags, FLAG_TRACK_TITLE_CHANGED);
+		} else if (bt_atomic_test_bit(client->flags, FLAG_TRACK_TITLE_CHANGED)) {
 			return BT_GATT_ERR(BT_MCS_ERR_LONG_VAL_CHANGED);
 		}
 	}
@@ -193,7 +193,7 @@ static ssize_t read_track_duration(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_TRACK_DURATION_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_TRACK_DURATION_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &duration_le, sizeof(duration_le));
@@ -215,7 +215,7 @@ static ssize_t read_track_position(struct bt_conn *conn, const struct bt_gatt_at
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_TRACK_POSITION_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_TRACK_POSITION_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &position_le,
@@ -263,7 +263,7 @@ static ssize_t read_playback_speed(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_PLAYBACK_SPEED_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_PLAYBACK_SPEED_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &speed, sizeof(speed));
@@ -305,7 +305,7 @@ static ssize_t read_seeking_speed(struct bt_conn *conn, const struct bt_gatt_att
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_SEEKING_SPEED_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_SEEKING_SPEED_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &speed,
@@ -348,7 +348,7 @@ static ssize_t read_current_track_id(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_CURRENT_TRACK_OBJ_ID_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_CURRENT_TRACK_OBJ_ID_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, track_id_le,
@@ -403,7 +403,7 @@ static ssize_t read_next_track_id(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_NEXT_TRACK_OBJ_ID_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_NEXT_TRACK_OBJ_ID_CHANGED);
 	}
 
 	if (track_id == MPL_NO_TRACK_ID) {
@@ -468,7 +468,7 @@ static ssize_t read_parent_group_id(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_PARENT_GROUP_OBJ_ID_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_PARENT_GROUP_OBJ_ID_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, group_id_le,
@@ -495,7 +495,7 @@ static ssize_t read_current_group_id(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_CURRENT_GROUP_OBJ_ID_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_CURRENT_GROUP_OBJ_ID_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, group_id_le,
@@ -550,7 +550,7 @@ static ssize_t read_playing_order(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_PLAYING_ORDER_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_PLAYING_ORDER_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &order, sizeof(order));
@@ -605,7 +605,7 @@ static ssize_t read_media_state(struct bt_conn *conn, const struct bt_gatt_attr 
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_MEDIA_STATE_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_MEDIA_STATE_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &state,
@@ -656,7 +656,7 @@ static ssize_t write_control_point(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		if (atomic_test_and_set_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_BUSY)) {
+		if (bt_atomic_test_and_set_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_BUSY)) {
 			const struct mpl_cmd_ntf cmd_ntf = {
 				.requested_opcode = command.opcode,
 				.result_code = BT_MCS_OPC_NTF_CANNOT_BE_COMPLETED,
@@ -699,7 +699,7 @@ static ssize_t read_opcodes_supported(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_MEDIA_CONTROL_OPCODES_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_MEDIA_CONTROL_OPCODES_CHANGED);
 	}
 
 	return bt_gatt_attr_read(conn, attr, buf, len, offset, &opcodes_le, sizeof(opcodes_le));
@@ -728,7 +728,7 @@ static ssize_t write_search_control_point(struct bt_conn *conn, const struct bt_
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		if (atomic_test_and_set_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_BUSY)) {
+		if (bt_atomic_test_and_set_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_BUSY)) {
 			const uint8_t result_code = BT_MCS_SCP_NTF_FAILURE;
 
 			LOG_DBG("Busy with other operation");
@@ -766,7 +766,7 @@ static ssize_t read_search_results_id(struct bt_conn *conn,
 	if (conn != NULL) {
 		struct client_state *client = &clients[bt_conn_index(conn)];
 
-		atomic_clear_bit(client->flags, FLAG_SEARCH_RESULTS_OBJ_ID_CHANGED);
+		bt_atomic_clear_bit(client->flags, FLAG_SEARCH_RESULTS_OBJ_ID_CHANGED);
 	}
 
 	/* TODO: The permanent solution here should be that the call to */
@@ -1001,7 +1001,7 @@ static void mark_icon_url_changed_cb(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	atomic_set_bit(client->flags, FLAG_ICON_URL_CHANGED);
+	bt_atomic_set_bit(client->flags, FLAG_ICON_URL_CHANGED);
 }
 
 static void notify_cb(struct bt_conn *conn, void *data)
@@ -1021,21 +1021,21 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_PLAYER_NAME_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_PLAYER_NAME_CHANGED)) {
 		const char *name = media_proxy_sctrl_get_player_name();
 
 		LOG_DBG("Notifying player name: %s", name);
 		notify_string(conn, BT_UUID_MCS_PLAYER_NAME, name);
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_TRACK_TITLE_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_TRACK_TITLE_CHANGED)) {
 		const char *title = media_proxy_sctrl_get_track_title();
 
 		LOG_DBG("Notifying track title: %s", title);
 		notify_string(conn, BT_UUID_MCS_TRACK_TITLE, title);
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_TRACK_DURATION_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_TRACK_DURATION_CHANGED)) {
 		int32_t duration = media_proxy_sctrl_get_track_duration();
 		int32_t duration_le = sys_cpu_to_le32(duration);
 
@@ -1043,7 +1043,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		notify(BT_UUID_MCS_TRACK_DURATION, &duration_le, sizeof(duration_le));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_TRACK_POSITION_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_TRACK_POSITION_CHANGED)) {
 		int32_t position = media_proxy_sctrl_get_track_position();
 		int32_t position_le = sys_cpu_to_le32(position);
 
@@ -1051,14 +1051,14 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		notify(BT_UUID_MCS_TRACK_POSITION, &position_le, sizeof(position_le));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_PLAYBACK_SPEED_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_PLAYBACK_SPEED_CHANGED)) {
 		int8_t speed = media_proxy_sctrl_get_playback_speed();
 
 		LOG_DBG("Notifying playback speed: %d", speed);
 		notify(BT_UUID_MCS_PLAYBACK_SPEED, &speed, sizeof(speed));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_SEEKING_SPEED_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_SEEKING_SPEED_CHANGED)) {
 		int8_t speed = media_proxy_sctrl_get_seeking_speed();
 
 		LOG_DBG("Notifying seeking speed: %d", speed);
@@ -1066,7 +1066,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 	}
 
 #if defined(CONFIG_BT_OTS)
-	if (atomic_test_and_clear_bit(client->flags, FLAG_CURRENT_TRACK_OBJ_ID_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_CURRENT_TRACK_OBJ_ID_CHANGED)) {
 		uint64_t track_id = media_proxy_sctrl_get_current_track_id();
 		uint8_t track_id_le[BT_OTS_OBJ_ID_SIZE];
 
@@ -1076,7 +1076,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		notify(BT_UUID_MCS_CURRENT_TRACK_OBJ_ID, track_id_le, sizeof(track_id_le));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_NEXT_TRACK_OBJ_ID_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_NEXT_TRACK_OBJ_ID_CHANGED)) {
 		uint64_t track_id = media_proxy_sctrl_get_next_track_id();
 
 		if (track_id == MPL_NO_TRACK_ID) {
@@ -1095,7 +1095,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		}
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_PARENT_GROUP_OBJ_ID_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_PARENT_GROUP_OBJ_ID_CHANGED)) {
 		uint64_t group_id = media_proxy_sctrl_get_parent_group_id();
 		uint8_t group_id_le[BT_OTS_OBJ_ID_SIZE];
 
@@ -1105,7 +1105,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		notify(BT_UUID_MCS_PARENT_GROUP_OBJ_ID, &group_id_le, sizeof(group_id_le));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_CURRENT_GROUP_OBJ_ID_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_CURRENT_GROUP_OBJ_ID_CHANGED)) {
 		uint64_t group_id = media_proxy_sctrl_get_current_group_id();
 		uint8_t group_id_le[BT_OTS_OBJ_ID_SIZE];
 
@@ -1116,26 +1116,26 @@ static void notify_cb(struct bt_conn *conn, void *data)
 	}
 #endif /* CONFIG_BT_OTS */
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_TRACK_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_TRACK_CHANGED)) {
 		LOG_DBG("Notifying track change");
 		notify(BT_UUID_MCS_TRACK_CHANGED, NULL, 0);
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_PLAYING_ORDER_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_PLAYING_ORDER_CHANGED)) {
 		uint8_t order = media_proxy_sctrl_get_playing_order();
 
 		LOG_DBG("Notifying playing order: %d", order);
 		notify(BT_UUID_MCS_PLAYING_ORDER, &order, sizeof(order));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_STATE_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_STATE_CHANGED)) {
 		uint8_t state = media_proxy_sctrl_get_media_state();
 
 		LOG_DBG("Notifying media state: %d", state);
 		notify(BT_UUID_MCS_MEDIA_STATE, &state, sizeof(state));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_CONTROL_OPCODES_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_CONTROL_OPCODES_CHANGED)) {
 		uint32_t opcodes = media_proxy_sctrl_get_commands_supported();
 		uint32_t opcodes_le = sys_cpu_to_le32(opcodes);
 
@@ -1144,7 +1144,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 	}
 
 #if defined(CONFIG_BT_OTS)
-	if (atomic_test_and_clear_bit(client->flags, FLAG_SEARCH_RESULTS_OBJ_ID_CHANGED)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_SEARCH_RESULTS_OBJ_ID_CHANGED)) {
 		uint64_t search_id = media_proxy_sctrl_get_search_results_id();
 		uint8_t search_id_le[BT_OTS_OBJ_ID_SIZE];
 
@@ -1154,7 +1154,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 		notify(BT_UUID_MCS_SEARCH_RESULTS_OBJ_ID, &search_id_le, sizeof(search_id_le));
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_RESULT)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_RESULT)) {
 		uint8_t result_code = client->search_control_point_result;
 
 		LOG_DBG("Notifying search control point - result: %d", result_code);
@@ -1162,7 +1162,7 @@ static void notify_cb(struct bt_conn *conn, void *data)
 	}
 #endif /* CONFIG_BT_OTS */
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_RESULT)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_RESULT)) {
 		LOG_DBG("Notifying control point command - opcode: %d, result: %d",
 			client->cmd_ntf.requested_opcode, client->cmd_ntf.result_code);
 		notify(BT_UUID_MCS_MEDIA_CONTROL_POINT, &client->cmd_ntf, sizeof(client->cmd_ntf));
@@ -1193,7 +1193,7 @@ static void defer_value_ntf(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	atomic_set_bit(client->flags, POINTER_TO_UINT(data));
+	bt_atomic_set_bit(client->flags, POINTER_TO_UINT(data));
 	bt_work_submit(&deferred_nfy_work);
 }
 
@@ -1300,9 +1300,9 @@ static void defer_media_control_point_ntf(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_BUSY)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_BUSY)) {
 		client->cmd_ntf = *cmd_ntf;
-		atomic_set_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_RESULT);
+		bt_atomic_set_bit(client->flags, FLAG_MEDIA_CONTROL_POINT_RESULT);
 		bt_work_submit(&deferred_nfy_work);
 	}
 }
@@ -1337,9 +1337,9 @@ static void defer_search_control_point_ntf(struct bt_conn *conn, void *data)
 		return;
 	}
 
-	if (atomic_test_and_clear_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_BUSY)) {
+	if (bt_atomic_test_and_clear_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_BUSY)) {
 		client->search_control_point_result = POINTER_TO_UINT(data);
-		atomic_set_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_RESULT);
+		bt_atomic_set_bit(client->flags, FLAG_SEARCH_CONTROL_POINT_RESULT);
 		bt_work_submit(&deferred_nfy_work);
 	}
 }

@@ -281,7 +281,7 @@ struct bt_mesh_net_tx {
 extern struct bt_mesh_net bt_mesh;
 
 #define BT_MESH_NET_IVI_TX (bt_mesh.iv_index - \
-			    atomic_test_bit(bt_mesh.flags, \
+			    bt_atomic_test_bit(bt_mesh.flags, \
 					    BT_MESH_IVU_IN_PROGRESS))
 #define BT_MESH_NET_IVI_RX(rx) (bt_mesh.iv_index - (rx)->old_iv)
 

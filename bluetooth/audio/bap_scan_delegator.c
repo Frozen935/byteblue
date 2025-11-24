@@ -1330,7 +1330,7 @@ int bt_bap_scan_delegator_register(struct bt_bap_scan_delegator_cb *cb)
 {
 	int err;
 
-	if (atomic_test_and_set_bit(scan_delegator_flags,
+	if (bt_atomic_test_and_set_bit(scan_delegator_flags,
 				    SCAN_DELEGATOR_FLAG_REGISTERED_SCAN_DELIGATOR)) {
 		LOG_DBG("Scan delegator already registered");
 		return -EALREADY;
@@ -1338,7 +1338,7 @@ int bt_bap_scan_delegator_register(struct bt_bap_scan_delegator_cb *cb)
 
 	err = bass_register();
 	if (err) {
-		atomic_clear_bit(scan_delegator_flags,
+		bt_atomic_clear_bit(scan_delegator_flags,
 				 SCAN_DELEGATOR_FLAG_REGISTERED_SCAN_DELIGATOR);
 		return err;
 	}
@@ -1373,7 +1373,7 @@ int bt_bap_scan_delegator_unregister(void)
 {
 	int err;
 
-	if (!atomic_test_and_clear_bit(scan_delegator_flags,
+	if (!bt_atomic_test_and_clear_bit(scan_delegator_flags,
 				       SCAN_DELEGATOR_FLAG_REGISTERED_SCAN_DELIGATOR)) {
 		LOG_DBG("Scan delegator not yet registered");
 		return -EALREADY;
@@ -1381,7 +1381,7 @@ int bt_bap_scan_delegator_unregister(void)
 
 	err = bass_unregister();
 	if (err) {
-		atomic_set_bit(scan_delegator_flags,
+		bt_atomic_set_bit(scan_delegator_flags,
 			       SCAN_DELEGATOR_FLAG_REGISTERED_SCAN_DELIGATOR);
 		return err;
 	}

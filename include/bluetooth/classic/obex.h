@@ -514,13 +514,13 @@ struct bt_obex_server {
 	} tx;
 
 	/** @internal Saves the current state, @ref bt_obex_state */
-	atomic_t _state;
+	bt_atomic_t _state;
 
 	/** @internal OBEX opcode */
-	atomic_t _opcode;
+	bt_atomic_t _opcode;
 
 	/** @internal OBEX flags */
-	atomic_t _flags;
+	bt_atomic_t _flags;
 
 	/** @internal Target of service */
 	union bt_obex_uuid _target;
@@ -555,16 +555,16 @@ struct bt_obex_client {
 	} tx;
 
 	/** @internal Saves the current state, @ref bt_obex_state */
-	atomic_t _state;
+	bt_atomic_t _state;
 
 	/** @internal OBEX opcode */
-	atomic_t _opcode;
+	bt_atomic_t _opcode;
 
 	/** @internal OBEX previous opcode */
-	atomic_t _pre_opcode;
+	bt_atomic_t _pre_opcode;
 
 	/** @internal OBEX flags */
-	atomic_t _flags;
+	bt_atomic_t _flags;
 
 	/** @internal target of the conn req */
 	union bt_obex_uuid _target;
@@ -592,10 +592,10 @@ struct bt_obex {
 	const struct bt_obex_transport_ops *_transport_ops;
 
 	/** @internal OBEX executing client */
-	atomic_ptr_t _active_client;
+	bt_atomic_ptr_t _active_client;
 
 	/** @internal OBEX executing client */
-	atomic_ptr_t _active_server;
+	bt_atomic_ptr_t _active_server;
 
 	/** @internal OBEX clients */
 	bt_slist_t _clients;

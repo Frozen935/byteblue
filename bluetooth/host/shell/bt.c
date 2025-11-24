@@ -648,7 +648,7 @@ static bool adv_rpa_expired(struct bt_le_ext_adv *adv)
 {
 	uint8_t adv_index = bt_le_ext_adv_get_index(adv);
 
-	bool keep_rpa = atomic_test_bit(adv_set_opt[adv_index], SHELL_ADV_OPT_KEEP_RPA);
+	bool keep_rpa = bt_atomic_test_bit(adv_set_opt[adv_index], SHELL_ADV_OPT_KEEP_RPA);
 	bt_shell_print("Advertiser[%d] %p RPA %s", adv_index, adv,
 		       keep_rpa ? "not expired" : "expired");
 
@@ -1993,11 +1993,11 @@ static int cmd_scan_filter_clear_addr(const struct bt_shell *sh, size_t argc,
 
 #if defined(CONFIG_BT_BROADCASTER)
 static ssize_t ad_init(struct bt_data *data_array, const size_t data_array_size,
-		       const atomic_t *adv_options)
+		       const bt_atomic_t *adv_options)
 {
-	const bool discoverable = atomic_test_bit(adv_options, SHELL_ADV_OPT_DISCOVERABLE);
-	const bool appearance = atomic_test_bit(adv_options, SHELL_ADV_OPT_APPEARANCE);
-	const bool adv_ext = atomic_test_bit(adv_options, SHELL_ADV_OPT_EXT_ADV);
+	const bool discoverable = bt_atomic_test_bit(adv_options, SHELL_ADV_OPT_DISCOVERABLE);
+	const bool appearance = bt_atomic_test_bit(adv_options, SHELL_ADV_OPT_APPEARANCE);
+	const bool adv_ext = bt_atomic_test_bit(adv_options, SHELL_ADV_OPT_EXT_ADV);
 	static uint8_t ad_flags;
 	size_t ad_len = 0;
 
@@ -2051,7 +2051,7 @@ static ssize_t ad_init(struct bt_data *data_array, const size_t data_array_size,
 	}
 
 	if (IS_ENABLED(CONFIG_BT_AUDIO) && IS_ENABLED(CONFIG_BT_EXT_ADV) && adv_ext) {
-		const bool connectable = atomic_test_bit(adv_options, SHELL_ADV_OPT_CONNECTABLE);
+		const bool connectable = bt_atomic_test_bit(adv_options, SHELL_ADV_OPT_CONNECTABLE);
 
 		ad_len += audio_ad_data_add(&data_array[ad_len], data_array_size - ad_len,
 					    discoverable, connectable);
@@ -2155,11 +2155,11 @@ static int cmd_advertise(const struct bt_shell *sh, size_t argc, char *argv[])
 		sd_len++;
 	}
 
-	atomic_clear(adv_opt);
-	atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_CONNECTABLE,
+	bt_atomic_clear(adv_opt);
+	bt_atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_CONNECTABLE,
 			  (param.options & BT_LE_ADV_OPT_CONN) > 0);
-	atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_DISCOVERABLE, discoverable);
-	atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_APPEARANCE, appearance);
+	bt_atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_DISCOVERABLE, discoverable);
+	bt_atomic_set_bit_to(adv_opt, SHELL_ADV_OPT_APPEARANCE, appearance);
 
 	err = ad_init(&ad[ad_len], ARRAY_SIZE(ad) - ad_len, adv_opt);
 	if (err < 0) {
@@ -2344,10 +2344,10 @@ static int cmd_adv_create(const struct bt_shell *sh, size_t argc, char *argv[])
 	adv_index = bt_le_ext_adv_get_index(adv);
 	adv_sets[adv_index] = adv;
 
-	atomic_clear(adv_set_opt[adv_index]);
-	atomic_set_bit_to(adv_set_opt[adv_index], SHELL_ADV_OPT_CONNECTABLE,
+	bt_atomic_clear(adv_set_opt[adv_index]);
+	bt_atomic_set_bit_to(adv_set_opt[adv_index], SHELL_ADV_OPT_CONNECTABLE,
 			  (param.options & BT_LE_ADV_OPT_CONN) > 0);
-	atomic_set_bit_to(adv_set_opt[adv_index], SHELL_ADV_OPT_EXT_ADV,
+	bt_atomic_set_bit_to(adv_set_opt[adv_index], SHELL_ADV_OPT_EXT_ADV,
 			  (param.options & BT_LE_ADV_OPT_EXT_ADV) > 0);
 
 	bt_shell_print("Created adv id: %d, adv: %p", adv_index, adv);
@@ -2491,8 +2491,8 @@ static int cmd_adv_data(const struct bt_shell *sh, size_t argc, char *argv[])
 		(*data_len)++;
 	}
 
-	atomic_set_bit_to(adv_set_opt[selected_adv], SHELL_ADV_OPT_DISCOVERABLE, discoverable);
-	atomic_set_bit_to(adv_set_opt[selected_adv], SHELL_ADV_OPT_APPEARANCE, appearance);
+	bt_atomic_set_bit_to(adv_set_opt[selected_adv], SHELL_ADV_OPT_DISCOVERABLE, discoverable);
+	bt_atomic_set_bit_to(adv_set_opt[selected_adv], SHELL_ADV_OPT_APPEARANCE, appearance);
 
 	len = ad_init(&data[*data_len], AD_SIZE - *data_len, adv_set_opt[selected_adv]);
 	if (len < 0) {
@@ -2683,10 +2683,10 @@ static int cmd_adv_oob(const struct bt_shell *sh, size_t argc, char *argv[])
 static int cmd_adv_rpa_expire(const struct bt_shell *sh, size_t argc, char *argv[])
 {
 	if (!strcmp(argv[1], "on")) {
-		atomic_clear_bit(adv_set_opt[selected_adv], SHELL_ADV_OPT_KEEP_RPA);
+		bt_atomic_clear_bit(adv_set_opt[selected_adv], SHELL_ADV_OPT_KEEP_RPA);
 		bt_shell_print("RPA will expire on next timeout");
 	} else if (!strcmp(argv[1], "off")) {
-		atomic_set_bit(adv_set_opt[selected_adv], SHELL_ADV_OPT_KEEP_RPA);
+		bt_atomic_set_bit(adv_set_opt[selected_adv], SHELL_ADV_OPT_KEEP_RPA);
 		bt_shell_print("RPA will not expire on RPA timeout");
 	} else {
 		bt_shell_error("Invalid argument: %s", argv[1]);

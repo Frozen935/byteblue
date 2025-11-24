@@ -101,7 +101,7 @@ struct shell_stream {
 			int64_t connected_at_ticks;
 			uint16_t seq_num;
 #if defined(CONFIG_LIBLC3)
-			atomic_t lc3_enqueue_cnt;
+			bt_atomic_t lc3_enqueue_cnt;
 			bool active;
 			size_t encoded_cnt;
 			size_t lc3_sdu_cnt;

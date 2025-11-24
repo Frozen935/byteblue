@@ -48,7 +48,7 @@ int bt_mesh_provision(const uint8_t net_key[16], uint16_t net_idx,
 	bool is_dev_key_valid = false;
 	int err = 0;
 
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {
 		return -ENODEV;
 	}
 
@@ -58,12 +58,12 @@ int bt_mesh_provision(const uint8_t net_key[16], uint16_t net_idx,
 	LOG_INF("Primary Element: 0x%04x", addr);
 	LOG_DBG("net_idx 0x%04x flags 0x%02x iv_index 0x%04x", net_idx, flags, iv_index);
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EALREADY;
 	}
 
 	if (IS_ENABLED(CONFIG_BT_MESH_CDB) &&
-	    atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID)) {
+	    bt_atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID)) {
 		const struct bt_mesh_comp *comp;
 		const struct bt_mesh_prov *prov;
 
@@ -135,7 +135,7 @@ int bt_mesh_provision(const uint8_t net_key[16], uint16_t net_idx,
 	}
 
 	if (IS_ENABLED(CONFIG_BT_MESH_CDB) &&
-	    atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID)) {
+	    bt_atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID)) {
 		bt_mesh_cdb_subnet_store(subnet);
 		bt_mesh_cdb_node_store(node);
 	}
@@ -157,7 +157,7 @@ int bt_mesh_provision(const uint8_t net_key[16], uint16_t net_idx,
 		bt_mesh_net_store();
 	}
 
-	atomic_set_bit(bt_mesh.flags, BT_MESH_VALID);
+	bt_atomic_set_bit(bt_mesh.flags, BT_MESH_VALID);
 	bt_mesh_start();
 
 	return 0;
@@ -219,7 +219,7 @@ void bt_mesh_dev_key_cand(const uint8_t *key)
 		return;
 	}
 
-	atomic_set_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND);
+	bt_atomic_set_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND);
 
 	if (IS_ENABLED(CONFIG_BT_SETTINGS)) {
 		bt_mesh_net_dev_key_cand_store();
@@ -228,7 +228,7 @@ void bt_mesh_dev_key_cand(const uint8_t *key)
 
 void bt_mesh_dev_key_cand_remove(void)
 {
-	if (!atomic_test_and_clear_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
+	if (!bt_atomic_test_and_clear_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
 		return;
 	}
 
@@ -243,7 +243,7 @@ void bt_mesh_dev_key_cand_remove(void)
 
 void bt_mesh_dev_key_cand_activate(void)
 {
-	if (!atomic_test_and_clear_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
+	if (!bt_atomic_test_and_clear_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
 		return;
 	}
 
@@ -263,7 +263,7 @@ void bt_mesh_dev_key_cand_activate(void)
 int bt_mesh_provision_adv(const uint8_t uuid[16], uint16_t net_idx,
 			  uint16_t addr, uint8_t attention_duration)
 {
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EINVAL;
 	}
 
@@ -283,7 +283,7 @@ int bt_mesh_provision_adv(const uint8_t uuid[16], uint16_t net_idx,
 int bt_mesh_provision_gatt(const uint8_t uuid[16], uint16_t net_idx, uint16_t addr,
 			   uint8_t attention_duration)
 {
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EINVAL;
 	}
 
@@ -304,7 +304,7 @@ int bt_mesh_provision_remote(struct bt_mesh_rpr_cli *cli,
 			     const uint8_t uuid[16], uint16_t net_idx,
 			     uint16_t addr)
 {
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EINVAL;
 	}
 
@@ -324,7 +324,7 @@ int bt_mesh_reprovision_remote(struct bt_mesh_rpr_cli *cli,
 			       struct bt_mesh_rpr_node *srv,
 			       uint16_t addr, bool comp_change)
 {
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EINVAL;
 	}
 
@@ -338,8 +338,8 @@ int bt_mesh_reprovision_remote(struct bt_mesh_rpr_cli *cli,
 
 void bt_mesh_reset(void)
 {
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID) ||
-	    !atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID) ||
+	    !bt_atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {
 		return;
 	}
 
@@ -348,7 +348,7 @@ void bt_mesh_reset(void)
 	bt_mesh.seq = 0U;
 
 	memset(bt_mesh.flags, 0, sizeof(bt_mesh.flags));
-	atomic_set_bit(bt_mesh.flags, BT_MESH_INIT);
+	bt_atomic_set_bit(bt_mesh.flags, BT_MESH_INIT);
 
 	bt_mesh_scan_disable();
 
@@ -419,7 +419,7 @@ void bt_mesh_reset(void)
 
 bool bt_mesh_is_provisioned(void)
 {
-	return atomic_test_bit(bt_mesh.flags, BT_MESH_VALID);
+	return bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID);
 }
 
 static void model_suspend(const struct bt_mesh_model *mod, const struct bt_mesh_elem *elem,
@@ -438,17 +438,17 @@ int bt_mesh_suspend(void)
 {
 	int err;
 
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EINVAL;
 	}
 
-	if (atomic_test_and_set_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
+	if (bt_atomic_test_and_set_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
 		return -EALREADY;
 	}
 
 	err = bt_mesh_scan_disable();
 	if (err) {
-		atomic_clear_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
+		bt_atomic_clear_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
 		LOG_WRN("Disabling scanning failed (err %d)", err);
 		return err;
 	}
@@ -483,7 +483,7 @@ int bt_mesh_suspend(void)
 
 	err = bt_mesh_adv_disable();
 	if (err) {
-		atomic_clear_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
+		bt_atomic_clear_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
 		LOG_WRN("Disabling advertisers failed (err %d)", err);
 		return err;
 	}
@@ -508,11 +508,11 @@ int bt_mesh_resume(void)
 {
 	int err;
 
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_VALID)) {
 		return -EINVAL;
 	}
 
-	if (!atomic_test_and_clear_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
+	if (!bt_atomic_test_and_clear_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
 		return -EALREADY;
 	}
 
@@ -522,7 +522,7 @@ int bt_mesh_resume(void)
 
 	err = bt_mesh_adv_enable();
 	if (err) {
-		atomic_set_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
+		bt_atomic_set_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
 		LOG_WRN("Re-enabling advertisers failed (err %d)", err);
 		return err;
 	}
@@ -530,7 +530,7 @@ int bt_mesh_resume(void)
 	err = bt_mesh_scan_enable();
 	if (err) {
 		LOG_WRN("Re-enabling scanning failed (err %d)", err);
-		atomic_set_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
+		bt_atomic_set_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
 		return err;
 	}
 
@@ -568,7 +568,7 @@ int bt_mesh_init(const struct bt_mesh_prov *prov,
 {
 	int err;
 
-	if (atomic_test_and_set_bit(bt_mesh.flags, BT_MESH_INIT)) {
+	if (bt_atomic_test_and_set_bit(bt_mesh.flags, BT_MESH_INIT)) {
 		return -EALREADY;
 	}
 

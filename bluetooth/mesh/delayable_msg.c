@@ -223,7 +223,7 @@ int bt_mesh_delayable_msg_manage(struct bt_mesh_msg_ctx *ctx, struct bt_buf_simp
 	int allocated_number = 0;
 	uint16_t len = buf->len;
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
 		LOG_WRN("Refusing to allocate message context while suspended");
 		return -ENODEV;
 	}

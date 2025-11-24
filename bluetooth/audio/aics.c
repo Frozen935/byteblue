@@ -183,7 +183,7 @@ static void notify_work_reschedule(struct bt_aics *inst, enum bt_aics_notify not
 {
 	int err;
 
-	atomic_set_bit(inst->srv.notify, notify);
+	bt_atomic_set_bit(inst->srv.notify, notify);
 
 	err = bt_work_reschedule(&inst->srv.notify_work, OS_TIMEOUT_NO_WAIT);
 	if (err < 0) {
@@ -212,17 +212,17 @@ static void notify_work_handler(struct bt_work *work)
 	struct bt_work_delayable *d_work = bt_work_delayable_from_work(work);
 	struct bt_aics *inst = CONTAINER_OF(d_work, struct bt_aics, srv.notify_work);
 
-	if (atomic_test_and_clear_bit(inst->srv.notify, AICS_NOTIFY_STATE)) {
+	if (bt_atomic_test_and_clear_bit(inst->srv.notify, AICS_NOTIFY_STATE)) {
 		notify(inst, AICS_NOTIFY_STATE, BT_UUID_AICS_STATE, &inst->srv.state,
 		       sizeof(inst->srv.state));
 	}
 
-	if (atomic_test_and_clear_bit(inst->srv.notify, AICS_NOTIFY_DESCRIPTION)) {
+	if (bt_atomic_test_and_clear_bit(inst->srv.notify, AICS_NOTIFY_DESCRIPTION)) {
 		notify(inst, AICS_NOTIFY_DESCRIPTION, BT_UUID_AICS_DESCRIPTION,
 		       &inst->srv.description, strlen(inst->srv.description));
 	}
 
-	if (atomic_test_and_clear_bit(inst->srv.notify, AICS_NOTIFY_STATUS)) {
+	if (bt_atomic_test_and_clear_bit(inst->srv.notify, AICS_NOTIFY_STATUS)) {
 		notify(inst, AICS_NOTIFY_STATUS, BT_UUID_AICS_INPUT_STATUS, &inst->srv.status,
 		       sizeof(inst->srv.status));
 	}
@@ -570,7 +570,7 @@ int bt_aics_register(struct bt_aics *aics, struct bt_aics_register_param *param)
 	aics->srv.status = param->status ? BT_AICS_STATUS_ACTIVE : BT_AICS_STATUS_INACTIVE;
 	aics->srv.cb = param->cb;
 
-	atomic_clear(aics->srv.notify);
+	bt_atomic_clear(aics->srv.notify);
 	bt_work_init_delayable(&aics->srv.notify_work, notify_work_handler);
 
 	if (param->description) {

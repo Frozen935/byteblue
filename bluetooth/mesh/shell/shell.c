@@ -1205,7 +1205,7 @@ static void cdb_print_nodes(const struct bt_shell *sh)
 			continue;
 		}
 
-		configured = atomic_test_bit(node->flags,
+		configured = bt_atomic_test_bit(node->flags,
 					     BT_MESH_CDB_NODE_CONFIGURED);
 
 		total++;
@@ -1283,7 +1283,7 @@ static void cdb_print_app_keys(const struct bt_shell *sh)
 static int cmd_cdb_show(const struct bt_shell *sh, size_t argc,
 			char *argv[])
 {
-	if (!atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID)) {
+	if (!bt_atomic_test_bit(bt_mesh_cdb.flags, BT_MESH_CDB_VALID)) {
 		bt_shell_print("No valid networks");
 		return 0;
 	}

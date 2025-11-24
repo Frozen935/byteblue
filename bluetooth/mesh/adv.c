@@ -86,7 +86,7 @@ static struct bt_mesh_adv *adv_create_from_pool(struct bt_mem_pool *buf_pool,
 	struct bt_mesh_adv *adv;
 	int err;
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
 		LOG_WRN("Refusing to allocate buffer while suspended");
 		return NULL;
 	}
@@ -256,7 +256,7 @@ void bt_mesh_adv_send(struct bt_mesh_adv *adv, const struct bt_mesh_send_cb *cb,
 	LOG_DBG("type 0x%02x len %u: %s", adv->ctx.type, adv->b.len,
 		bt_hex(adv->b.data, adv->b.len));
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED)) {
 		LOG_WRN("Sending advertisement while suspended");
 	}
 

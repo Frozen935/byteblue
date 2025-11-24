@@ -69,7 +69,7 @@ static void notify_work_reschedule(struct bt_vocs_server *inst, enum bt_vocs_not
 {
 	int err;
 
-	atomic_set_bit(inst->notify, notify);
+	bt_atomic_set_bit(inst->notify, notify);
 
 	err = bt_work_reschedule(&inst->notify_work, OS_TIMEOUT_NO_WAIT);
 	if (err < 0) {
@@ -96,16 +96,16 @@ static void notify_work_handler(struct bt_work *work)
 	struct bt_work_delayable *d_work = bt_work_delayable_from_work(work);
 	struct bt_vocs_server *inst = CONTAINER_OF(d_work, struct bt_vocs_server, notify_work);
 
-	if (atomic_test_and_clear_bit(inst->notify, NOTIFY_STATE)) {
+	if (bt_atomic_test_and_clear_bit(inst->notify, NOTIFY_STATE)) {
 		notify(inst, NOTIFY_STATE, BT_UUID_VOCS_STATE, &inst->state, sizeof(inst->state));
 	}
 
-	if (atomic_test_and_clear_bit(inst->notify, NOTIFY_LOCATION)) {
+	if (bt_atomic_test_and_clear_bit(inst->notify, NOTIFY_LOCATION)) {
 		notify(inst, NOTIFY_LOCATION, BT_UUID_VOCS_LOCATION, &inst->location,
 		       sizeof(inst->location));
 	}
 
-	if (atomic_test_and_clear_bit(inst->notify, NOTIFY_OUTPUT_DESC)) {
+	if (bt_atomic_test_and_clear_bit(inst->notify, NOTIFY_OUTPUT_DESC)) {
 		notify(inst, NOTIFY_OUTPUT_DESC, BT_UUID_VOCS_DESCRIPTION, &inst->output_desc,
 		       strlen(inst->output_desc));
 	}
@@ -449,7 +449,7 @@ int bt_vocs_register(struct bt_vocs *vocs,
 		return err;
 	}
 
-	atomic_clear(inst->notify);
+	bt_atomic_clear(inst->notify);
 	bt_work_init_delayable(&inst->notify_work, notify_work_handler);
 
 	inst->initialized = true;

@@ -252,7 +252,7 @@ int bt_mesh_beacon_create(struct bt_mesh_subnet *sub, struct bt_buf_simple *buf,
 static bool secure_beacon_is_running(void)
 {
 	return bt_mesh_beacon_enabled() ||
-	       atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_INITIATOR);
+	       bt_atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_INITIATOR);
 }
 
 static int net_beacon_send(struct bt_mesh_subnet *sub, struct bt_mesh_beacon *beacon,
@@ -629,8 +629,8 @@ static void net_beacon_recv(struct bt_mesh_subnet *sub,
 		"current iv_index 0x%08x",
 		sub->net_idx, params->flags, params->iv_index, bt_mesh.iv_index);
 
-	if (atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_INITIATOR) &&
-	    (atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_IN_PROGRESS) ==
+	if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_INITIATOR) &&
+	    (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_IVU_IN_PROGRESS) ==
 	     BT_MESH_IV_UPDATE(params->flags))) {
 		bt_mesh_beacon_ivu_initiator(false);
 	}
@@ -782,7 +782,7 @@ void bt_mesh_beacon_init(void)
 
 void bt_mesh_beacon_ivu_initiator(bool enable)
 {
-	atomic_set_bit_to(bt_mesh.flags, BT_MESH_IVU_INITIATOR, enable);
+	bt_atomic_set_bit_to(bt_mesh.flags, BT_MESH_IVU_INITIATOR, enable);
 
 	/* Fire the beacon handler straight away if it's not already pending -
 	 * in which case we'll fire according to the ongoing periodic sending.

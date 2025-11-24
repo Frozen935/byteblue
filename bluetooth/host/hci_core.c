@@ -145,7 +145,7 @@ bool bt_drv_quirk_no_auto_dle(void)
 
 void bt_hci_cmd_state_set_init(struct bt_buf *buf,
 			       struct bt_hci_cmd_state_set *state,
-			       atomic_t *target, int bit, bool val)
+			       bt_atomic_t *target, int bit, bool val)
 {
 	state->target = target;
 	state->bit = bit;
@@ -646,8 +646,8 @@ static void hci_num_completed_packets(struct bt_buf *buf)
 			bt_slist_append(&conn->tx_complete, node);
 
 			/* align the `pending` value */
-			__ASSERT_NO_MSG(atomic_get(&conn->in_ll));
-			atomic_dec(&conn->in_ll);
+			__ASSERT_NO_MSG(bt_atomic_get(&conn->in_ll));
+			bt_atomic_dec(&conn->in_ll);
 
 			/* TX context free + callback happens in there */
 			bt_conn_tx_notify(conn, false);
@@ -733,7 +733,7 @@ int bt_le_create_conn_ext(const struct bt_conn *conn)
 	int err;
 
 	if (IS_ENABLED(CONFIG_BT_FILTER_ACCEPT_LIST)) {
-		use_filter = atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT);
+		use_filter = bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT);
 	}
 
 	err = bt_id_set_create_conn_own_addr(use_filter, &own_addr_type);
@@ -853,7 +853,7 @@ static int bt_le_create_conn_legacy(const struct bt_conn *conn)
 	int err;
 
 	if (IS_ENABLED(CONFIG_BT_FILTER_ACCEPT_LIST)) {
-		use_filter = atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT);
+		use_filter = bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT);
 	}
 
 	err = bt_id_set_create_conn_own_addr(use_filter, &own_addr_type);
@@ -1047,7 +1047,7 @@ static void hci_disconn_complete(struct bt_buf *buf)
 			 * If the connection link is paired but not bond, remove
 			 * the link key upon disconnection.
 			 */
-			if (atomic_test_and_clear_bit(conn->flags, BT_CONN_BR_NOBOND)) {
+			if (bt_atomic_test_and_clear_bit(conn->flags, BT_CONN_BR_NOBOND)) {
 				bt_keys_link_key_clear(conn->br.link_key);
 			}
 
@@ -1059,7 +1059,7 @@ static void hci_disconn_complete(struct bt_buf *buf)
 	}
 
 #if defined(CONFIG_BT_CENTRAL) && !defined(CONFIG_BT_FILTER_ACCEPT_LIST)
-	if (atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT)) {
+	if (bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT)) {
 		bt_conn_set_state(conn, BT_CONN_SCAN_BEFORE_INITIATING);
 		/* Just a best-effort check if the scanner should be started. */
 		int err = bt_le_scan_user_remove(BT_LE_SCAN_USER_NONE);
@@ -1099,7 +1099,7 @@ int bt_hci_read_remote_version(struct bt_conn *conn)
 	}
 
 	/* Remote version cannot change. */
-	if (atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO)) {
+	if (bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO)) {
 		return 0;
 	}
 
@@ -1256,7 +1256,7 @@ static void le_conn_complete_cancel(uint8_t err)
 		return;
 	}
 
-	if (atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT)) {
+	if (bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_CONNECT)) {
 		if (!IS_ENABLED(CONFIG_BT_FILTER_ACCEPT_LIST)) {
 			/* Restart passive scanner for device */
 			bt_conn_set_state(conn, BT_CONN_SCAN_BEFORE_INITIATING);
@@ -1297,7 +1297,7 @@ static void le_conn_complete_adv_timeout(void)
 		 * advertising.
 		 */
 
-		atomic_clear_bit(adv->flags, BT_ADV_ENABLED);
+		bt_atomic_clear_bit(adv->flags, BT_ADV_ENABLED);
 
 		if (IS_ENABLED(CONFIG_BT_EXT_ADV) &&
 		    !BT_DEV_FEAT_LE_EXT_ADV(bt_dev.le.features)) {
@@ -1420,7 +1420,7 @@ void bt_hci_le_enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt)
 		/* Clear initiating even if we are not able to add connection
 		 * object to keep the host in sync with controller state.
 		 */
-		atomic_clear_bit(bt_dev.flags, BT_DEV_INITIATING);
+		bt_atomic_clear_bit(bt_dev.flags, BT_DEV_INITIATING);
 	}
 
 	if (!conn) {
@@ -1449,7 +1449,7 @@ void bt_hci_le_enh_conn_complete(struct bt_hci_evt_le_enh_conn_complete *evt)
 			struct bt_le_ext_adv *adv = bt_le_adv_lookup_legacy();
 
 			if (IS_ENABLED(CONFIG_BT_PRIVACY) &&
-			    !atomic_test_bit(adv->flags, BT_ADV_USE_IDENTITY)) {
+			    !bt_atomic_test_bit(adv->flags, BT_ADV_USE_IDENTITY)) {
 				conn->le.resp_addr.type = BT_ADDR_LE_RANDOM;
 				if (!bt_addr_eq(&evt->local_rpa, BT_ADDR_ANY)) {
 					bt_addr_copy(&conn->le.resp_addr.a,
@@ -1637,7 +1637,7 @@ static void enh_conn_complete_error_handle(uint8_t status)
 	    status == BT_HCI_ERR_CONN_FAIL_TO_ESTAB) {
 		le_conn_complete_cancel(status);
 
-		atomic_clear_bit(bt_dev.flags, BT_DEV_INITIATING);
+		bt_atomic_clear_bit(bt_dev.flags, BT_DEV_INITIATING);
 
 		return;
 	}
@@ -1755,11 +1755,11 @@ static void le_remote_feat_complete(struct bt_buf *buf)
 		       sizeof(conn->le.features));
 	}
 
-	atomic_set_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED);
+	bt_atomic_set_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED);
 
 	if (IS_ENABLED(CONFIG_BT_REMOTE_INFO) &&
 	    (!IS_ENABLED(CONFIG_BT_REMOTE_VERSION) ||
-	     atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO))) {
+	     bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO))) {
 		bt_conn_notify_remote_info(conn);
 	}
 
@@ -2012,7 +2012,7 @@ static void le_conn_update_complete(struct bt_buf *buf)
 
 	if (evt->status == BT_HCI_ERR_UNSUPP_REMOTE_FEATURE &&
 	    conn->role == BT_HCI_ROLE_PERIPHERAL &&
-	    !atomic_test_and_set_bit(conn->flags,
+	    !bt_atomic_test_and_set_bit(conn->flags,
 				     BT_CONN_PERIPHERAL_PARAM_L2CAP)) {
 		/* CPR not supported, let's try L2CAP CPUP instead */
 		struct bt_le_conn_param param;
@@ -2047,9 +2047,9 @@ static void le_conn_update_complete(struct bt_buf *buf)
 			}
 
 #if defined(CONFIG_BT_GAP_AUTO_UPDATE_CONN_PARAMS)
-			atomic_clear_bit(conn->flags,
+			bt_atomic_clear_bit(conn->flags,
 					 BT_CONN_PERIPHERAL_PARAM_AUTO_UPDATE);
-		} else if (atomic_test_bit(conn->flags,
+		} else if (bt_atomic_test_bit(conn->flags,
 					   BT_CONN_PERIPHERAL_PARAM_AUTO_UPDATE) &&
 			   evt->status == BT_HCI_ERR_UNSUPP_LL_PARAM_VAL &&
 			   conn->le.conn_param_retry_countdown) {
@@ -2057,7 +2057,7 @@ static void le_conn_update_complete(struct bt_buf *buf)
 			bt_work_schedule(&conn->deferred_work,
 					OS_MSEC(CONFIG_BT_CONN_PARAM_RETRY_TIMEOUT));
 		} else {
-			atomic_clear_bit(conn->flags,
+			bt_atomic_clear_bit(conn->flags,
 					 BT_CONN_PERIPHERAL_PARAM_AUTO_UPDATE);
 #endif /* CONFIG_BT_GAP_AUTO_UPDATE_CONN_PARAMS */
 
@@ -2286,7 +2286,7 @@ static void hci_encrypt_change(struct bt_buf *buf)
 			 * Start SMP over BR/EDR if we are pairing and are
 			 * central on the link
 			 */
-			if (atomic_test_bit(conn->flags, BT_CONN_BR_PAIRED) &&
+			if (bt_atomic_test_bit(conn->flags, BT_CONN_BR_PAIRED) &&
 			    conn->role == BT_CONN_ROLE_CENTRAL) {
 				bt_smp_br_send_pairing_req(conn);
 			}
@@ -2356,7 +2356,7 @@ static void hci_encrypt_key_refresh_complete(struct bt_buf *buf)
 			 * Start SMP over BR/EDR if we are pairing and are
 			 * central on the link
 			 */
-			if (atomic_test_bit(conn->flags, BT_CONN_BR_PAIRED) &&
+			if (bt_atomic_test_bit(conn->flags, BT_CONN_BR_PAIRED) &&
 			    conn->role == BT_CONN_ROLE_CENTRAL) {
 				bt_smp_br_send_pairing_req(conn);
 			}
@@ -2395,10 +2395,10 @@ static void bt_hci_evt_read_remote_version_complete(struct bt_buf *buf)
 		conn->rv.subversion = sys_le16_to_cpu(evt->subversion);
 	}
 
-	atomic_set_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO);
+	bt_atomic_set_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO);
 
 	if (IS_ENABLED(CONFIG_BT_REMOTE_INFO) &&
-	    atomic_test_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED)) {
+	    bt_atomic_test_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED)) {
 		/* Remote features is already present */
 		bt_conn_notify_remote_info(conn);
 	}
@@ -2482,7 +2482,7 @@ static void le_ltk_request(struct bt_buf *buf)
 
 static void hci_reset_complete(void)
 {
-	atomic_t flags;
+	bt_atomic_t flags;
 
 	if (IS_ENABLED(CONFIG_BT_OBSERVER)) {
 		bt_scan_reset();
@@ -2492,8 +2492,8 @@ static void hci_reset_complete(void)
 	bt_br_discovery_reset();
 #endif /* CONFIG_BT_CLASSIC */
 
-	flags = (atomic_get(bt_dev.flags) & BT_DEV_PERSISTENT_FLAGS);
-	atomic_set(bt_dev.flags, flags);
+	flags = (bt_atomic_get(bt_dev.flags) & BT_DEV_PERSISTENT_FLAGS);
+	bt_atomic_set(bt_dev.flags, flags);
 }
 
 static void hci_cmd_done(uint16_t opcode, uint8_t status, struct bt_buf *evt_buf)
@@ -2512,7 +2512,7 @@ static void hci_cmd_done(uint16_t opcode, uint8_t status, struct bt_buf *evt_buf
 	}
 
 	/* Take the original command buffer reference. */
-	buf = atomic_ptr_clear((atomic_ptr_t *)&bt_dev.sent_cmd);
+	buf = bt_atomic_ptr_clear((bt_atomic_ptr_t *)&bt_dev.sent_cmd);
 
 	if (!buf) {
 		LOG_ERR("No command sent for cmd complete 0x%04x", opcode);
@@ -2522,7 +2522,7 @@ static void hci_cmd_done(uint16_t opcode, uint8_t status, struct bt_buf *evt_buf
 	if (cmd(buf)->opcode != opcode) {
 		LOG_ERR("OpCode 0x%04x completed instead of expected 0x%04x", opcode,
 			cmd(buf)->opcode);
-		buf = atomic_ptr_set((atomic_ptr_t *)&bt_dev.sent_cmd, buf);
+		buf = bt_atomic_ptr_set((bt_atomic_ptr_t *)&bt_dev.sent_cmd, buf);
 		__ASSERT_NO_MSG(!buf);
 		goto exit;
 	}
@@ -2538,7 +2538,7 @@ static void hci_cmd_done(uint16_t opcode, uint8_t status, struct bt_buf *evt_buf
 	if (cmd(buf)->state && !status) {
 		struct bt_hci_cmd_state_set *update = cmd(buf)->state;
 
-		atomic_set_bit_to(update->target, update->bit, update->val);
+		bt_atomic_set_bit_to(update->target, update->bit, update->val);
 	}
 
 	/* If the command was synchronous wake up bt_hci_cmd_send_sync() */
@@ -2623,7 +2623,7 @@ int bt_hci_get_conn_handle(const struct bt_conn *conn, uint16_t *conn_handle)
 #if defined(CONFIG_BT_EXT_ADV)
 int bt_hci_get_adv_handle(const struct bt_le_ext_adv *adv, uint8_t *adv_handle)
 {
-	if (!atomic_test_bit(adv->flags, BT_ADV_CREATED)) {
+	if (!bt_atomic_test_bit(adv->flags, BT_ADV_CREATED)) {
 		return -EINVAL;
 	}
 
@@ -2635,7 +2635,7 @@ int bt_hci_get_adv_handle(const struct bt_le_ext_adv *adv, uint8_t *adv_handle)
 #if defined(CONFIG_BT_PER_ADV_SYNC)
 int bt_hci_get_adv_sync_handle(const struct bt_le_per_adv_sync *sync, uint16_t *sync_handle)
 {
-	if (!atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_CREATED)) {
+	if (!bt_atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_CREATED)) {
 		return -EINVAL;
 	}
 
@@ -4212,7 +4212,7 @@ static void le_conn_complete_prio(uint8_t role)
 		/* Clear advertising even if we are not able to add connection
 		 * object to keep host in sync with controller state.
 		 */
-		atomic_clear_bit(adv->flags, BT_ADV_ENABLED);
+		bt_atomic_clear_bit(adv->flags, BT_ADV_ENABLED);
 		(void)bt_le_lim_adv_cancel_timeout(adv);
 	}
 }
@@ -4417,7 +4417,7 @@ int bt_hci_transport_register(const struct bt_hci_transport *transport)
 
 void bt_finalize_init(void)
 {
-	atomic_set_bit(bt_dev.flags, BT_DEV_READY);
+	bt_atomic_set_bit(bt_dev.flags, BT_DEV_READY);
 
 	if (IS_ENABLED(CONFIG_BT_OBSERVER)) {
 		bt_scan_reset();
@@ -4455,7 +4455,7 @@ static int bt_init(void)
 			return 0;
 		}
 
-		atomic_set_bit(bt_dev.flags, BT_DEV_PRESET_ID);
+		bt_atomic_set_bit(bt_dev.flags, BT_DEV_PRESET_ID);
 	}
 
 	bt_finalize_init();
@@ -4558,9 +4558,9 @@ int bt_enable(bt_ready_cb_t cb)
 
 	bt_monitor_new_index(BT_MONITOR_TYPE_PRIMARY, BT_HCI_BUS, BT_ADDR_ANY, BT_HCI_NAME);
 
-	atomic_clear_bit(bt_dev.flags, BT_DEV_DISABLE);
+	bt_atomic_clear_bit(bt_dev.flags, BT_DEV_DISABLE);
 
-	if (atomic_test_and_set_bit(bt_dev.flags, BT_DEV_ENABLE)) {
+	if (bt_atomic_test_and_set_bit(bt_dev.flags, BT_DEV_ENABLE)) {
 		return -EALREADY;
 	}
 
@@ -4622,12 +4622,12 @@ int bt_disable(void)
 {
 	int err;
 
-	if (atomic_test_and_set_bit(bt_dev.flags, BT_DEV_DISABLE)) {
+	if (bt_atomic_test_and_set_bit(bt_dev.flags, BT_DEV_DISABLE)) {
 		return -EALREADY;
 	}
 
 	/* Clear BT_DEV_READY before disabling HCI link */
-	atomic_clear_bit(bt_dev.flags, BT_DEV_READY);
+	bt_atomic_clear_bit(bt_dev.flags, BT_DEV_READY);
 
 #if defined(CONFIG_BT_BROADCASTER)
 	bt_adv_reset_adv_pool();
@@ -4663,8 +4663,8 @@ int bt_disable(void)
 
 	err = bt_hci_close(bt_dev.hci);
 	if (err == -ENOSYS) {
-		atomic_clear_bit(bt_dev.flags, BT_DEV_DISABLE);
-		atomic_set_bit(bt_dev.flags, BT_DEV_READY);
+		bt_atomic_clear_bit(bt_dev.flags, BT_DEV_DISABLE);
+		bt_atomic_set_bit(bt_dev.flags, BT_DEV_READY);
 		return -ENOTSUP;
 	}
 
@@ -4672,7 +4672,7 @@ int bt_disable(void)
 		LOG_ERR("HCI driver close failed (%d)", err);
 
 		/* Re-enable BT_DEV_READY to avoid inconsistent stack state */
-		atomic_set_bit(bt_dev.flags, BT_DEV_READY);
+		bt_atomic_set_bit(bt_dev.flags, BT_DEV_READY);
 
 		return err;
 	}
@@ -4704,14 +4704,14 @@ int bt_disable(void)
 	/* Clear BT_DEV_ENABLE here to prevent early bt_enable() calls, before disable is
 	 * completed.
 	 */
-	atomic_clear_bit(bt_dev.flags, BT_DEV_ENABLE);
+	bt_atomic_clear_bit(bt_dev.flags, BT_DEV_ENABLE);
 
 	return 0;
 }
 
 bool bt_is_ready(void)
 {
-	return atomic_test_bit(bt_dev.flags, BT_DEV_READY);
+	return bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY);
 }
 
 #define DEVICE_NAME_LEN (sizeof(CONFIG_BT_DEVICE_NAME) - 1)
@@ -4794,7 +4794,7 @@ int bt_le_get_local_features(struct bt_le_local_features *remote_info)
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
 	}
 
@@ -4830,7 +4830,7 @@ int bt_le_filter_accept_list_add(const bt_addr_le_t *addr)
 	struct bt_buf *buf;
 	int err;
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
 	}
 
@@ -4858,7 +4858,7 @@ int bt_le_filter_accept_list_remove(const bt_addr_le_t *addr)
 	struct bt_buf *buf;
 	int err;
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
 	}
 
@@ -4883,7 +4883,7 @@ int bt_le_filter_accept_list_clear(void)
 {
 	int err;
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
 	}
 
@@ -4938,7 +4938,7 @@ int bt_le_set_rpa_timeout(uint16_t new_rpa_timeout)
 	}
 
 	bt_dev.rpa_timeout = new_rpa_timeout;
-	atomic_set_bit(bt_dev.flags, BT_DEV_RPA_TIMEOUT_CHANGED);
+	bt_atomic_set_bit(bt_dev.flags, BT_DEV_RPA_TIMEOUT_CHANGED);
 
 	return 0;
 }

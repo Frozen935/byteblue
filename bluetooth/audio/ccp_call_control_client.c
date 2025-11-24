@@ -171,7 +171,7 @@ static void tbs_client_discover_cb(struct bt_conn *conn, int err, uint8_t tbs_co
 
 	populate_bearers(client, &bearers);
 
-	atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
+	bt_atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
 
 	BT_SLIST_FOR_EACH_CONTAINER_SAFE(&ccp_call_control_client_cbs, listener, next, _node) {
 		if (listener->discover != NULL) {
@@ -204,7 +204,7 @@ int bt_ccp_call_control_client_discover(struct bt_conn *conn,
 	}
 
 	client = get_client_by_conn(conn);
-	if (atomic_test_and_set_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY)) {
 		return -EBUSY;
 	}
 
@@ -214,7 +214,7 @@ int bt_ccp_call_control_client_discover(struct bt_conn *conn,
 	if (err != 0) {
 		LOG_DBG("Failed to discover TBS for %p: %d", (void *)conn, err);
 
-		atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
+		bt_atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
 
 		/* Return known errors */
 		if (err == -EBUSY || err == -ENOTCONN) {
@@ -288,7 +288,7 @@ static void tbs_client_read_bearer_provider_name_cb(struct bt_conn *conn, int er
 	struct bt_ccp_call_control_client_cb *listener, *next;
 	struct bt_ccp_call_control_client_bearer *bearer;
 
-	atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
+	bt_atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
 
 	bearer = get_bearer_by_tbs_index(client, inst_index);
 	if (bearer == NULL) {
@@ -336,7 +336,7 @@ static int validate_bearer_and_get_client(const struct bt_ccp_call_control_clien
 		return -EFAULT;
 	}
 
-	if (atomic_test_and_set_bit((*client)->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY)) {
+	if (bt_atomic_test_and_set_bit((*client)->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY)) {
 		LOG_DBG("Client %p identified by bearer %p is busy", *client, bearer);
 
 		return -EBUSY;
@@ -360,7 +360,7 @@ int bt_ccp_call_control_client_read_bearer_provider_name(
 
 	err = bt_tbs_client_read_bearer_provider_name(client->conn, bearer->tbs_index);
 	if (err != 0) {
-		atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
+		bt_atomic_clear_bit(client->flags, CCP_CALL_CONTROL_CLIENT_FLAG_BUSY);
 
 		/* Return expected return values directly */
 		if (err == -ENOTCONN || err == -EBUSY) {

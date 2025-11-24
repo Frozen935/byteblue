@@ -348,7 +348,7 @@ struct bt_conn *bt_conn_new(struct bt_conn *conns, size_t size)
 	int i;
 
 	for (i = 0; i < size; i++) {
-		if (atomic_cas(&conns[i].ref, 0, 1)) {
+		if (bt_atomic_cas(&conns[i].ref, 0, 1)) {
 			conn = &conns[i];
 			break;
 		}
@@ -734,7 +734,7 @@ static int send_buf(struct bt_conn *conn, struct bt_buf *buf,
 	 * event and our handler will be confused that there is no corresponding
 	 * callback node in the `tx_pending` list.
 	 */
-	atomic_inc(&conn->in_ll);
+	bt_atomic_inc(&conn->in_ll);
 	bt_slist_append(&conn->tx_pending, &tx->node);
 
 	if (is_iso_tx_conn(conn)) {
@@ -751,7 +751,7 @@ static int send_buf(struct bt_conn *conn, struct bt_buf *buf,
 	}
 
 	/* Remove buf from pending list */
-	atomic_dec(&conn->in_ll);
+	bt_atomic_dec(&conn->in_ll);
 	(void)bt_slist_find_and_remove(&conn->tx_pending, &tx->node);
 
 	LOG_ERR("Unable to send to driver (err %d)", err);
@@ -837,7 +837,7 @@ static bool should_stop_tx(struct bt_conn *conn)
 	}
 
 	/* Queue only 3 buffers per-conn for now */
-	if (atomic_get(&conn->in_ll) < 3) {
+	if (bt_atomic_get(&conn->in_ll) < 3) {
 		/* The goal of this heuristic is to allow the link-layer to
 		 * extend an ACL connection event as long as the application
 		 * layer can provide data.
@@ -895,7 +895,7 @@ static bool cannot_send_to_controller(struct bt_conn *conn)
 static bool dont_have_viewbufs(void)
 {
 #if defined(CONFIG_BT_CONN_TX)
-	/* The LIFO only tracks buffers that have been destroyed at least once,
+	/* The queue only tracks buffers that have been destroyed at least once,
 	 * hence the uninit check beforehand.
 	 */
 	if (fragments.uninit_count > 0) {
@@ -903,8 +903,8 @@ static bool dont_have_viewbufs(void)
 		return false;
 	}
 
-	/* In practice bt_fifo == bt_lifo ABI. */
-	return bt_fifo_is_empty(&fragments.free);
+	/* In practice bt_fifo == bt_queue. */
+	return bt_queue_is_empty(&fragments.free);
 
 #else  /* !CONFIG_BT_CONN_TX */
 	return false;
@@ -1442,7 +1442,7 @@ void bt_conn_foreach(enum bt_conn_type type,
 
 struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 {
-	atomic_val_t old;
+	bt_atomic_val_t old;
 
 	__ASSERT_NO_MSG(conn);
 
@@ -1452,12 +1452,12 @@ struct bt_conn *bt_conn_ref(struct bt_conn *conn)
 	 * count since the read, and start over again when that happens.
 	 */
 	do {
-		old = atomic_get(&conn->ref);
+		old = bt_atomic_get(&conn->ref);
 
 		if (!old) {
 			return NULL;
 		}
-	} while (!atomic_cas(&conn->ref, old, old + 1));
+	} while (!bt_atomic_cas(&conn->ref, old, old + 1));
 
 	LOG_DBG("handle %u ref %ld -> %ld", conn->handle, old, old + 1);
 
@@ -1478,7 +1478,7 @@ static BT_WORK_DEFINE(recycled_work, recycled_work_handler);
 
 void bt_conn_unref(struct bt_conn *conn)
 {
-	atomic_val_t old;
+	bt_atomic_val_t old;
 	bool deallocated;
 	__maybe_unused uint16_t conn_handle;
 	/* Used only if CONFIG_ASSERT and CONFIG_BT_CONN_TX. */
@@ -1497,7 +1497,7 @@ void bt_conn_unref(struct bt_conn *conn)
 #if CONFIG_BT_CONN_TX
 	conn_tx_is_pending = bt_work_is_pending(&conn->tx_complete_work);
 #endif
-	old = atomic_dec(&conn->ref);
+	old = bt_atomic_dec(&conn->ref);
 	conn = NULL;
 
 	LOG_DBG("handle %u ref %ld -> %ld", conn_handle, old, (old - 1));
@@ -1782,12 +1782,12 @@ static void perform_auto_initiated_procedures(struct bt_conn *conn, void *unused
 		return;
 	}
 
-	if (atomic_test_and_set_bit(conn->flags, BT_CONN_AUTO_INIT_PROCEDURES_DONE)) {
+	if (bt_atomic_test_and_set_bit(conn->flags, BT_CONN_AUTO_INIT_PROCEDURES_DONE)) {
 		/* We have already run the auto-initiated procedures */
 		return;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED) &&
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED) &&
 	    can_initiate_feature_exchange(conn)) {
 		err = bt_hci_le_read_remote_features(conn);
 		if (err) {
@@ -1799,7 +1799,7 @@ static void perform_auto_initiated_procedures(struct bt_conn *conn, void *unused
 	}
 
 	if (IS_ENABLED(CONFIG_BT_REMOTE_VERSION) &&
-	    !atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO)) {
+	    !bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO)) {
 		err = bt_hci_read_remote_version(conn);
 		if (err) {
 			LOG_ERR("Failed read remote version (%d)", err);
@@ -2008,12 +2008,12 @@ void bt_conn_notify_le_param_updated(struct bt_conn *conn)
 	/* If new connection parameters meet requirement of pending
 	 * parameters don't send peripheral conn param request anymore on timeout
 	 */
-	if (atomic_test_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_SET) &&
+	if (bt_atomic_test_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_SET) &&
 	    conn->le.interval >= conn->le.interval_min &&
 	    conn->le.interval <= conn->le.interval_max &&
 	    conn->le.latency == conn->le.pending_latency &&
 	    conn->le.timeout == conn->le.pending_timeout) {
-		atomic_clear_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_SET);
+		bt_atomic_clear_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_SET);
 	}
 
 
@@ -2127,7 +2127,7 @@ static int send_conn_le_param_update(struct bt_conn *conn,
 	 */
 	if ((BT_FEAT_LE_CONN_PARAM_REQ_PROC(bt_dev.le.features) &&
 	     BT_FEAT_LE_CONN_PARAM_REQ_PROC(conn->le.features) &&
-	     !atomic_test_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_L2CAP)) ||
+	     !bt_atomic_test_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_L2CAP)) ||
 	     (conn->role == BT_HCI_ROLE_CENTRAL)) {
 		int rc;
 
@@ -2286,7 +2286,7 @@ static void deferred_work(struct bt_work *work)
 	}
 
 	/* if application set own params use those, otherwise use defaults. */
-	if (atomic_test_and_clear_bit(conn->flags,
+	if (bt_atomic_test_and_clear_bit(conn->flags,
 				      BT_CONN_PERIPHERAL_PARAM_SET)) {
 		int err;
 
@@ -2297,7 +2297,7 @@ static void deferred_work(struct bt_work *work)
 
 		err = send_conn_le_param_update(conn, param);
 		if (!err) {
-			atomic_clear_bit(conn->flags,
+			bt_atomic_clear_bit(conn->flags,
 					 BT_CONN_PERIPHERAL_PARAM_AUTO_UPDATE);
 		} else {
 			LOG_WRN("Send LE param update failed (err %d)", err);
@@ -2314,7 +2314,7 @@ static void deferred_work(struct bt_work *work)
 
 		err = send_conn_le_param_update(conn, param);
 		if (!err) {
-			atomic_set_bit(conn->flags,
+			bt_atomic_set_bit(conn->flags,
 				       BT_CONN_PERIPHERAL_PARAM_AUTO_UPDATE);
 		} else {
 			LOG_WRN("Send auto LE param update failed (err %d)",
@@ -2327,7 +2327,7 @@ static void deferred_work(struct bt_work *work)
 		 */
 	}
 
-	atomic_set_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_UPDATE);
+	bt_atomic_set_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_UPDATE);
 }
 
 static struct bt_conn *acl_conn_new(void)
@@ -2553,11 +2553,11 @@ static void reset_pairing(struct bt_conn *conn)
 {
 #if defined(CONFIG_BT_CLASSIC)
 	if (conn->type == BT_CONN_TYPE_BR) {
-		atomic_clear_bit(conn->flags, BT_CONN_BR_PAIRING);
-		atomic_clear_bit(conn->flags, BT_CONN_BR_PAIRED);
-		atomic_clear_bit(conn->flags, BT_CONN_BR_PAIRING_INITIATOR);
-		atomic_clear_bit(conn->flags, BT_CONN_BR_LEGACY_SECURE);
-		atomic_clear_bit(conn->flags, BT_CONN_BR_GENERAL_BONDING);
+		bt_atomic_clear_bit(conn->flags, BT_CONN_BR_PAIRING);
+		bt_atomic_clear_bit(conn->flags, BT_CONN_BR_PAIRED);
+		bt_atomic_clear_bit(conn->flags, BT_CONN_BR_PAIRING_INITIATOR);
+		bt_atomic_clear_bit(conn->flags, BT_CONN_BR_LEGACY_SECURE);
+		bt_atomic_clear_bit(conn->flags, BT_CONN_BR_GENERAL_BONDING);
 	}
 #endif /* CONFIG_BT_CLASSIC */
 
@@ -2645,7 +2645,7 @@ int bt_conn_set_security(struct bt_conn *conn, bt_security_t sec)
 		return 0;
 	}
 
-	atomic_set_bit_to(conn->flags, BT_CONN_FORCE_PAIR, force_pair);
+	bt_atomic_set_bit_to(conn->flags, BT_CONN_FORCE_PAIR, force_pair);
 	conn->required_sec_level = sec;
 
 	err = start_security(conn);
@@ -2949,9 +2949,9 @@ int bt_conn_get_remote_info(const struct bt_conn *conn, struct bt_conn_remote_in
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED) ||
+	if (!bt_atomic_test_bit(conn->flags, BT_CONN_LE_FEATURES_EXCHANGED) ||
 	    (IS_ENABLED(CONFIG_BT_REMOTE_VERSION) &&
-	     !atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO))) {
+	     !bt_atomic_test_bit(conn->flags, BT_CONN_AUTO_VERSION_INFO))) {
 		return -EBUSY;
 	}
 
@@ -3579,7 +3579,7 @@ int bt_conn_le_param_update(struct bt_conn *conn,
 
 	if (IS_ENABLED(CONFIG_BT_PERIPHERAL)) {
 		/* if peripheral conn param update timer expired just send request */
-		if (atomic_test_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_UPDATE)) {
+		if (bt_atomic_test_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_UPDATE)) {
 			return send_conn_le_param_update(conn, param);
 		}
 
@@ -3588,7 +3588,7 @@ int bt_conn_le_param_update(struct bt_conn *conn,
 		conn->le.interval_max = param->interval_max;
 		conn->le.pending_latency = param->latency;
 		conn->le.pending_timeout = param->timeout;
-		atomic_set_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_SET);
+		bt_atomic_set_bit(conn->flags, BT_CONN_PERIPHERAL_PARAM_SET);
 	}
 
 	return 0;
@@ -3700,7 +3700,7 @@ int bt_conn_le_create_auto(const struct bt_conn_le_create_param *create_param,
 	struct bt_conn *conn;
 	int err;
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EAGAIN;
 	}
 
@@ -3719,11 +3719,11 @@ int bt_conn_le_create_auto(const struct bt_conn_le_create_param *create_param,
 	 * started by application and should not be stopped.
 	 */
 	if (!BT_LE_STATES_SCAN_INIT(bt_dev.le.states) &&
-	    atomic_test_bit(bt_dev.flags, BT_DEV_SCANNING)) {
+	    bt_atomic_test_bit(bt_dev.flags, BT_DEV_SCANNING)) {
 		return -EINVAL;
 	}
 
-	if (atomic_test_bit(bt_dev.flags, BT_DEV_INITIATING)) {
+	if (bt_atomic_test_bit(bt_dev.flags, BT_DEV_INITIATING)) {
 		return -EINVAL;
 	}
 
@@ -3739,7 +3739,7 @@ int bt_conn_le_create_auto(const struct bt_conn_le_create_param *create_param,
 	bt_conn_set_param_le(conn, param);
 	create_param_setup(create_param);
 
-	atomic_set_bit(conn->flags, BT_CONN_AUTO_CONNECT);
+	bt_atomic_set_bit(conn->flags, BT_CONN_AUTO_CONNECT);
 	bt_conn_set_state(conn, BT_CONN_INITIATING_FILTER_LIST);
 
 	err = bt_le_create_conn(conn);
@@ -3763,7 +3763,7 @@ int bt_conn_create_auto_stop(void)
 	struct bt_conn *conn;
 	int err;
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		return -EINVAL;
 	}
 
@@ -3773,7 +3773,7 @@ int bt_conn_create_auto_stop(void)
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_INITIATING)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_INITIATING)) {
 		return -EINVAL;
 	}
 
@@ -3794,7 +3794,7 @@ static int conn_le_create_common_checks(const bt_addr_le_t *peer,
 					const struct bt_le_conn_param *conn_param)
 {
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		LOG_DBG("Conn check failed: BT dev not ready.");
 		return -EAGAIN;
 	}
@@ -3809,7 +3809,7 @@ static int conn_le_create_common_checks(const bt_addr_le_t *peer,
 		return -EAGAIN;
 	}
 
-	if (atomic_test_bit(bt_dev.flags, BT_DEV_INITIATING)) {
+	if (bt_atomic_test_bit(bt_dev.flags, BT_DEV_INITIATING)) {
 		LOG_DBG("Conn check failed: device is already initiating.");
 		return -EALREADY;
 	}
@@ -3960,7 +3960,7 @@ int bt_conn_le_create_synced(const struct bt_le_ext_adv *adv,
 		return err;
 	}
 
-	if (!atomic_test_bit(adv->flags, BT_PER_ADV_ENABLED)) {
+	if (!bt_atomic_test_bit(adv->flags, BT_PER_ADV_ENABLED)) {
 		return -EINVAL;
 	}
 
@@ -4246,7 +4246,7 @@ int bt_conn_init(void)
 			}
 
 #if !defined(CONFIG_BT_FILTER_ACCEPT_LIST)
-			if (atomic_test_bit(conn->flags,
+			if (bt_atomic_test_bit(conn->flags,
 					    BT_CONN_AUTO_CONNECT)) {
 				/* Only the default identity is supported */
 				conn->id = BT_ID_DEFAULT;

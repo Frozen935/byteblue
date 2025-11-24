@@ -365,7 +365,7 @@ static bool l2cap_chan_add(struct bt_conn *conn, struct bt_l2cap_chan *chan,
 		return false;
 	}
 
-	atomic_clear(chan->status);
+	bt_atomic_clear(chan->status);
 	init_le_chan_private(le_chan);
 
 	bt_l2cap_chan_add(conn, chan, destroy);
@@ -431,7 +431,7 @@ void bt_l2cap_connected(struct bt_conn *conn)
 		}
 
 		/* Always set output status to fixed channels */
-		atomic_set_bit(chan->status, BT_L2CAP_STATUS_OUT);
+		bt_atomic_set_bit(chan->status, BT_L2CAP_STATUS_OUT);
 
 		if (chan->ops->status) {
 			chan->ops->status(chan, chan->status);
@@ -618,7 +618,7 @@ static void l2cap_le_encrypt_change(struct bt_l2cap_chan *chan, uint8_t status)
 	struct bt_l2cap_le_chan *le = BT_L2CAP_LE_CHAN(chan);
 
 	/* Skip channels that are not pending waiting for encryption */
-	if (!atomic_test_and_clear_bit(chan->status,
+	if (!bt_atomic_test_and_clear_bit(chan->status,
 				       BT_L2CAP_STATUS_ENCRYPT_PENDING)) {
 		return;
 	}
@@ -638,7 +638,7 @@ static void l2cap_le_encrypt_change(struct bt_l2cap_chan *chan, uint8_t status)
 				__ASSERT_MSG(i < BT_L2CAP_ECRED_CHAN_MAX_PER_REQ,
 					 "There can only be BT_L2CAP_ECRED_CHAN_MAX_PER_REQ "
 					 "channels from the same request.");
-				atomic_clear_bit(ch->status, BT_L2CAP_STATUS_ENCRYPT_PENDING);
+				bt_atomic_clear_bit(ch->status, BT_L2CAP_STATUS_ENCRYPT_PENDING);
 				echan[i++] = ch;
 			}
 		}
@@ -794,18 +794,18 @@ static bool chan_has_data(struct bt_l2cap_le_chan *lechan)
 }
 
 #if defined(CONFIG_BT_L2CAP_DYNAMIC_CHANNEL)
-static bool test_and_dec(atomic_t *target)
+static bool test_and_dec(bt_atomic_t *target)
 {
-	atomic_t old_value, new_value;
+	bt_atomic_t old_value, new_value;
 
 	do {
-		old_value = atomic_get(target);
+		old_value = bt_atomic_get(target);
 		if (!old_value) {
 			return false;
 		}
 
 		new_value = old_value - 1;
-	} while (atomic_cas(target, old_value, new_value) == 0);
+	} while (bt_atomic_cas(target, old_value, new_value) == 0);
 
 	return true;
 }
@@ -825,9 +825,9 @@ static void chan_take_credit(struct bt_l2cap_le_chan *lechan)
 	}
 
 	/* Notify channel user that it can't send anymore on this channel. */
-	if (!atomic_get(&lechan->tx.credits)) {
+	if (!bt_atomic_get(&lechan->tx.credits)) {
 		LOG_DBG("chan %p paused", lechan);
-		atomic_clear_bit(lechan->chan.status, BT_L2CAP_STATUS_OUT);
+		bt_atomic_clear_bit(lechan->chan.status, BT_L2CAP_STATUS_OUT);
 
 		if (lechan->chan.ops->status) {
 			lechan->chan.ops->status(&lechan->chan, lechan->chan.status);
@@ -905,9 +905,9 @@ static bool chan_has_credits(struct bt_l2cap_le_chan *lechan)
 		return true;
 	}
 
-	LOG_DBG("chan %p credits %ld", lechan, atomic_get(&lechan->tx.credits));
+	LOG_DBG("chan %p credits %ld", lechan, bt_atomic_get(&lechan->tx.credits));
 
-	return atomic_get(&lechan->tx.credits) >= 1;
+	return bt_atomic_get(&lechan->tx.credits) >= 1;
 #else
 	return true;
 #endif
@@ -1284,7 +1284,7 @@ static void l2cap_chan_rx_init(struct bt_l2cap_le_chan *chan)
 		chan->rx.mtu = chan->rx.mps - BT_L2CAP_SDU_HDR_SIZE;
 	}
 
-	atomic_set(&chan->rx.credits, 1);
+	bt_atomic_set(&chan->rx.credits, 1);
 }
 
 /** @brief Get @c chan->state.
@@ -1308,7 +1308,7 @@ static void l2cap_chan_tx_init(struct bt_l2cap_le_chan *chan)
 	LOG_DBG("chan %p", chan);
 
 	(void)memset(&chan->tx, 0, sizeof(chan->tx));
-	atomic_set(&chan->tx.credits, 0);
+	bt_atomic_set(&chan->tx.credits, 0);
 	bt_fifo_init(&chan->tx_queue);
 }
 
@@ -1317,9 +1317,9 @@ static void l2cap_chan_tx_give_credits(struct bt_l2cap_le_chan *chan,
 {
 	LOG_DBG("chan %p credits %u", chan, credits);
 
-	atomic_add(&chan->tx.credits, credits);
+	bt_atomic_add(&chan->tx.credits, credits);
 
-	if (!atomic_test_and_set_bit(chan->chan.status, BT_L2CAP_STATUS_OUT)) {
+	if (!bt_atomic_test_and_set_bit(chan->chan.status, BT_L2CAP_STATUS_OUT)) {
 		LOG_DBG("chan %p unpaused", chan);
 		if (chan->chan.ops->status) {
 			chan->chan.ops->status(&chan->chan, chan->chan.status);
@@ -1907,7 +1907,7 @@ static int l2cap_change_security(struct bt_l2cap_le_chan *chan, uint16_t err)
 	bt_security_t sec;
 	int ret;
 
-	if (atomic_test_bit(chan->chan.status,
+	if (bt_atomic_test_bit(chan->chan.status,
 			    BT_L2CAP_STATUS_ENCRYPT_PENDING)) {
 		return -EINPROGRESS;
 	}
@@ -1940,7 +1940,7 @@ static int l2cap_change_security(struct bt_l2cap_le_chan *chan, uint16_t err)
 		return ret;
 	}
 
-	atomic_set_bit(chan->chan.status, BT_L2CAP_STATUS_ENCRYPT_PENDING);
+	bt_atomic_set_bit(chan->chan.status, BT_L2CAP_STATUS_ENCRYPT_PENDING);
 
 	return 0;
 }
@@ -2251,7 +2251,7 @@ static void le_credits(struct bt_l2cap *l2cap, uint8_t ident,
 
 	le_chan = BT_L2CAP_LE_CHAN(chan);
 
-	if (atomic_get(&le_chan->tx.credits) + credits > UINT16_MAX) {
+	if (bt_atomic_get(&le_chan->tx.credits) + credits > UINT16_MAX) {
 		LOG_ERR("Credits overflow");
 		bt_l2cap_chan_disconnect(chan);
 		return;
@@ -2259,7 +2259,7 @@ static void le_credits(struct bt_l2cap *l2cap, uint8_t ident,
 
 	l2cap_chan_tx_give_credits(le_chan, credits);
 
-	LOG_DBG("chan %p total credits %lu", le_chan, atomic_get(&le_chan->tx.credits));
+	LOG_DBG("chan %p total credits %lu", le_chan, bt_atomic_get(&le_chan->tx.credits));
 }
 
 static void reject_cmd(struct bt_l2cap *l2cap, uint8_t ident,
@@ -2367,7 +2367,7 @@ static void l2cap_chan_shutdown(struct bt_l2cap_chan *chan)
 
 	LOG_DBG("chan %p", chan);
 
-	atomic_set_bit(chan->status, BT_L2CAP_STATUS_SHUTDOWN);
+	bt_atomic_set_bit(chan->status, BT_L2CAP_STATUS_SHUTDOWN);
 
 	/* Destroy segmented SDU if it exists */
 	if (le_chan->_sdu) {
@@ -2411,8 +2411,8 @@ static void l2cap_chan_send_credits(struct bt_l2cap_le_chan *chan,
 		return;
 	}
 
-	__ASSERT_NO_MSG(atomic_get(&chan->rx.credits) == 0);
-	atomic_set(&chan->rx.credits, credits);
+	__ASSERT_NO_MSG(bt_atomic_get(&chan->rx.credits) == 0);
+	bt_atomic_set(&chan->rx.credits, credits);
 
 	ev = bt_buf_add(buf, sizeof(*ev));
 	ev->cid = sys_cpu_to_le16(chan->rx.cid);
@@ -2420,7 +2420,7 @@ static void l2cap_chan_send_credits(struct bt_l2cap_le_chan *chan,
 
 	l2cap_send_sig(chan->chan.conn, buf);
 
-	LOG_DBG("chan %p credits %lu", chan, atomic_get(&chan->rx.credits));
+	LOG_DBG("chan %p credits %lu", chan, bt_atomic_get(&chan->rx.credits));
 }
 
 #if defined(CONFIG_BT_L2CAP_SEG_RECV)
@@ -2444,20 +2444,20 @@ static int l2cap_chan_send_credits_pdu(struct bt_conn *conn, uint16_t cid, uint1
 }
 
 /**
- * Combination of @ref atomic_add and @ref u16_add_overflow. Leaves @p
+ * Combination of @ref bt_atomic_add and @ref u16_add_overflow. Leaves @p
  * target unchanged if an overflow would occur. Assumes the current
  * value of @p target is representable by uint16_t.
  */
-static bool atomic_add_safe_u16(atomic_t *target, uint16_t addition)
+static bool atomic_add_safe_u16(bt_atomic_t *target, uint16_t addition)
 {
 	uint16_t target_old, target_new;
 
 	do {
-		target_old = atomic_get(target);
+		target_old = bt_atomic_get(target);
 		if (u16_add_overflow(target_old, addition, &target_new)) {
 			return true;
 		}
-	} while (!atomic_cas(target, target_old, target_new));
+	} while (!bt_atomic_cas(target, target_old, target_new));
 
 	return false;
 }
@@ -2559,7 +2559,7 @@ static void l2cap_chan_le_recv_sdu(struct bt_l2cap_le_chan *chan,
 	LOG_DBG("chan %p len %u", chan, buf->len);
 
 	__ASSERT_NO_MSG(bt_l2cap_chan_get_state(&chan->chan) == BT_L2CAP_CONNECTED);
-	__ASSERT_NO_MSG(atomic_get(&chan->rx.credits) == 0);
+	__ASSERT_NO_MSG(bt_atomic_get(&chan->rx.credits) == 0);
 
 	/* Receiving complete SDU, notify channel and reset SDU buf */
 	err = chan->chan.ops->recv(&chan->chan, buf);
@@ -2619,7 +2619,7 @@ static void l2cap_chan_le_recv_seg(struct bt_l2cap_le_chan *chan,
 		 * the SDU, then the remote will end up with more credits than
 		 * the app has buffers.
 		 */
-		if (atomic_get(&chan->rx.credits) == 0) {
+		if (bt_atomic_get(&chan->rx.credits) == 0) {
 			LOG_DBG("remote is not fully utilizing MPS");
 			l2cap_chan_send_credits(chan, 1);
 		}
@@ -2787,7 +2787,7 @@ static void l2cap_chan_recv_queue(struct bt_l2cap_le_chan *chan,
 		return;
 	}
 
-	if (atomic_test_bit(chan->chan.status, BT_L2CAP_STATUS_SHUTDOWN)) {
+	if (bt_atomic_test_bit(chan->chan.status, BT_L2CAP_STATUS_SHUTDOWN)) {
 		LOG_WRN("Ignoring data received while channel has shutdown");
 		bt_buf_unref(buf);
 		return;
@@ -2997,7 +2997,7 @@ static int l2cap_le_connect(struct bt_conn *conn, struct bt_l2cap_le_chan *ch,
 			goto fail;
 		}
 
-		atomic_set_bit(ch->chan.status,
+		bt_atomic_set_bit(ch->chan.status,
 			       BT_L2CAP_STATUS_ENCRYPT_PENDING);
 
 		return 0;
@@ -3449,7 +3449,7 @@ int bt_l2cap_chan_send(struct bt_l2cap_chan *chan, struct bt_buf *buf)
 		return -ENOTCONN;
 	}
 
-	if (atomic_test_bit(chan->status, BT_L2CAP_STATUS_SHUTDOWN)) {
+	if (bt_atomic_test_bit(chan->status, BT_L2CAP_STATUS_SHUTDOWN)) {
 		return -ESHUTDOWN;
 	}
 

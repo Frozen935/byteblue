@@ -562,7 +562,7 @@ uint16_t bt_mesh_app_key_find(bool dev_key, uint8_t aid,
 			}
 
 #if defined(CONFIG_BT_MESH_RPR_SRV)
-			if (atomic_test_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
+			if (bt_atomic_test_bit(bt_mesh.flags, BT_MESH_DEVKEY_CAND)) {
 				err = cb(rx, &bt_mesh.dev_key_cand, cb_data);
 				if (!err) {
 					/* MshPRTv1.1: 3.6.4.2:

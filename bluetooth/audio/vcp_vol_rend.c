@@ -93,7 +93,7 @@ static void notify_work_reschedule(struct bt_vcp_vol_rend *inst, enum vol_rend_n
 {
 	int err;
 
-	atomic_set_bit(inst->notify, notify);
+	bt_atomic_set_bit(inst->notify, notify);
 
 	err = bt_work_reschedule(&inst->notify_work, delay);
 	if (err < 0) {
@@ -123,12 +123,12 @@ static void notify_work_handler(struct bt_work *work)
 	struct bt_work_delayable *d_work = bt_work_delayable_from_work(work);
 	struct bt_vcp_vol_rend *inst = CONTAINER_OF(d_work, struct bt_vcp_vol_rend, notify_work);
 
-	if (atomic_test_and_clear_bit(inst->notify, NOTIFY_STATE)) {
+	if (bt_atomic_test_and_clear_bit(inst->notify, NOTIFY_STATE)) {
 		notify(inst, NOTIFY_STATE, BT_UUID_VCS_STATE, &inst->state, sizeof(inst->state));
 	}
 
 	if (IS_ENABLED(CONFIG_BT_VCP_VOL_REND_VOL_FLAGS_NOTIFIABLE) &&
-	    atomic_test_and_clear_bit(inst->notify, NOTIFY_FLAGS)) {
+	    bt_atomic_test_and_clear_bit(inst->notify, NOTIFY_FLAGS)) {
 		notify(inst, NOTIFY_FLAGS, BT_UUID_VCS_FLAGS, &inst->flags, sizeof(inst->flags));
 	}
 }
@@ -473,7 +473,7 @@ int bt_vcp_vol_rend_register(struct bt_vcp_vol_rend_register_param *param)
 
 	vol_rend.cb = param->cb;
 
-	atomic_clear(vol_rend.notify);
+	bt_atomic_clear(vol_rend.notify);
 	bt_work_init_delayable(&vol_rend.notify_work, notify_work_handler);
 
 	registered = true;

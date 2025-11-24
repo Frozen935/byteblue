@@ -122,7 +122,7 @@ static int set_setting(const char *name, size_t len_rd, bt_storage_read_cb read_
 	ssize_t len;
 	const char *next;
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_ENABLE)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_ENABLE)) {
 		/* The Bluetooth settings loader needs to communicate with the Bluetooth
 		 * controller to setup identities. This will not work before
 		 * bt_enable(). The doc on @ref bt_enable requires the "bt/" settings
@@ -141,7 +141,7 @@ static int set_setting(const char *name, size_t len_rd, bt_storage_read_cb read_
 
 	if (!strncmp(name, "id", len)) {
 		/* Any previously provided identities supersede flash */
-		if (atomic_test_bit(bt_dev.flags, BT_DEV_PRESET_ID)) {
+		if (bt_atomic_test_bit(bt_dev.flags, BT_DEV_PRESET_ID)) {
 			LOG_WRN("Ignoring identities stored in flash");
 			return 0;
 		}
@@ -234,7 +234,7 @@ static int commit_settings(void)
 
 	LOG_DBG("");
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_ENABLE)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_ENABLE)) {
 		/* The Bluetooth settings loader needs to communicate with the Bluetooth
 		 * controller to setup identities. This will not work before
 		 * bt_enable(). The doc on @ref bt_enable requires the "bt/" settings
@@ -265,14 +265,14 @@ static int commit_settings(void)
 		}
 	}
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_READY)) {
 		bt_finalize_init();
 	}
 
 	/* If any part of the Identity Information of the device has been
 	 * generated this Identity needs to be saved persistently.
 	 */
-	if (atomic_test_and_clear_bit(bt_dev.flags, BT_DEV_STORE_ID)) {
+	if (bt_atomic_test_and_clear_bit(bt_dev.flags, BT_DEV_STORE_ID)) {
 		LOG_DBG("Storing Identity Information");
 		bt_settings_store_id();
 		bt_settings_store_irk();

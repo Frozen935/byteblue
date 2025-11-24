@@ -31,7 +31,7 @@ struct bt_bap_iso {
 	/* Must be at the end so that everything else in the structure can be
 	 * memset to zero without affecting the ref.
 	 */
-	atomic_t ref;
+	bt_atomic_t ref;
 };
 
 typedef bool (*bt_bap_iso_func_t)(struct bt_bap_iso *iso, void *user_data);

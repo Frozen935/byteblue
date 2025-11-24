@@ -352,8 +352,8 @@ end:
 static psa_key_id_t keyid_alloc(void)
 {
 	for (int i = 0; i < BT_MESH_PSA_KEY_ID_RANGE_SIZE; i++) {
-		if (!atomic_test_bit(pst_keys, i)) {
-			atomic_set_bit(pst_keys, i);
+		if (!bt_atomic_test_bit(pst_keys, i)) {
+			bt_atomic_set_bit(pst_keys, i);
 			return BT_MESH_PSA_KEY_ID_MIN + i;
 		}
 	}
@@ -365,7 +365,7 @@ static int keyid_free(psa_key_id_t key_id)
 {
 	if (IN_RANGE(key_id, BT_MESH_PSA_KEY_ID_MIN,
 			BT_MESH_PSA_KEY_ID_MIN + BT_MESH_PSA_KEY_ID_RANGE_SIZE - 1)) {
-		atomic_clear_bit(pst_keys, key_id - BT_MESH_PSA_KEY_ID_MIN);
+		bt_atomic_clear_bit(pst_keys, key_id - BT_MESH_PSA_KEY_ID_MIN);
 		return 0;
 	}
 
@@ -376,7 +376,7 @@ static void keyid_assign(psa_key_id_t key_id)
 {
 	if (IN_RANGE(key_id, BT_MESH_PSA_KEY_ID_MIN,
 				BT_MESH_PSA_KEY_ID_MIN + BT_MESH_PSA_KEY_ID_RANGE_SIZE - 1)) {
-		atomic_set_bit(pst_keys, key_id - BT_MESH_PSA_KEY_ID_MIN);
+		bt_atomic_set_bit(pst_keys, key_id - BT_MESH_PSA_KEY_ID_MIN);
 	}
 }
 

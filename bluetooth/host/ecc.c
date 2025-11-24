@@ -164,11 +164,11 @@ static void generate_pub_key(struct bt_work *work)
 	sys_memcpy_swap(&pub_key[BT_PUB_KEY_COORD_LEN],
 			&ecc.public_key_be[BT_PUB_KEY_COORD_LEN], BT_PUB_KEY_COORD_LEN);
 
-	atomic_set_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
+	bt_atomic_set_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
 	err = 0;
 
 done:
-	atomic_clear_bit(flags, PENDING_PUB_KEY);
+	bt_atomic_clear_bit(flags, PENDING_PUB_KEY);
 
 	/* Change to cooperative priority while we do the callbacks */
 	os_sched_lock();
@@ -235,7 +235,7 @@ exit:
 		bt_dh_key_cb_t cb = dh_key_cb;
 
 		dh_key_cb = NULL;
-		atomic_clear_bit(flags, PENDING_DHKEY);
+		bt_atomic_clear_bit(flags, PENDING_DHKEY);
 
 		if (err) {
 			cb(NULL);
@@ -255,7 +255,7 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 	struct bt_pub_key_cb *cb;
 
 	if (IS_ENABLED(CONFIG_BT_USE_DEBUG_KEYS)) {
-		atomic_set_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
+		bt_atomic_set_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
 		__ASSERT_NO_MSG(new_cb->func != NULL);
 		new_cb->func(debug_public_key);
 		return 0;
@@ -272,18 +272,18 @@ int bt_pub_key_gen(struct bt_pub_key_cb *new_cb)
 		}
 	}
 
-	if (atomic_test_bit(flags, PENDING_DHKEY)) {
+	if (bt_atomic_test_bit(flags, PENDING_DHKEY)) {
 		LOG_WRN("Busy performing another ECDH operation");
 		return -EBUSY;
 	}
 
 	bt_slist_prepend(&pub_key_cb_slist, &new_cb->node);
 
-	if (atomic_test_and_set_bit(flags, PENDING_PUB_KEY)) {
+	if (bt_atomic_test_and_set_bit(flags, PENDING_PUB_KEY)) {
 		return 0;
 	}
 
-	atomic_clear_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
+	bt_atomic_clear_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY);
 
 	if (IS_ENABLED(CONFIG_BT_LONG_WQ)) {
 		bt_long_wq_submit(&pub_key_work);
@@ -298,7 +298,7 @@ void bt_pub_key_hci_disrupted(void)
 {
 	struct bt_pub_key_cb *cb;
 
-	atomic_clear_bit(flags, PENDING_PUB_KEY);
+	bt_atomic_clear_bit(flags, PENDING_PUB_KEY);
 
 	BT_SLIST_FOR_EACH_CONTAINER(&pub_key_cb_slist, cb, node) {
 		if (cb->func) {
@@ -315,7 +315,7 @@ const uint8_t *bt_pub_key_get(void)
 		return debug_public_key;
 	}
 
-	if (atomic_test_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY)) {
+	if (bt_atomic_test_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY)) {
 		return pub_key;
 	}
 
@@ -328,13 +328,13 @@ int bt_dh_key_gen(const uint8_t remote_pk[BT_PUB_KEY_LEN], bt_dh_key_cb_t cb)
 		return -EALREADY;
 	}
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_HAS_PUB_KEY)) {
 		return -EADDRNOTAVAIL;
 	}
 
 	if (dh_key_cb ||
-	    atomic_test_bit(flags, PENDING_PUB_KEY) ||
-	    atomic_test_and_set_bit(flags, PENDING_DHKEY)) {
+	    bt_atomic_test_bit(flags, PENDING_PUB_KEY) ||
+	    bt_atomic_test_and_set_bit(flags, PENDING_DHKEY)) {
 		return -EBUSY;
 	}
 

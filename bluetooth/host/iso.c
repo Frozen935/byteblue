@@ -2654,7 +2654,7 @@ static struct bt_iso_big *get_free_big(void)
 	 */
 
 	for (size_t i = 0; i < ARRAY_SIZE(bigs); i++) {
-		if (!atomic_test_and_set_bit(bigs[i].flags, BT_BIG_INITIALIZED)) {
+		if (!bt_atomic_test_and_set_bit(bigs[i].flags, BT_BIG_INITIALIZED)) {
 			bigs[i].handle = i;
 			bt_slist_init(&bigs[i].bis_channels);
 			return &bigs[i];
@@ -2669,7 +2669,7 @@ static struct bt_iso_big *get_free_big(void)
 static struct bt_iso_big *big_lookup_flag(int bit)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(bigs); i++) {
-		if (atomic_test_bit(bigs[i].flags, bit)) {
+		if (bt_atomic_test_bit(bigs[i].flags, bit)) {
 			return &bigs[i];
 		}
 	}
@@ -2699,7 +2699,7 @@ static void big_disconnect(struct bt_iso_big *big, uint8_t reason)
 {
 	struct bt_iso_chan *bis;
 
-	atomic_set_bit(big->flags, BT_BIG_BUSY);
+	bt_atomic_set_bit(big->flags, BT_BIG_BUSY);
 
 	BT_SLIST_FOR_EACH_CONTAINER(&big->bis_channels, bis, node) {
 		bis->iso->err = reason;
@@ -3054,7 +3054,7 @@ int bt_iso_big_create(struct bt_le_ext_adv *padv, struct bt_iso_big_create_param
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(padv->flags, BT_PER_ADV_PARAMS_SET)) {
+	if (!bt_atomic_test_bit(padv->flags, BT_PER_ADV_PARAMS_SET)) {
 		LOG_DBG("PA params not set; invalid adv object");
 		return -EINVAL;
 	}
@@ -3154,7 +3154,7 @@ void hci_le_big_complete(struct bt_buf *buf)
 	}
 
 	big = lookup_big_by_handle(evt->big_handle);
-	atomic_clear_bit(big->flags, BT_BIG_PENDING);
+	bt_atomic_clear_bit(big->flags, BT_BIG_PENDING);
 
 	LOG_DBG("BIG[%u] %p completed, status 0x%02x %s", big->handle, big, evt->status,
 		bt_hci_err_to_str(evt->status));
@@ -3168,7 +3168,7 @@ void hci_le_big_complete(struct bt_buf *buf)
 		return;
 	}
 
-	atomic_set_bit(big->flags, BT_BIG_BUSY);
+	bt_atomic_set_bit(big->flags, BT_BIG_BUSY);
 	i = 0;
 	BT_SLIST_FOR_EACH_CONTAINER(&big->bis_channels, bis, node) {
 		const uint16_t handle = evt->handle[i++];
@@ -3179,7 +3179,7 @@ void hci_le_big_complete(struct bt_buf *buf)
 		bt_conn_set_state(iso_conn, BT_CONN_CONNECTED);
 	}
 
-	atomic_clear_bit(big->flags, BT_BIG_BUSY);
+	bt_atomic_clear_bit(big->flags, BT_BIG_BUSY);
 
 	if (!bt_slist_is_empty(&iso_big_cbs)) {
 		struct bt_iso_big_cb *listener;
@@ -3267,12 +3267,12 @@ int bt_iso_big_terminate(struct bt_iso_big *big)
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(big->flags, BT_BIG_INITIALIZED) || !big->num_bis) {
+	if (!bt_atomic_test_bit(big->flags, BT_BIG_INITIALIZED) || !big->num_bis) {
 		LOG_DBG("BIG not initialized");
 		return -EINVAL;
 	}
 
-	if (atomic_test_bit(big->flags, BT_BIG_BUSY)) {
+	if (bt_atomic_test_bit(big->flags, BT_BIG_BUSY)) {
 		LOG_DBG("BIG %p is busy", big);
 		return -EBUSY;
 	}
@@ -3352,7 +3352,7 @@ void hci_le_big_sync_established(struct bt_buf *buf)
 	}
 
 	big = lookup_big_by_handle(evt->big_handle);
-	atomic_clear_bit(big->flags, BT_BIG_SYNCING);
+	bt_atomic_clear_bit(big->flags, BT_BIG_SYNCING);
 
 	LOG_DBG("BIG[%u] %p sync established, status 0x%02x %s", big->handle, big, evt->status,
 		bt_hci_err_to_str(evt->status));
@@ -3366,7 +3366,7 @@ void hci_le_big_sync_established(struct bt_buf *buf)
 		return;
 	}
 
-	atomic_set_bit(big->flags, BT_BIG_BUSY);
+	bt_atomic_set_bit(big->flags, BT_BIG_BUSY);
 	i = 0;
 	BT_SLIST_FOR_EACH_CONTAINER(&big->bis_channels, bis, node) {
 		const uint16_t handle = evt->handle[i++];
@@ -3377,7 +3377,7 @@ void hci_le_big_sync_established(struct bt_buf *buf)
 		bt_conn_set_state(iso_conn, BT_CONN_CONNECTED);
 	}
 
-	atomic_clear_bit(big->flags, BT_BIG_BUSY);
+	bt_atomic_clear_bit(big->flags, BT_BIG_BUSY);
 
 	if (!bt_slist_is_empty(&iso_big_cbs)) {
 		struct bt_iso_big_cb *listener;
@@ -3480,7 +3480,7 @@ int bt_iso_big_sync(struct bt_le_per_adv_sync *sync, struct bt_iso_big_sync_para
 		return -EINVAL;
 	}
 
-	if (!atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_SYNCED)) {
+	if (!bt_atomic_test_bit(sync->flags, BT_PER_ADV_SYNC_SYNCED)) {
 		LOG_DBG("PA sync not synced");
 		return -EINVAL;
 	}

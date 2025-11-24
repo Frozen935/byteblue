@@ -690,7 +690,7 @@ static int on_obj_deleted(struct bt_ots *ots, struct bt_conn *conn,
 static void on_obj_selected(struct bt_ots *ots, struct bt_conn *conn,
 			    uint64_t id)
 {
-	if (atomic_test_and_set_bit(obj.flags, MPL_OBJ_FLAG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(obj.flags, MPL_OBJ_FLAG_BUSY)) {
 		/* TODO: Can there be a collision between select and internal */
 		/* activities, like adding new objects? */
 		LOG_ERR("Object busy - select not performed");
@@ -724,12 +724,12 @@ static void on_obj_selected(struct bt_ots *ots, struct bt_conn *conn,
 		(void)setup_group_object(media_player.group);
 	} else {
 		LOG_ERR("Unknown Object ID");
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return;
 	}
 
 	obj.selected_id = id;
-	atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+	bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 }
 
 static int on_obj_created(struct bt_ots *ots, struct bt_conn *conn, uint64_t id,
@@ -799,7 +799,7 @@ static ssize_t on_object_send(struct bt_ots *ots, struct bt_conn *conn,
 			      uint64_t id, void **data, size_t len,
 			      off_t offset)
 {
-	if (atomic_test_and_set_bit(obj.flags, MPL_OBJ_FLAG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(obj.flags, MPL_OBJ_FLAG_BUSY)) {
 		/* TODO: Can there be a collision between select and internal */
 		/* activities, like adding new objects? */
 		LOG_ERR("Object busy");
@@ -814,19 +814,19 @@ static ssize_t on_object_send(struct bt_ots *ots, struct bt_conn *conn,
 
 	if (id != obj.selected_id) {
 		LOG_ERR("Read from unselected object");
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return -EINVAL;
 	}
 
 	if (!data) {
 		LOG_DBG("Read complete");
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return 0;
 	}
 
 	if (offset >= obj.content->len) {
 		LOG_DBG("Offset too large");
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return -EINVAL;
 	}
 
@@ -837,7 +837,7 @@ static ssize_t on_object_send(struct bt_ots *ots, struct bt_conn *conn,
 	}
 
 	*data = &obj.content->data[offset];
-	atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+	bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 
 	return MIN(len, obj.content->len - offset);
 }
@@ -2326,7 +2326,7 @@ int media_proxy_pl_init(void)
 	/* The test here is arguably needed as the objects cannot be accessed before bt_mcs_init is
 	 * called, but the set is to avoid the objects being accessed before properly initialized
 	 */
-	if (atomic_test_and_set_bit(obj.flags, MPL_OBJ_FLAG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(obj.flags, MPL_OBJ_FLAG_BUSY)) {
 		LOG_ERR("Object busy");
 		return -EBUSY;
 	}
@@ -2334,7 +2334,7 @@ int media_proxy_pl_init(void)
 	ret = bt_mcs_init(&ots_cbs);
 	if (ret < 0) {
 		LOG_ERR("Could not init MCS: %d", ret);
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 
 		return ret;
 	}
@@ -2358,7 +2358,7 @@ int media_proxy_pl_init(void)
 	ret = add_icon_object(&media_player);
 	if (ret < 0) {
 		LOG_ERR("Unable to add icon object, error %d", ret);
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return ret;
 	}
 
@@ -2366,7 +2366,7 @@ int media_proxy_pl_init(void)
 	ret = add_group_and_track_objects(&media_player);
 	if (ret < 0) {
 		LOG_ERR("Error adding tracks and groups to OTS, error %d", ret);
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return ret;
 	}
 
@@ -2376,11 +2376,11 @@ int media_proxy_pl_init(void)
 	ret = add_current_track_segments_object(&media_player);
 	if (ret < 0) {
 		LOG_ERR("Error adding Track Segments Object to OTS, error %d", ret);
-		atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+		bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 		return ret;
 	}
 
-	atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
+	bt_atomic_clear_bit(obj.flags, MPL_OBJ_FLAG_BUSY);
 #endif /* CONFIG_BT_MPL_OBJECTS */
 
 	/* Set up the calls structure */

@@ -98,7 +98,7 @@ static void active_members_reset(void)
 		struct bt_csip_set_coordinator_inst *client =
 			CONTAINER_OF(member, struct bt_csip_set_coordinator_inst, set_member);
 
-		atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
+		bt_atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
 	}
 
 	(void)memset(&active, 0, sizeof(active));
@@ -357,7 +357,7 @@ static void discover_complete(struct bt_csip_set_coordinator_inst *client,
 	struct bt_csip_set_coordinator_cb *listener;
 
 	client->cur_inst = NULL;
-	atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
+	bt_atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
 
 	BT_SLIST_FOR_EACH_CONTAINER(&csip_set_coordinator_cbs, listener, _node) {
 		if (listener->discover) {
@@ -762,7 +762,7 @@ static uint8_t discover_func(struct bt_conn *conn,
 				sub_params->end_handle = client->cur_inst->end_handle;
 				sub_params->value_handle = chrc->value_handle;
 				sub_params->notify = notify_handler;
-				atomic_set_bit(sub_params->flags, BT_GATT_SUBSCRIBE_FLAG_VOLATILE);
+				bt_atomic_set_bit(sub_params->flags, BT_GATT_SUBSCRIBE_FLAG_VOLATILE);
 
 				err = bt_gatt_subscribe(conn, sub_params);
 				if (err != 0 && err != -EALREADY) {
@@ -1442,7 +1442,7 @@ int bt_csip_set_coordinator_discover(struct bt_conn *conn)
 	}
 
 	client = &client_insts[bt_conn_index(conn)];
-	if (atomic_test_and_set_bit(client->flags, SET_COORDINATOR_FLAG_BUSY)) {
+	if (bt_atomic_test_and_set_bit(client->flags, SET_COORDINATOR_FLAG_BUSY)) {
 		return -EBUSY;
 	}
 
@@ -1464,7 +1464,7 @@ int bt_csip_set_coordinator_discover(struct bt_conn *conn)
 		}
 		client->conn = bt_conn_ref(conn);
 	} else {
-		atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
+		bt_atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
 	}
 
 	return err;
@@ -1552,7 +1552,7 @@ static bool check_and_set_members_busy(const struct bt_csip_set_coordinator_set_
 		struct bt_csip_set_coordinator_inst *client =
 			CONTAINER_OF(member, struct bt_csip_set_coordinator_inst, set_member);
 
-		if (atomic_test_and_set_bit(client->flags, SET_COORDINATOR_FLAG_BUSY)) {
+		if (bt_atomic_test_and_set_bit(client->flags, SET_COORDINATOR_FLAG_BUSY)) {
 			LOG_DBG("Member[%zu] (%p) is busy", num_free, member);
 			break;
 		}
@@ -1565,7 +1565,7 @@ static bool check_and_set_members_busy(const struct bt_csip_set_coordinator_set_
 			struct bt_csip_set_coordinator_inst *client = CONTAINER_OF(
 				member, struct bt_csip_set_coordinator_inst, set_member);
 
-			atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
+			bt_atomic_clear_bit(client->flags, SET_COORDINATOR_FLAG_BUSY);
 		}
 	}
 

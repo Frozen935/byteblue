@@ -80,11 +80,11 @@ int bt_mesh_settings_set(bt_storage_read_cb read_cb, void *cb_arg,
 
 static int mesh_commit(void)
 {
-	if (!atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {
+	if (!bt_atomic_test_bit(bt_mesh.flags, BT_MESH_INIT)) {
 		return 0;
 	}
 
-	if (!atomic_test_bit(bt_dev.flags, BT_DEV_ENABLE)) {
+	if (!bt_atomic_test_bit(bt_dev.flags, BT_DEV_ENABLE)) {
 		/* The Bluetooth Mesh settings loader calls bt_mesh_start() immediately
 		 * after loading the settings. This is not intended to work before
 		 * bt_enable(). The doc on @ref bt_enable requires the "bt/" settings
@@ -102,7 +102,7 @@ static int mesh_commit(void)
 	bt_mesh_net_settings_commit();
 	bt_mesh_model_settings_commit();
 
-	atomic_set_bit(bt_mesh.flags, BT_MESH_VALID);
+	bt_atomic_set_bit(bt_mesh.flags, BT_MESH_VALID);
 
 	bt_mesh_start();
 
@@ -130,14 +130,14 @@ void bt_mesh_settings_store_schedule(enum bt_mesh_settings_flag flag)
 {
 	uint32_t timeout_ms, remaining_ms;
 
-	atomic_set_bit(pending_flags, flag);
+	bt_atomic_set_bit(pending_flags, flag);
 
-	if (atomic_get(pending_flags) & NO_WAIT_PENDING_BITS) {
+	if (bt_atomic_get(pending_flags) & NO_WAIT_PENDING_BITS) {
 		timeout_ms = 0;
 	} else if (IS_ENABLED(CONFIG_BT_MESH_RPL_STORAGE_MODE_SETTINGS) && RPL_STORE_TIMEOUT >= 0 &&
-		   (atomic_test_bit(pending_flags, BT_MESH_SETTINGS_RPL_PENDING) ||
-		     atomic_test_bit(pending_flags, BT_MESH_SETTINGS_SRPL_PENDING)) &&
-		   !(atomic_get(pending_flags) & GENERIC_PENDING_BITS)) {
+		   (bt_atomic_test_bit(pending_flags, BT_MESH_SETTINGS_RPL_PENDING) ||
+		     bt_atomic_test_bit(pending_flags, BT_MESH_SETTINGS_SRPL_PENDING)) &&
+		   !(bt_atomic_get(pending_flags) & GENERIC_PENDING_BITS)) {
 		timeout_ms = RPL_STORE_TIMEOUT * MSEC_PER_SEC;
 	} else {
 		timeout_ms = CONFIG_BT_MESH_STORE_TIMEOUT * MSEC_PER_SEC;
@@ -169,7 +169,7 @@ void bt_mesh_settings_store_schedule(enum bt_mesh_settings_flag flag)
 
 void bt_mesh_settings_store_cancel(enum bt_mesh_settings_flag flag)
 {
-	atomic_clear_bit(pending_flags, flag);
+	bt_atomic_clear_bit(pending_flags, flag);
 }
 
 static void store_pending(struct bt_work *work)
@@ -211,7 +211,7 @@ static void store_pending(struct bt_work *work)
 			continue;
 		}
 
-		if (atomic_test_and_clear_bit(pending_flags, i)) {
+		if (bt_atomic_test_and_clear_bit(pending_flags, i)) {
 			handlers[i].handler();
 		}
 	}

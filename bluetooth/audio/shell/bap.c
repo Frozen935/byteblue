@@ -471,7 +471,7 @@ static void lc3_audio_send_data(struct shell_stream *sh_stream)
 		return;
 	}
 
-	if (atomic_get(&sh_stream->tx.lc3_enqueue_cnt) == 0U) {
+	if (bt_atomic_get(&sh_stream->tx.lc3_enqueue_cnt) == 0U) {
 		/* no op */
 		return;
 	}
@@ -497,7 +497,7 @@ static void lc3_audio_send_data(struct shell_stream *sh_stream)
 
 	sh_stream->tx.lc3_sdu_cnt++;
 	sh_stream->tx.seq_num++;
-	atomic_dec(&sh_stream->tx.lc3_enqueue_cnt);
+	bt_atomic_dec(&sh_stream->tx.lc3_enqueue_cnt);
 }
 
 static void lc3_sent_cb(struct bt_bap_stream *bap_stream)
@@ -508,7 +508,7 @@ static void lc3_sent_cb(struct bt_bap_stream *bap_stream)
 		return;
 	}
 
-	atomic_inc(&sh_stream->tx.lc3_enqueue_cnt);
+	bt_atomic_inc(&sh_stream->tx.lc3_enqueue_cnt);
 }
 
 static void encode_and_send_cb(struct shell_stream *sh_stream, void *user_data)
@@ -2869,7 +2869,7 @@ static void stream_started_cb(struct bt_bap_stream *bap_stream)
 
 	if (codec_cfg->id == BT_HCI_CODING_FORMAT_LC3) {
 		if (sh_stream->is_tx) {
-			atomic_set(&sh_stream->tx.lc3_enqueue_cnt, PRIME_COUNT);
+			bt_atomic_set(&sh_stream->tx.lc3_enqueue_cnt, PRIME_COUNT);
 			sh_stream->tx.lc3_sdu_cnt = 0U;
 		}
 

@@ -221,10 +221,10 @@ struct bt_buf *bt_buf_alloc_len(struct bt_buf_pool *pool, size_t size, int32_t t
 
 		/* If this is not the first access to the pool, we can
 		 * be opportunistic and try to fetch a previously used
-		 * buffer from the LIFO with OS_TIMEOUT_NO_WAIT.
+		 * buffer from the queue with OS_TIMEOUT_NO_WAIT.
 		 */
 		if (pool->uninit_count < pool->buf_count) {
-			buf = bt_lifo_get(&pool->free, OS_TIMEOUT_NO_WAIT);
+			buf = bt_queue_get(&pool->free, OS_TIMEOUT_NO_WAIT);
 			if (buf) {
 				os_mutex_unlock(&pool->lock);
 				goto success;
@@ -240,7 +240,7 @@ struct bt_buf *bt_buf_alloc_len(struct bt_buf_pool *pool, size_t size, int32_t t
 
 	os_mutex_unlock(&pool->lock);
 
-	buf = bt_lifo_get(&pool->free, timeout);
+	buf = bt_queue_get(&pool->free, timeout);
 	if (!buf) {
 		BT_BUF_ERR("%s():%d: Failed to get free buffer", func, line);
 		return NULL;

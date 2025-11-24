@@ -116,9 +116,9 @@ static int l2cap_recv(struct bt_l2cap_chan *chan, struct bt_buf *buf)
 	return l2cap_ctx->rx_done(l2cap_ctx, chan->conn, buf);
 }
 
-static void l2cap_status(struct bt_l2cap_chan *chan, atomic_t *status)
+static void l2cap_status(struct bt_l2cap_chan *chan, bt_atomic_t *status)
 {
-	LOG_DBG("Channel %p status %lu", chan, atomic_get(status));
+	LOG_DBG("Channel %p status %lu", chan, bt_atomic_get(status));
 }
 
 static void l2cap_connected(struct bt_l2cap_chan *chan)

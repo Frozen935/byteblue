@@ -58,13 +58,13 @@ static void link_closed(enum prov_bearer_link_status status)
 
 static void protocol_timeout(struct bt_work *work)
 {
-	if (!atomic_test_bit(bt_mesh_prov_link.flags, LINK_ACTIVE)) {
+	if (!bt_atomic_test_bit(bt_mesh_prov_link.flags, LINK_ACTIVE)) {
 		return;
 	}
 
 	/* If connection failed or timeout, not allow establish connection */
 	if (IS_ENABLED(CONFIG_BT_MESH_PB_GATT_CLIENT) &&
-	    atomic_test_bit(bt_mesh_prov_link.flags, PROVISIONER)) {
+	    bt_atomic_test_bit(bt_mesh_prov_link.flags, PROVISIONER)) {
 		if (link.conn) {
 			(void)bt_conn_disconnect(link.conn,
 						 BT_HCI_ERR_REMOTE_USER_TERM_CONN);

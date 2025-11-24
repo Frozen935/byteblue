@@ -445,7 +445,7 @@ int bt_hci_recv(const struct bt_hci_transport *transport, struct bt_buf *buf);
  */
 struct bt_hci_cmd_state_set {
 	/* Target memory to be updated */
-	atomic_t *target;
+	bt_atomic_t *target;
 	/* Bit number to be updated in target memory */
 	int bit;
 	/* Value to determine if enable or disable bit */
@@ -455,7 +455,7 @@ struct bt_hci_cmd_state_set {
 /* Set command state related with the command buffer */
 void bt_hci_cmd_state_set_init(struct bt_buf *buf,
 			       struct bt_hci_cmd_state_set *state,
-			       atomic_t *target, int bit, bool val);
+			       bt_atomic_t *target, int bit, bool val);
 
 int bt_hci_disconnect(uint16_t handle, uint8_t reason);
 

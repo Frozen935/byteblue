@@ -916,7 +916,7 @@ static enum security_result rfcomm_dlc_security(struct bt_rfcomm_dlc *dlc)
 		 * as a precursor to accessing a service.
 		 * For current case, it is dedicated bonding.
 		 */
-		atomic_set_bit(conn->flags, BT_CONN_BR_GENERAL_BONDING);
+		bt_atomic_set_bit(conn->flags, BT_CONN_BR_GENERAL_BONDING);
 		/* If Security elevation is initiated or in progress */
 		return RFCOMM_SECURITY_PENDING;
 	}

@@ -36,7 +36,7 @@ static int32_t adv_timeout;
 
 static bool is_mesh_suspended(void)
 {
-	return atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
+	return bt_atomic_test_bit(bt_mesh.flags, BT_MESH_SUSPENDED);
 }
 
 static int bt_data_send(uint8_t num_events, uint16_t adv_int,
