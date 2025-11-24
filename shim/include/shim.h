@@ -34,7 +34,6 @@
 #include <base/assert.h>
 #include <base/queue/bt_queue.h>
 #include <base/queue/bt_fifo.h>
-#include <base/queue/bt_lifo.h>
 #include <base/bt_mem_pool.h>
 #include <base/bt_poll.h>
 #include <base/bt_work.h>

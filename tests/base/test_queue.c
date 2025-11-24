@@ -5,7 +5,6 @@
 #include <assert.h>
 #include "base/queue/bt_queue.h"
 #include "base/queue/bt_fifo.h"
-#include "base/queue/bt_lifo.h"
 #include "osdep/os.h"
 
 static void test_basic_ops(void)
@@ -166,7 +165,7 @@ static void test_multi_prod_cons(void)
     assert(bt_queue_is_empty(&q) == true);
 }
 
-static void test_fifo_lifo_wrappers(void)
+static void test_fifo_wrappers(void)
 {
     struct bt_fifo f; bt_fifo_init(&f);
     int a=1,b=2,c=3;
@@ -177,15 +176,6 @@ static void test_fifo_lifo_wrappers(void)
     assert(bt_fifo_get(&f, OS_TIMEOUT_NO_WAIT) == &b);
     assert(bt_fifo_get(&f, OS_TIMEOUT_NO_WAIT) == &c);
     assert(bt_fifo_get(&f, OS_TIMEOUT_NO_WAIT) == NULL);
-
-    struct bt_lifo l; bt_lifo_init(&l);
-    bt_lifo_put(&l, &a);
-    bt_lifo_put(&l, &b);
-    bt_lifo_put(&l, &c);
-    assert(bt_lifo_get(&l, OS_TIMEOUT_NO_WAIT) == &c);
-    assert(bt_lifo_get(&l, OS_TIMEOUT_NO_WAIT) == &b);
-    assert(bt_lifo_get(&l, OS_TIMEOUT_NO_WAIT) == &a);
-    assert(bt_lifo_get(&l, OS_TIMEOUT_NO_WAIT) == NULL);
 }
 
 int main(void)
@@ -200,8 +190,8 @@ int main(void)
     test_timeout();
     printf("[buf_queue/test_queue] multi producer/consumer...\n");
     test_multi_prod_cons();
-    printf("[buf_queue/test_queue] fifo/lifo wrappers...\n");
-    test_fifo_lifo_wrappers();
+    printf("[buf_queue/test_queue] fifo wrappers...\n");
+    test_fifo_wrappers();
     printf("[buf_queue/test_queue] all tests passed.\n");
     return 0;
 }

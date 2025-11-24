@@ -1051,8 +1051,8 @@ struct bt_buf_data_alloc {
  * This struct is used to represent a pool of network buffers.
  */
 struct bt_buf_pool {
-	/** LIFO to place the buffer into when free */
-	struct bt_lifo free;
+	/** queue to place the buffer into when free */
+	struct bt_queue free;
 
 	/** To prevent concurrent access/modifications */
 	os_mutex_t lock;
@@ -1078,7 +1078,7 @@ struct bt_buf_pool {
 
 #define BT_BUF_POOL_INITIALIZER(_pool, _alloc, _bufs, _count, _ud_size, _destroy)                  \
 	{                                                                                          \
-		.free = BT_LIFO_INITIALIZER(_pool.free), .lock = {}, .buf_count = _count,          \
+		.free = BT_QUEUE_INITIALIZER(_pool.free), .lock = {}, .buf_count = _count,          \
 		.uninit_count = _count, .user_data_size = _ud_size, .destroy = _destroy,           \
 		.alloc = _alloc, .__bufs = (struct bt_buf *)_bufs,                                 \
 	}
@@ -1404,7 +1404,7 @@ static inline void bt_buf_destroy(struct bt_buf *buf)
 		buf->__buf = NULL;
 	}
 
-	bt_lifo_put(&pool->free, buf);
+	bt_queue_prepend(&pool->free, buf);
 }
 
 /**

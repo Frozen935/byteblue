@@ -895,7 +895,7 @@ static bool cannot_send_to_controller(struct bt_conn *conn)
 static bool dont_have_viewbufs(void)
 {
 #if defined(CONFIG_BT_CONN_TX)
-	/* The LIFO only tracks buffers that have been destroyed at least once,
+	/* The queue only tracks buffers that have been destroyed at least once,
 	 * hence the uninit check beforehand.
 	 */
 	if (fragments.uninit_count > 0) {
@@ -903,8 +903,8 @@ static bool dont_have_viewbufs(void)
 		return false;
 	}
 
-	/* In practice bt_fifo == bt_lifo ABI. */
-	return bt_fifo_is_empty(&fragments.free);
+	/* In practice bt_fifo == bt_queue. */
+	return bt_queue_is_empty(&fragments.free);
 
 #else  /* !CONFIG_BT_CONN_TX */
 	return false;

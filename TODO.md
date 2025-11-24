@@ -1,14 +1,15 @@
 # TODO
 
 ## feature
+* remove lifo code
 * merge feature branch to main branch
 * adapt to nemos framework bluetooth
 * remove STRUCT_SECTION_* from source code and redesign the definition
   * BT_CONN_CB_DEFINE
   * BT_MEM_POOL_DEFINE_IN_SECT
   * BT_MEM_POOL_DEFINE_IN_SECT_STATIC
-  * BT_L2CAP_BR_CHANNEL_DEFINE
-  * BT_L2CAP_FIXED_CHANNEL_DEFINE
+  * ~~BT_L2CAP_BR_CHANNEL_DEFINE~~
+  * ~~BT_L2CAP_FIXED_CHANNEL_DEFINE~~
   * BT_SCO_CONN_CB_DEFINE
   * BT_MESH_APP_KEY_CB_DEFINE
   * BT_MESH_SUBNET_CB_DEFINE
@@ -55,6 +56,7 @@
 
 ## demo
 * SDL audio demo
+* merge feature branch to main branch
 
 ## test
 * add unit test for each module
