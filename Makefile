@@ -84,6 +84,39 @@ mbedtls-local:
 	@$(MAKE) -C $(MBEDTLS_LOCAL_DIR)/library libmbedcrypto.a
 endif
 
+# ===== cmocka test integration =====
+CMOCKA_PKG_AVAILABLE := $(shell pkg-config --exists cmocka && echo yes || echo no)
+CMOCKA_INSTALL_TARGET := cmocka-install
+
+ifeq ($(CMOCKA_PKG_AVAILABLE),yes)
+  CMOCKA_CFLAGS := $(shell pkg-config --cflags cmocka)
+  CMOCKA_LIBS   := $(shell pkg-config --libs cmocka)
+else
+  CMOCKA_LOCAL_DIR := third_party/cmocka
+  CMOCKA_FALLBACK_TARGET := cmocka-local
+  CMOCKA_CFLAGS := -I$(CMOCKA_LOCAL_DIR)/include
+  CMOCKA_LIBS   := $(CMOCKA_LOCAL_DIR)/build/src/libcmocka.a
+endif
+
+# Best-effort system install (does not fail the build if unavailable)
+.PHONY: cmocka-install
+cmocka-install:
+	@echo "Attempting to install cmocka via apt/yum/dnf (best-effort)..."
+	@ (command -v apt-get >/dev/null && apt-get update -y && apt-get install -y libcmocka-dev) || \
+	  (command -v dnf >/dev/null && dnf install -y cmocka cmocka-devel) || \
+	  (command -v yum >/dev/null && yum install -y cmocka cmocka-devel) || \
+	  (echo "cmocka system install not available; continuing with vendored fallback")
+
+# Fallback: vendor cmocka static build
+ifeq ($(CMOCKA_FALLBACK_TARGET),cmocka-local)
+.PHONY: cmocka-local
+cmocka-local:
+	@echo "Fetching and building local cmocka..."
+	@test -d $(CMOCKA_LOCAL_DIR) || git clone --depth 1 https://github.com/clibs/cmocka.git $(CMOCKA_LOCAL_DIR)
+	@mkdir -p $(CMOCKA_LOCAL_DIR)/build
+	@cd $(CMOCKA_LOCAL_DIR)/build && (cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF .. && $(MAKE) -j)
+endif
+
 # Source files
 CSRCS :=
 
@@ -110,10 +143,14 @@ include bluetooth/module.mk
 # Append module include flags
 CPPFLAGS += $(BT_CPPFLAGS)
 
+TEST_DIRS := tests/base tests/osdep
+TEST_SRCS := $(foreach d,$(TEST_DIRS),$(wildcard $(d)/test_*.c))
+
 # Combine sources: base + bluetooth module
 CSRCS += \
     $(CSRCS_BASE) \
-    $(BT_SRCS)
+    $(BT_SRCS) \
+    $(TEST_SRCS)
 
 # Object files
 OBJS = $(CSRCS:.c=.o)
@@ -153,7 +190,7 @@ all: libopenblue.a demo btcmd
 # Clean target
 clean:
 	@echo "Cleaning..."
-	$(RM) $(OBJS) $(DEPS) libopenblue.a samples/demo/demo samples/demo/demo.d
+	$(RM) $(OBJS) $(DEPS) libopenblue.a samples/demo/demo samples/demo/demo.d $(TEST_BINS)
 	$(RM) samples/cmds/btcmd samples/cmds/btcmd.d
 	$(RM) -r include/generated
 
@@ -179,6 +216,29 @@ btcmd:
 	@echo "Skipping samples/cmds/btcmd..."
 endif
 
+# Test integration
+TEST_BINS := $(TEST_SRCS:.c=)
+
+.PHONY: test test-run
+
+test: libopenblue.a $(MBEDTLS_FALLBACK_TARGET) $(if $(filter yes,$(CMOCKA_PKG_AVAILABLE)),,$(CMOCKA_INSTALL_TARGET) $(CMOCKA_FALLBACK_TARGET)) $(TEST_BINS)
+
+# Rule to build each test binary (single-source tests) regardless of directory
+$(TEST_BINS): %: %.c libopenblue.a
+	@echo "CC $< (test)"
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(CMOCKA_CFLAGS) -o $@ $< libopenblue.a $(MBEDTLS_LIBS) $(CMOCKA_LIBS) -lpthread -lrt
+
+# Run all test binaries (fail-fast)
+.test-run-impl:
+	@set -e; \
+	for t in $(TEST_BINS); do \
+	  echo "Running $$t"; \
+	  $$t || { echo "FAILED: $$t"; exit 1; }; \
+	done; \
+	echo "All tests passed"
+
+test-run: test .test-run-impl
+
 # Kconfig targets
 .PHONY: menuconfig kconfig-deps help genconfig
 
@@ -193,6 +253,8 @@ ifeq ($(filter y 1,$(CONFIG_OPENBLUE_BT_CMD)),y 1)
 	@echo "  make btcmd        - build samples/cmds/btcmd"
 endif
 	@echo "  make all          - build all"
+	@echo "  make test         - build all unit tests"
+	@echo "  make test-run     - run all unit tests (fail-fast)"
 
 kconfig-deps:
 	@python3 -c "import kconfiglib" 2>/dev/null || pip3 install --user kconfiglib

@@ -133,6 +133,7 @@ uint8_t u8_to_dec(char *buf, uint8_t buflen, uint8_t value);
 bool util_memeq(const uint8_t *a, const uint8_t *b, size_t len);
 bool util_eq(const uint8_t *a, size_t alen, const uint8_t *b, size_t blen);
 char *utf8_lcpy(char *dst, const char *src, size_t n);
+int utf8_count_chars(const char *s);
 
 static inline size_t sys_count_bits(const void *value, size_t len)
 {

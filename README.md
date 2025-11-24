@@ -9,6 +9,11 @@ This project is an independent module extracted from the Zephyr Bluetooth subsys
 - git (used to fetch local mbed TLS source code when system dependencies are not available)
 - Linux/Unix environment (examples depend on pthread, rt)
 
+install dependencies:
+```
+sudo apt install libcmocka-dev libmbedtls-dev git
+```
+
 ## Dependency Handling Strategy (System-First + Local Fallback)
 When `CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS=y`:
 - Prioritize detecting system-installed mbed TLS via `pkg-config`:

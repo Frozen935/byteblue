@@ -9,6 +9,11 @@
 - git（用于在无系统依赖时拉取本地 mbed TLS 源码）
 - Linux/Unix 环境（示例依赖 pthread、rt）
 
+安装依赖：
+```
+sudo apt install libcmocka-dev libmbedtls-dev git
+```
+
 ## 依赖处理策略（系统优先 + 本地回退）
 当 `CONFIG_OPENBLUE_CRYPTO_USE_MBEDTLS=y` 时：
 - 优先通过 `pkg-config` 检测系统安装的 mbed TLS：
