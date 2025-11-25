@@ -16,7 +16,7 @@
 #define ASSERT_EN 1
 
 #if ASSERT_EN
-#ifndef assert
+#ifdef NDEBUG
 static inline void __bt_assert_fail(const char *expr, const char *file, int line)
 {
 	LOG_ERR("Assertion failed: %s at %s:%d", expr, file, line);
