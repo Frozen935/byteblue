@@ -5,19 +5,27 @@
 #include <stdlib.h>
 #include <base/log.h>
 
+/*
+#ifdef NDEBUG
+#define ASSERT_EN 0
+#else
+#define ASSERT_EN 1
+#endif
+*/
+
 #define ASSERT_EN 1
 
+#if ASSERT_EN
+#ifndef assert
 static inline void __bt_assert_fail(const char *expr, const char *file, int line)
 {
-#ifdef NDEBUG
 	LOG_ERR("Assertion failed: %s at %s:%d", expr, file, line);
 	abort();
-#else
-	assert(0);
-#endif
 }
+#else
+#define __bt_assert_fail(expr, file, line) assert(0)
+#endif
 
-#if ASSERT_EN
 /* ===== Assert macros ===== */
 #define __ASSERT_NO_MSG(test)                                                                      \
 	do {                                                                                       \
